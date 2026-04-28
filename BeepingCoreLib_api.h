@@ -38,8 +38,8 @@ extern "C" {
   ///////////////////////////////////////////
     
   //Create BeepingCore Object, the returned object will be passed as parameter to all API functions
-  BEEPING_DLLEXPORT void *BEEPING_Create();
-  
+  BEEPING_DLLEXPORT void *BEEPING_Create(void);
+
   //Destroy BeepingCore Object
   BEEPING_DLLEXPORT void BEEPING_Destroy(void *beepingObject);
 
@@ -47,7 +47,7 @@ extern "C" {
   ///// VERSIONING //////////////////////////
   ///////////////////////////////////////////
   //Return string with version information
-  BEEPING_DLLEXPORT const char* BEEPING_GetVersion();
+  BEEPING_DLLEXPORT const char* BEEPING_GetVersion(void);
 
   //Return string with version information
   BEEPING_DLLEXPORT int32_t BEEPING_GetVersionInfo(char * versioninfo);
@@ -58,7 +58,7 @@ extern "C" {
 
   //BEEPING_Configure function, call this function to configure parameters of the BeepingCore Library
   //* Parameters:
-  //    mode: mode (2 for audible, 3 for non-audible, don’t use other modes, 0 and 1 are old modes)
+  //    mode: mode (2 for audible, 3 for non-audible, donï¿½t use other modes, 0 and 1 are old modes)
   //    samplingRate: sampling rate in Hz
   //    nChannels: number of channels of the input audio
   //    beepingObject: BEEPING object instance, created in BEEPING_Create()

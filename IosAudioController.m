@@ -87,7 +87,13 @@ static OSStatus recordingCallback(void *inRefCon,
     {
       NSLog(@"BEGIN TOKEN FOUND!");
 
+      // Legacy C-callback bridge; this entire file is replaced with a
+      // Swift+ObjC++ AudioEngine in BEE-68 phase 4/7. Suppression is
+      // localized here to keep the migration's history clean.
+      #pragma clang diagnostic push
+      #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
       [iosAudio->mObject performSelector:iosAudio->mSelector withObject:[NSNumber numberWithInt:0]];
+      #pragma clang diagnostic pop
     }
     else if (ret >= 0)
     {
@@ -105,13 +111,19 @@ static OSStatus recordingCallback(void *inRefCon,
       {
         iosAudio->mBeepingObject->mDecodedOK = 1;
         NSLog(@"END DECODING OK! %@ ", tmpString);
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [iosAudio->mObject performSelector:iosAudio->mSelector withObject:[NSNumber numberWithInt:1]];
+        #pragma clang diagnostic pop
       }
       else
       {
         iosAudio->mBeepingObject->mDecodedOK = -1;
         NSLog(@"END DECODING BAD! %@ ", tmpString);
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [iosAudio->mObject performSelector:iosAudio->mSelector withObject:[NSNumber numberWithInt:2]];
+        #pragma clang diagnostic pop
       }
     }
     else
