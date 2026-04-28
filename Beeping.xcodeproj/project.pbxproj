@@ -10,8 +10,10 @@
 		364AD71E1DBA597D009B3ACE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 364AD71D1DBA597D009B3ACE /* libc++.tbd */; };
 		36B9F2AC1DBC1D0200FA27D4 /* Beeping.h in Headers */ = {isa = PBXBuildFile; fileRef = 36CF5D8C1DBA62F50008BB8B /* Beeping.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		36CF5D911DBA62F50008BB8B /* Beeping.m in Sources */ = {isa = PBXBuildFile; fileRef = 36CF5D8D1DBA62F50008BB8B /* Beeping.m */; };
-		B1E0F00A1B2C3D4E5F000003 /* BeepingEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000001 /* BeepingEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		B1E0F00A1B2C3D4E5F000004 /* BeepingEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000002 /* BeepingEvent.m */; };
+		BC0001000000000000000011 /* BeepingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000010 /* BeepingError.swift */; };
+		BC0001000000000000000013 /* BeepingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000012 /* BeepingMode.swift */; };
+		BC0001000000000000000015 /* BeepingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000014 /* BeepingEvent.swift */; };
+		BC0001000000000000000017 /* BeepingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000016 /* BeepingDelegate.swift */; };
 		B1E0F00A1B2C3D4E5F000009 /* BeepingEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */; };
 		B1E0F00A1B2C3D4E5F00000A /* BeepingDelegateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000006 /* BeepingDelegateTests.m */; };
 		B1E0F00A1B2C3D4E5F00000B /* SwiftImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */; };
@@ -46,8 +48,10 @@
 		36B8B4E5204FD54400729DBA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		36CF5D8C1DBA62F50008BB8B /* Beeping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Beeping.h; sourceTree = "<group>"; };
 		36CF5D8D1DBA62F50008BB8B /* Beeping.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Beeping.m; sourceTree = "<group>"; };
-		B1E0F00A1B2C3D4E5F000001 /* BeepingEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BeepingEvent.h; sourceTree = "<group>"; };
-		B1E0F00A1B2C3D4E5F000002 /* BeepingEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingEvent.m; sourceTree = "<group>"; };
+		BC0001000000000000000010 /* BeepingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingError.swift; sourceTree = "<group>"; };
+		BC0001000000000000000012 /* BeepingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingMode.swift; sourceTree = "<group>"; };
+		BC0001000000000000000014 /* BeepingEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingEvent.swift; sourceTree = "<group>"; };
+		BC0001000000000000000016 /* BeepingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingDelegate.swift; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingEventTests.m; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F000006 /* BeepingDelegateTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingDelegateTests.m; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftImportTests.swift; sourceTree = "<group>"; };
@@ -101,8 +105,8 @@
 			children = (
 				36CF5D8C1DBA62F50008BB8B /* Beeping.h */,
 				36CF5D8D1DBA62F50008BB8B /* Beeping.m */,
-				B1E0F00A1B2C3D4E5F000001 /* BeepingEvent.h */,
-				B1E0F00A1B2C3D4E5F000002 /* BeepingEvent.m */,
+				BC0001000000000000000014 /* BeepingEvent.swift */,
+				BC0001000000000000000016 /* BeepingDelegate.swift */,
 			);
 			name = API;
 			sourceTree = "<group>";
@@ -126,6 +130,8 @@
 			children = (
 				BC0001000000000000000001 /* BeepingC.h */,
 				BC0001000000000000000002 /* BeepingC.mm */,
+				BC0001000000000000000010 /* BeepingError.swift */,
+				BC0001000000000000000012 /* BeepingMode.swift */,
 			);
 			name = Internal;
 			sourceTree = "<group>";
@@ -203,7 +209,6 @@
 			files = (
 				A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */,
 				36B9F2AC1DBC1D0200FA27D4 /* Beeping.h in Headers */,
-				B1E0F00A1B2C3D4E5F000003 /* BeepingEvent.h in Headers */,
 				A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */,
 				A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */,
 				BC0001000000000000000003 /* BeepingC.h in Headers */,
@@ -322,9 +327,12 @@
 			files = (
 				A18148321C68EC0C00BD86D0 /* IosAudioController.m in Sources */,
 				36CF5D911DBA62F50008BB8B /* Beeping.m in Sources */,
-				B1E0F00A1B2C3D4E5F000004 /* BeepingEvent.m in Sources */,
 				A18148331C68EC0C00BD86D0 /* BeepingCore.m in Sources */,
 				BC0001000000000000000004 /* BeepingC.mm in Sources */,
+				BC0001000000000000000011 /* BeepingError.swift in Sources */,
+				BC0001000000000000000013 /* BeepingMode.swift in Sources */,
+				BC0001000000000000000015 /* BeepingEvent.swift in Sources */,
+				BC0001000000000000000017 /* BeepingDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

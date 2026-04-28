@@ -2,31 +2,29 @@
 //  Beeping.h
 //  Beeping
 //
+//  Public umbrella header. The `BeepingEvent` payload class and the
+//  `beepingDelegate` protocol moved to Swift in BEE-68 — they're declared
+//  in the auto-generated `Beeping-Swift.h` (included via the framework's
+//  module map). Forward declarations below let this header compile
+//  standalone; module-import consumers (`@import Beeping;` /
+//  `import Beeping`) get the full definitions automatically.
+//
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-
-#import <Beeping/BeepingEvent.h>
+#import <Beeping/BeepingCore.h>   // public ObjC API of the legacy core wrapper (replaced in phase 4)
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class BeepingCore;
+@class BeepingEvent;          // defined in Beeping-Swift.h
+@protocol beepingDelegate;    // defined in Beeping-Swift.h
 @class Beeping;
-
-@protocol beepingDelegate <NSObject>
-
-@required
-- (void)beepIdWith:(NSString *)beep_id NS_SWIFT_NAME(beepId(with:));
-
-@optional
-- (void)beepingDidReceiveEvent:(BeepingEvent *)event NS_SWIFT_NAME(beepingDidReceive(event:));
-@end
 
 @interface Beeping : NSObject <NSURLConnectionDelegate> {
 
     // Private properties
     // Beeping object
-    BeepingCore *_beepingCore;              
+    BeepingCore *_beepingCore;
 
 }
 

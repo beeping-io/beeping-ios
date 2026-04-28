@@ -5,6 +5,7 @@
 
 #import "Beeping.h"
 #import "BeepingCore.h"
+#import <Beeping/Beeping-Swift.h>  // BeepingEvent + beepingDelegate (Swift)
 
 @interface Beeping ()
 
