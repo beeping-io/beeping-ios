@@ -21,6 +21,8 @@
 		A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E2E21AFA5EFE00987410 /* BeepingCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E30C1AFA72A000987410 /* IosAudioController.h */; };
+		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; };
+		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -59,6 +61,8 @@
 		41E1E30D1AFA72A000987410 /* IosAudioController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IosAudioController.m; sourceTree = "<group>"; };
 		41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeepingCoreLib_api.h; sourceTree = "<group>"; };
 		A18148401C68EC0C00BD86D0 /* Beeping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Beeping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC0001000000000000000001 /* BeepingC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeepingC.h; sourceTree = "<group>"; };
+		BC0001000000000000000002 /* BeepingC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BeepingC.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,7 +77,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				364AD71E1DBA597D009B3ACE /* libc++.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				36CF5D8B1DBA62C10008BB8B /* API */,
+				BC0001000000000000000005 /* Internal */,
 				41E1E30B1AFA729000987410 /* Audio */,
 				41E1E3061AFA725700987410 /* BeepingCoreLib */,
 				41E1E2DF1AFA5EFE00987410 /* BeepingCore */,
@@ -115,6 +119,15 @@
 				41E1E2DE1AFA5EFE00987410 /* Products */,
 				364AD71C1DBA597D009B3ACE /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		BC0001000000000000000005 /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				BC0001000000000000000001 /* BeepingC.h */,
+				BC0001000000000000000002 /* BeepingC.mm */,
+			);
+			name = Internal;
 			sourceTree = "<group>";
 		};
 		41E1E2DE1AFA5EFE00987410 /* Products */ = {
@@ -193,6 +206,7 @@
 				B1E0F00A1B2C3D4E5F000003 /* BeepingEvent.h in Headers */,
 				A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */,
 				A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */,
+				BC0001000000000000000003 /* BeepingC.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +324,7 @@
 				36CF5D911DBA62F50008BB8B /* Beeping.m in Sources */,
 				B1E0F00A1B2C3D4E5F000004 /* BeepingEvent.m in Sources */,
 				A18148331C68EC0C00BD86D0 /* BeepingCore.m in Sources */,
+				BC0001000000000000000004 /* BeepingC.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
