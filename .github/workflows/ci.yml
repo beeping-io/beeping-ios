@@ -13,7 +13,7 @@ jobs:
   smoke:
     name: Smoke (Xcode project resolves)
     runs-on: macos-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +27,34 @@ jobs:
       - name: Validate Xcode project resolves to JSON
         run: xcodebuild -list -project Beeping.xcodeproj -json | python3 -m json.tool > /dev/null
 
-      - name: Smoke OK
-        run: echo "✅ Xcode project resolves cleanly."
+      - name: Build Beeping framework (Swift 6 + strict concurrency, device)
+        # Notes:
+        # - generic/platform=iOS targets device (arm64); the legacy
+        #   libBeepingCoreUniversal.a only ships device + intel-simulator slices,
+        #   so simulator-arm64 builds are deferred until BEE-79 (consume signed
+        #   XCFramework from beeping-core releases).
+        # - CODE_SIGN_* disabled to skip Apple Developer signing on CI.
+        # - The build settings (Swift 6, strict concurrency, iOS 15) are baked
+        #   into the project; this job verifies they don't regress.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log
+
+      - name: Fail on warnings or errors in build log
+        run: |
+          if grep -nE "warning:|error:" build.log; then
+            echo "❌ Found warnings or errors in build output"
+            exit 1
+          fi
+          echo "✅ 0 warnings, 0 errors"
 
   # NOTE: real lint (SwiftLint + swift-format) lands in BEE-77.
   # Real test suite (XCTest + Swift Testing + snapshot + property) lands in BEE-76.
