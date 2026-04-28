@@ -91,3 +91,9 @@ generated/
 docs/_build/
 docs/api/  # generated DocC output (BEE-76+)
 site/
+
+# ── Node tooling (commitlint only, no runtime JS) ────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
