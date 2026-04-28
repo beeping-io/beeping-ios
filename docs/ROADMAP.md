@@ -18,17 +18,17 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-04-28 (init) |
+| **Last update** | 2026-04-28 (Closed BEE-67 — net delta 0 days) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks)
+- **Story points**: 94 (16 tasks; **2 SP closed**, 92 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (no tasks closed yet)
+- **Status**: ✅ En tiempo (1/16 tasks closed — BEE-67)
 
 ### Per-task projections
 
@@ -38,7 +38,7 @@
 
 | Order | Linear | SP | Title | Est. start | Est. end | Status |
 |---|---|---|---|---|---|---|
-| 1 | BEE-67 | 2 | 🏷️ Rename + Apache-2.0 + Conventional Commits | 2026-04-28 | 2026-04-28 | ✅ |
+| 1 | BEE-67 | 2 | 🏷️ Rename + Apache-2.0 + Conventional Commits | 2026-04-28 | 2026-04-28 | ✅ **DONE** |
 | 2 | BEE-68 | 13 | 🔄 ObjC → Swift 6 + strict concurrency | 2026-04-29 | 2026-04-30 | ✅ |
 | 3 | BEE-69 | 3 | 🔒 iOS 15 min + PrivacyInfo.xcprivacy | 2026-05-01 | 2026-05-01 | ✅ |
 | 4 | BEE-70 | 8 | 🌊 BeepingClient actor + AsyncStream | 2026-05-04 | 2026-05-05 | ✅ |
@@ -88,6 +88,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | Date | SP closed (cum.) | SP remaining | SP·day actual | Notes |
 |---|---|---|---|---|
 | 2026-04-28 | 0 / 94 | 94 | — | Initial bootstrap |
+| 2026-04-28 | 2 / 94 | 92 | 2.0 (day 1) | BEE-67 closed in plan; cumulative velocity = 2.0 SP/day (single day, partial) |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.
