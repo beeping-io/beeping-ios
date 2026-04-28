@@ -1,0 +1,93 @@
+# ── Xcode ────────────────────────────────────────────────────────────────
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+profile/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── Xcode workspace user data ────────────────────────────────────────────
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
+
+# ── Swift Package Manager ────────────────────────────────────────────────
+.build/
+Packages/
+Package.pins
+Package.resolved
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# ── CocoaPods ────────────────────────────────────────────────────────────
+Pods/
+*.podspec.json
+
+# ── Carthage (out of scope, here for safety) ─────────────────────────────
+Carthage/Build/
+Carthage/Checkouts/
+
+# ── Fastlane ─────────────────────────────────────────────────────────────
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# ── XCFramework distribution outputs ─────────────────────────────────────
+dist/
+Framework/
+*.xcframework.zip
+
+# ── Local config (machine-specific, NEVER commit) ────────────────────────
+*.xcconfig.local
+
+# ── Secrets / env ────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.gpg
+*.asc
+*.p12
+*.cer
+*.mobileprovision
+
+# ── Logs ─────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS junk ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── Test reports / coverage ──────────────────────────────────────────────
+test-results/
+coverage/
+*.xcresult/
+
+# ── Generated ────────────────────────────────────────────────────────────
+generated/
+
+# ── Documentation builds (DocC, jazzy, etc.) ─────────────────────────────
+docs/_build/
+docs/api/  # generated DocC output (BEE-76+)
+site/
