@@ -1,6 +1,5 @@
 @import XCTest;
-
-#import "BeepingEvent.h"
+@import Beeping;
 
 @interface BeepingEventTests : XCTestCase
 @end
