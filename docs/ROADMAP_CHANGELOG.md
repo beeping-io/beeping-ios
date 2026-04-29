@@ -13,15 +13,57 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-28 (trigger: Closed BEE-67 — net delta 0 days)
+- **Última actualización**: 2026-04-29 (trigger: Closed BEE-68 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 2 closed, 92 remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 15 SP closed, 79 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-29] - Closed BEE-68
+**Trigger detallado**: BEE-68 (🔄 Migración completa ObjC → Swift 6 con strict concurrency, Sendable, actors) cerrada en plan en day 2 del milestone, después de una pausa de sesión entre fases 3 y 4. Entregada en 8 fases (10 commits): Xcode toolchain Swift 6, ObjC++ bridge `BeepingC.{h,mm}`, Swift Sendable types, Swift internal wrappers, public Beeping facade `@MainActor`, Swift Testing migration, legacy ObjC cleanup, ROADMAP recalc.
+**Net delta global**: 0 días (cerramos en plan; 13 SP planeado ≈ 13 SP real)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio, antes: 2026-05-18)
+**Nuevo estado global**: ✅ (sin cambio, antes: ✅)
+
+#### Adelantados (negativo = más pronto)
+- (ninguno)
+
+#### Retrasados (positivo = más tarde)
+- (ninguno)
+
+#### Sin cambio
+- BEE-69..BEE-82 (14 tasks restantes, 79 SP remaining; el cierre de BEE-68 en plan no afecta la cascada)
+
+#### Cambios de estado de riesgo
+- (ninguno — global se mantiene ✅; las tasks BEE-80/81/82 al final del milestone siguen en ⚠️ medio por dependencia con R1 — Phase 1 `beeping-core` releases)
+
+#### Velocity actualizada
+- Day 1 (2026-04-28): 2 SP closed → cumulative velocity 2.0 SP/day
+- Day 2 (2026-04-29): 13 SP closed → cumulative velocity 7.5 SP/day across 2 working days
+- Velocity asumida 8 SP/día se sostiene ligeramente por debajo (-0.5 SP/día) — tracking dentro de margen. Re-evaluar tras 3+ days de samples.
+
+#### Commits relacionados (en `milestone/phase-9`, en orden)
+- `5c6d5a7` — chore(xcode): enable Swift 6 + strict concurrency + iOS 15 minimum
+- `76ca303` — fix(xcode): add shared Beeping.xcscheme for CI
+- `5464dca` — chore(legacy): silence pre-existing warnings on legacy ObjC sources
+- `66fb7a2` — feat(bridge): add BeepingC ObjC++ bridge for C API + AudioUnit
+- `669d6d1` — feat(api): add Swift Sendable types (Mode, Event, Error, Delegate)
+- `801e98b` — feat(internal): Swift wrappers for core + audio
+- `0f2340f` — fix(ci): use legacy allowBluetooth (Xcode 16 SDK lacks new symbol)
+- `e863bb1` — refactor(api): swap ObjC Beeping → Swift @MainActor facade
+- `e3d0994` — test: migrate XCTest → Swift Testing + add Sendable + native smoke
+- `7ebe26f` — chore: delete legacy ObjC sources after Swift 6 migration
+
+#### Known-allowlisted warnings (cleanup tracked)
+- `class 'Beeping.Beeping' shadows module 'Beeping'` → resuelve en BEE-70
+- `'allowBluetooth' was deprecated` → resuelve en BEE-69 / BEE-79
+- `BeepingC.h` Public visibility temporal → resuelve en BEE-80 (Package.swift private submodule)
+
+---
 
 ### [2026-04-28] - Closed BEE-67
 **Trigger detallado**: BEE-67 (🏷️ Rename `sdk-iphone` → `beeping-ios` + Apache-2.0 + Conventional Commits) cerrada en plan en day 1 del milestone. SP planeado = 2, SP real ≈ 1 (la mayor parte del trabajo ya quedó cubierta por el commit de bootstrap `/worktree-init`).
