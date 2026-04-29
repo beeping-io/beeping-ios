@@ -76,9 +76,14 @@ internal final class AudioEngine: @unchecked Sendable {
     private func configureAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
+            // `allowBluetooth` was renamed to `allowBluetoothHFP` in newer
+            // SDKs but the symbol is only present in Xcode 17+ / iOS 17+.
+            // CI runs Xcode 16.x, where the new spelling doesn't exist
+            // yet. Stay on the old spelling until BEE-69 raises Xcode min
+            // and BEE-79 drops legacy SDK support.
             try session.setCategory(.playAndRecord,
                                     mode: .default,
-                                    options: [.defaultToSpeaker, .allowBluetoothHFP])
+                                    options: [.defaultToSpeaker, .allowBluetooth])
             try session.setPreferredSampleRate(44100)
             try session.setActive(true)
         } catch {

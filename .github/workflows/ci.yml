@@ -57,18 +57,24 @@ jobs:
         #     to BeepingClient.
         #   - "Metadata extraction skipped. No AppIntents.framework": iOS
         #     compiler note from Xcode 16+, not a build issue.
+        #   - "'allowBluetooth' was deprecated in iOS …": the new spelling
+        #     `allowBluetoothHFP` only ships in Xcode 17+ / iOS 17+; CI runs
+        #     Xcode 16.x where the new symbol doesn't exist yet. Cleanup
+        #     lands with BEE-69 (raise Xcode min) or BEE-79 (drop legacy SDK).
         run: |
           if grep -nE "warning:|error:" build.log \
               | grep -v "shadows module 'Beeping'" \
               | grep -v "AppIntents.framework dependency" \
+              | grep -v "'allowBluetooth' was deprecated" \
               | grep -q .; then
             echo "❌ Found unexpected warnings or errors in build output"
             grep -nE "warning:|error:" build.log \
               | grep -v "shadows module 'Beeping'" \
-              | grep -v "AppIntents.framework dependency"
+              | grep -v "AppIntents.framework dependency" \
+              | grep -v "'allowBluetooth' was deprecated"
             exit 1
           fi
-          echo "✅ 0 unexpected warnings, 0 errors (1 known-allowlisted: BEE-70)"
+          echo "✅ 0 unexpected warnings, 0 errors (known-allowlisted: BEE-69/70)"
 
   # NOTE: real lint (SwiftLint + swift-format) lands in BEE-77.
   # Real test suite (XCTest + Swift Testing + snapshot + property) lands in BEE-76.
