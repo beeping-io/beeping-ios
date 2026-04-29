@@ -16,9 +16,12 @@
 		BC0001000000000000000017 /* BeepingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000016 /* BeepingDelegate.swift */; };
 		BC0001000000000000000021 /* BeepingCoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000020 /* BeepingCoreWrapper.swift */; };
 		BC0001000000000000000023 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000022 /* AudioEngine.swift */; };
-		B1E0F00A1B2C3D4E5F000009 /* BeepingEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */; };
 		B1E0F00A1B2C3D4E5F00000B /* SwiftImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */; };
-		41E1E2F01AFA5EFE00987410 /* BeepingCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E1E2EF1AFA5EFE00987410 /* BeepingCoreTests.m */; };
+		BC0001000000000000000041 /* BeepingPayloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000040 /* BeepingPayloadTests.swift */; };
+		BC0001000000000000000043 /* BeepingDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000042 /* BeepingDelegateTests.swift */; };
+		BC0001000000000000000045 /* NativeBridgeSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000044 /* NativeBridgeSmokeTests.swift */; };
+		BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000046 /* SendableConformanceTests.swift */; };
+		BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */; };
 		A18148321C68EC0C00BD86D0 /* IosAudioController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E1E30D1AFA72A000987410 /* IosAudioController.m */; };
 		A18148331C68EC0C00BD86D0 /* BeepingCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E1E2FC1AFA6CDD00987410 /* BeepingCore.m */; };
 		A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E2E21AFA5EFE00987410 /* BeepingCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -55,13 +58,16 @@
 		BC0001000000000000000016 /* BeepingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingDelegate.swift; sourceTree = "<group>"; };
 		BC0001000000000000000020 /* BeepingCoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingCoreWrapper.swift; sourceTree = "<group>"; };
 		BC0001000000000000000022 /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
-		B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingEventTests.m; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftImportTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000040 /* BeepingPayloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingPayloadTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000042 /* BeepingDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingDelegateTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000044 /* NativeBridgeSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeBridgeSmokeTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000046 /* SendableConformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableConformanceTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingFrameworkSmokeTests.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E1E2E21AFA5EFE00987410 /* BeepingCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BeepingCore.h; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		41E1E2EF1AFA5EFE00987410 /* BeepingCoreTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingCoreTests.m; sourceTree = "<group>"; };
 		41E1E2FC1AFA6CDD00987410 /* BeepingCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BeepingCore.m; sourceTree = "<group>"; };
 		41E1E30C1AFA72A000987410 /* IosAudioController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IosAudioController.h; sourceTree = "<group>"; };
 		41E1E30D1AFA72A000987410 /* IosAudioController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IosAudioController.m; sourceTree = "<group>"; };
@@ -171,8 +177,11 @@
 			isa = PBXGroup;
 			children = (
 				B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */,
-				B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */,
-				41E1E2EF1AFA5EFE00987410 /* BeepingCoreTests.m */,
+				BC0001000000000000000040 /* BeepingPayloadTests.swift */,
+				BC0001000000000000000042 /* BeepingDelegateTests.swift */,
+				BC0001000000000000000044 /* NativeBridgeSmokeTests.swift */,
+				BC0001000000000000000046 /* SendableConformanceTests.swift */,
+				BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */,
 				41E1E2ED1AFA5EFE00987410 /* Supporting Files */,
 			);
 			path = BeepingCoreTests;
@@ -318,8 +327,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1E0F00A1B2C3D4E5F00000B /* SwiftImportTests.swift in Sources */,
-				B1E0F00A1B2C3D4E5F000009 /* BeepingEventTests.m in Sources */,
-				41E1E2F01AFA5EFE00987410 /* BeepingCoreTests.m in Sources */,
+				BC0001000000000000000041 /* BeepingPayloadTests.swift in Sources */,
+				BC0001000000000000000043 /* BeepingDelegateTests.swift in Sources */,
+				BC0001000000000000000045 /* NativeBridgeSmokeTests.swift in Sources */,
+				BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */,
+				BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

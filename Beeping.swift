@@ -97,4 +97,16 @@ public final class Beeping: NSObject {
             delegate?.beepId(with: key)
         }
     }
+
+    // MARK: - Test seam
+
+    /// Internal entry point for tests (`@testable import Beeping`). Replaces
+    /// the legacy XCTest pattern of injecting a stub `BeepingCore` via KVC
+    /// (`setValue:forKey:@"_beepingCore"`) — Swift's stored properties are
+    /// not KVC-accessible, and this seam is more honest about the contract
+    /// being tested: that an arbitrary `BeepingEvent` reaches the delegate
+    /// per the dispatch rules.
+    internal func _injectEventForTesting(_ event: BeepingEvent) {
+        dispatch(event: event)
+    }
 }
