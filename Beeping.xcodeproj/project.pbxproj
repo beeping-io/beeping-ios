@@ -14,6 +14,8 @@
 		BC0001000000000000000013 /* BeepingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000012 /* BeepingMode.swift */; };
 		BC0001000000000000000015 /* BeepingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000014 /* BeepingEvent.swift */; };
 		BC0001000000000000000017 /* BeepingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000016 /* BeepingDelegate.swift */; };
+		BC0001000000000000000021 /* BeepingCoreWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000020 /* BeepingCoreWrapper.swift */; };
+		BC0001000000000000000023 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000022 /* AudioEngine.swift */; };
 		B1E0F00A1B2C3D4E5F000009 /* BeepingEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */; };
 		B1E0F00A1B2C3D4E5F00000A /* BeepingDelegateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F000006 /* BeepingDelegateTests.m */; };
 		B1E0F00A1B2C3D4E5F00000B /* SwiftImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */; };
@@ -23,7 +25,7 @@
 		A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E2E21AFA5EFE00987410 /* BeepingCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E30C1AFA72A000987410 /* IosAudioController.h */; };
-		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; };
+		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +54,8 @@
 		BC0001000000000000000012 /* BeepingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingMode.swift; sourceTree = "<group>"; };
 		BC0001000000000000000014 /* BeepingEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingEvent.swift; sourceTree = "<group>"; };
 		BC0001000000000000000016 /* BeepingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingDelegate.swift; sourceTree = "<group>"; };
+		BC0001000000000000000020 /* BeepingCoreWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingCoreWrapper.swift; sourceTree = "<group>"; };
+		BC0001000000000000000022 /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F000005 /* BeepingEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingEventTests.m; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F000006 /* BeepingDelegateTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeepingDelegateTests.m; sourceTree = "<group>"; };
 		B1E0F00A1B2C3D4E5F00000C /* SwiftImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftImportTests.swift; sourceTree = "<group>"; };
@@ -132,6 +136,8 @@
 				BC0001000000000000000002 /* BeepingC.mm */,
 				BC0001000000000000000010 /* BeepingError.swift */,
 				BC0001000000000000000012 /* BeepingMode.swift */,
+				BC0001000000000000000020 /* BeepingCoreWrapper.swift */,
+				BC0001000000000000000022 /* AudioEngine.swift */,
 			);
 			name = Internal;
 			sourceTree = "<group>";
@@ -333,6 +339,8 @@
 				BC0001000000000000000013 /* BeepingMode.swift in Sources */,
 				BC0001000000000000000015 /* BeepingEvent.swift in Sources */,
 				BC0001000000000000000017 /* BeepingDelegate.swift in Sources */,
+				BC0001000000000000000021 /* BeepingCoreWrapper.swift in Sources */,
+				BC0001000000000000000023 /* AudioEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
