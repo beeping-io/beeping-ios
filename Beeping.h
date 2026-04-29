@@ -16,7 +16,6 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <Beeping/BeepingCore.h>   // legacy ObjC core wrapper (replaced in phase 7 of BEE-68)
 #import <Beeping/BeepingC.h>      // ObjC++ bridge — Public for framework-internal Swift access; tightened in BEE-80 (private submodule)
 
 NS_ASSUME_NONNULL_BEGIN

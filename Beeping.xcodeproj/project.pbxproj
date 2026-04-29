@@ -22,11 +22,7 @@
 		BC0001000000000000000045 /* NativeBridgeSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000044 /* NativeBridgeSmokeTests.swift */; };
 		BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000046 /* SendableConformanceTests.swift */; };
 		BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */; };
-		A18148321C68EC0C00BD86D0 /* IosAudioController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E1E30D1AFA72A000987410 /* IosAudioController.m */; };
-		A18148331C68EC0C00BD86D0 /* BeepingCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E1E2FC1AFA6CDD00987410 /* BeepingCore.m */; };
-		A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E2E21AFA5EFE00987410 /* BeepingCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
-		A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */ = {isa = PBXBuildFile; fileRef = 41E1E30C1AFA72A000987410 /* IosAudioController.h */; };
 		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
 /* End PBXBuildFile section */
@@ -65,12 +61,8 @@
 		BC0001000000000000000046 /* SendableConformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableConformanceTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingFrameworkSmokeTests.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		41E1E2E21AFA5EFE00987410 /* BeepingCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BeepingCore.h; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		41E1E2FC1AFA6CDD00987410 /* BeepingCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BeepingCore.m; sourceTree = "<group>"; };
-		41E1E30C1AFA72A000987410 /* IosAudioController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IosAudioController.h; sourceTree = "<group>"; };
-		41E1E30D1AFA72A000987410 /* IosAudioController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IosAudioController.m; sourceTree = "<group>"; };
 		41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeepingCoreLib_api.h; sourceTree = "<group>"; };
 		A18148401C68EC0C00BD86D0 /* Beeping.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Beeping.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC0001000000000000000001 /* BeepingC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeepingC.h; sourceTree = "<group>"; };
@@ -124,7 +116,6 @@
 			children = (
 				36CF5D8B1DBA62C10008BB8B /* API */,
 				BC0001000000000000000005 /* Internal */,
-				41E1E30B1AFA729000987410 /* Audio */,
 				41E1E3061AFA725700987410 /* BeepingCoreLib */,
 				41E1E2DF1AFA5EFE00987410 /* BeepingCore */,
 				41E1E2EC1AFA5EFE00987410 /* BeepingCoreTests */,
@@ -158,8 +149,6 @@
 		41E1E2DF1AFA5EFE00987410 /* BeepingCore */ = {
 			isa = PBXGroup;
 			children = (
-				41E1E2E21AFA5EFE00987410 /* BeepingCore.h */,
-				41E1E2FC1AFA6CDD00987410 /* BeepingCore.m */,
 				41E1E2E01AFA5EFE00987410 /* Supporting Files */,
 			);
 			path = BeepingCore;
@@ -203,15 +192,6 @@
 			name = BeepingCoreLib;
 			sourceTree = "<group>";
 		};
-		41E1E30B1AFA729000987410 /* Audio */ = {
-			isa = PBXGroup;
-			children = (
-				41E1E30C1AFA72A000987410 /* IosAudioController.h */,
-				41E1E30D1AFA72A000987410 /* IosAudioController.m */,
-			);
-			name = Audio;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -219,10 +199,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A18148381C68EC0C00BD86D0 /* BeepingCore.h in Headers */,
 				36B9F2AC1DBC1D0200FA27D4 /* Beeping.h in Headers */,
 				A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */,
-				A181483A1C68EC0C00BD86D0 /* IosAudioController.h in Headers */,
 				BC0001000000000000000003 /* BeepingC.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -339,8 +317,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A18148321C68EC0C00BD86D0 /* IosAudioController.m in Sources */,
-				A18148331C68EC0C00BD86D0 /* BeepingCore.m in Sources */,
 				BC0001000000000000000004 /* BeepingC.mm in Sources */,
 				BC0001000000000000000031 /* Beeping.swift in Sources */,
 				BC0001000000000000000011 /* BeepingError.swift in Sources */,
