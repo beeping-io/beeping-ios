@@ -81,11 +81,16 @@ public actor BeepingClient {
     // MARK: - State
 
     private let wrapper: BeepingCoreWrapper
+    private let encoder: any BeepingEncoder
     private var streams: [UUID: AsyncStream<Event>.Continuation] = [:]
 
     // MARK: - Init
 
-    /// Creates a new client configured to decode the given mode.
+    /// Creates a new client configured to decode the given mode. The
+    /// default encoder is `LocalEncoder` (on-device C++ via ObjC++).
+    /// To pick a different strategy (e.g. cloud), construct via the
+    /// public factory methods in BEE-72 or pass an explicit encoder
+    /// to the internal initializer below.
     ///
     /// - Parameter mode: which carrier to decode. Default `.all` matches
     ///   any audible / non-audible / hidden tone. Other values let you
@@ -93,15 +98,37 @@ public actor BeepingClient {
     public init(mode: BeepingMode = .all) {
         let w = BeepingCoreWrapper()
         self.wrapper = w
+        self.encoder = LocalEncoder(wrapper: w)
         w.configure(mode: mode)
+        Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
+            Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
+        })
+    }
 
-        // Wire wrapper -> actor. Runs on wrapper's serial dispatch queue;
-        // hop into the actor before touching `streams`.
-        w.onEvent = { [weak self] legacyEvent in
-            guard let self else { return }
-            Task { [weak self] in
-                await self?.dispatch(legacyEvent: legacyEvent)
-            }
+    /// Internal initializer that lets the caller pick the encoder
+    /// strategy. Used by BEE-72 (public `.local()` / `.cloud(...)`
+    /// factory methods) and by tests that want to inject a stub encoder.
+    /// The decode path (mic capture) is always local — only the encode
+    /// strategy is configurable here.
+    internal init(encoder: any BeepingEncoder, mode: BeepingMode = .all) {
+        let w = BeepingCoreWrapper()
+        self.wrapper = w
+        self.encoder = encoder
+        w.configure(mode: mode)
+        Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
+            Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
+        })
+    }
+
+    /// Helper to factor out the closure boilerplate used by both inits.
+    /// The `dispatch` closure is invoked from the wrapper's serial
+    /// dispatch queue; it must hop back to the actor itself.
+    private static func wireEvents(
+        wrapper: BeepingCoreWrapper,
+        dispatch: @escaping @Sendable (BeepingEvent) -> Void
+    ) {
+        wrapper.onEvent = { legacyEvent in
+            dispatch(legacyEvent)
         }
     }
 
@@ -133,18 +160,19 @@ public actor BeepingClient {
         }
     }
 
-    /// Encodes and emits a payload through the device speaker.
-    ///
-    /// In BEE-70 this is a thin wrapper over the local encoder + audio
-    /// engine. The cloud-mode strategy (route encoding through
-    /// `beepbox-server`) lands in BEE-71. The function signature already
-    /// throws so future implementations can surface network / auth errors.
+    /// Encodes and emits a payload through whichever encoder strategy
+    /// this client was constructed with (BEE-71). The default encoder is
+    /// `LocalEncoder` (on-device C++ via ObjC++). Cloud-mode encoders
+    /// (URLSession to `beepbox-server`) become available via the public
+    /// factory methods in BEE-72.
     ///
     /// - Parameter payload: the payload to transmit. Only `decodedString`
     ///   is used by the encoder; other fields are metadata that the
     ///   receiving end will reconstruct on decode.
+    /// - Throws: `BeepingError` from the encoder strategy
+    ///   (network / auth / decoder failures, depending on mode).
     public func send(_ payload: BeepingPayload) async throws {
-        wrapper.play(code: payload.decodedString)
+        try await encoder.encode(payload)
     }
 
     /// Stops listening, terminates all `listen()` streams, and tears

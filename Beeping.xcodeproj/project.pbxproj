@@ -26,6 +26,11 @@
 		BC0001000000000000000061 /* BeepingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000060 /* BeepingClient.swift */; };
 		BC0001000000000000000063 /* BeepingPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000062 /* BeepingPayload.swift */; };
 		BC0001000000000000000065 /* BeepingClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000064 /* BeepingClientTests.swift */; };
+		BC0001000000000000000071 /* BeepingEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000070 /* BeepingEncoder.swift */; };
+		BC0001000000000000000073 /* LocalEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000072 /* LocalEncoder.swift */; };
+		BC0001000000000000000075 /* CloudEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000074 /* CloudEncoder.swift */; };
+		BC0001000000000000000077 /* MockURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000076 /* MockURLProtocol.swift */; };
+		BC0001000000000000000079 /* EncoderStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000078 /* EncoderStrategyTests.swift */; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
@@ -68,6 +73,11 @@
 		BC0001000000000000000060 /* BeepingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingClient.swift; sourceTree = "<group>"; };
 		BC0001000000000000000062 /* BeepingPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingPayload.swift; sourceTree = "<group>"; };
 		BC0001000000000000000064 /* BeepingClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingClientTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000070 /* BeepingEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingEncoder.swift; sourceTree = "<group>"; };
+		BC0001000000000000000072 /* LocalEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalEncoder.swift; sourceTree = "<group>"; };
+		BC0001000000000000000074 /* CloudEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudEncoder.swift; sourceTree = "<group>"; };
+		BC0001000000000000000076 /* MockURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockURLProtocol.swift; sourceTree = "<group>"; };
+		BC0001000000000000000078 /* EncoderStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderStrategyTests.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -144,6 +154,9 @@
 				BC0001000000000000000012 /* BeepingMode.swift */,
 				BC0001000000000000000020 /* BeepingCoreWrapper.swift */,
 				BC0001000000000000000022 /* AudioEngine.swift */,
+				BC0001000000000000000070 /* BeepingEncoder.swift */,
+				BC0001000000000000000072 /* LocalEncoder.swift */,
+				BC0001000000000000000074 /* CloudEncoder.swift */,
 			);
 			name = Internal;
 			sourceTree = "<group>";
@@ -183,6 +196,8 @@
 				BC0001000000000000000046 /* SendableConformanceTests.swift */,
 				BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */,
 				BC0001000000000000000064 /* BeepingClientTests.swift */,
+				BC0001000000000000000076 /* MockURLProtocol.swift */,
+				BC0001000000000000000078 /* EncoderStrategyTests.swift */,
 				41E1E2ED1AFA5EFE00987410 /* Supporting Files */,
 			);
 			path = BeepingCoreTests;
@@ -324,6 +339,8 @@
 				BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */,
 				BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */,
 				BC0001000000000000000065 /* BeepingClientTests.swift in Sources */,
+				BC0001000000000000000077 /* MockURLProtocol.swift in Sources */,
+				BC0001000000000000000079 /* EncoderStrategyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,6 +358,9 @@
 				BC0001000000000000000023 /* AudioEngine.swift in Sources */,
 				BC0001000000000000000061 /* BeepingClient.swift in Sources */,
 				BC0001000000000000000063 /* BeepingPayload.swift in Sources */,
+				BC0001000000000000000071 /* BeepingEncoder.swift in Sources */,
+				BC0001000000000000000073 /* LocalEncoder.swift in Sources */,
+				BC0001000000000000000075 /* CloudEncoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

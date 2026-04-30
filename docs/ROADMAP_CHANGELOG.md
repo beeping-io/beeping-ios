@@ -13,15 +13,52 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-30 (trigger: Closed BEE-70 — net delta 0 days)
+- **Última actualización**: 2026-04-30 (trigger: Closed BEE-71 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 26 SP closed, 68 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 34 SP closed, 60 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-30] - Closed BEE-71
+**Trigger detallado**: BEE-71 (🎭 Strategy pattern: `LocalEncoder` C++ via ObjC++ + `CloudEncoder` URLSession) cerrada en plan en day 3 del milestone (mismo día que BEE-69 + BEE-70 — sesión muy productiva). Single commit con:
+- `BeepingEncoder.swift` (~30 líneas) — internal `protocol BeepingEncoder: Sendable`
+- `LocalEncoder.swift` (~50 líneas) — `actor` wrapping `BeepingCoreWrapper.play(code:)`
+- `CloudEncoder.swift` (~90 líneas) — `actor` con URLSession async POST a `/v1/encode`
+- `BeepingClient.swift` modificado — `internal init(encoder:mode:)` permite inyección, `send` delega
+- `EncoderStrategyTests.swift` (~150 líneas) + `MockURLProtocol.swift` (~50 líneas) — 6 tests cubriendo URL/headers/body shape
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=8, SP real ~5 — fluido)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados (negativo = más pronto)
+- (ninguno significativo a nivel milestone — buffer creciente queda en margen)
+
+#### Retrasados (positivo = más tarde)
+- (ninguno)
+
+#### Sin cambio
+- BEE-72..BEE-82 (11 tasks restantes, 60 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅; BEE-80/81/82 al final siguen ⚠️ por dependencia con R1)
+
+#### Velocity actualizada
+- Day 3 (2026-04-30): +24 SP cerrados en total (BEE-69 + BEE-70 + BEE-71) → cumulative **11.3 SP/día** across 3 working days
+- 3.3 SP/día por encima del asumido 8 SP/día — buffer real de ~5 días si esta velocity se sostiene
+
+#### Scope decisión documentada
+- BEE-71 implementa strategy pattern SOLO para encode (transmit). Decode (mic capture + decoder) sigue local-only. Cloud-mode-decode requeriría rediseño grande del audio thread (chunked upload + async decoded responses); explícitamente fuera de scope para los 8 SP del task.
+- CloudEncoder usa URLSession plain en BEE-71. La response body audio no se procesa todavía — BEE-73 (OpenAPI-generated client) refinará con type-safety + wirearáa playback.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(strategy): BEE-71 add BeepingEncoder protocol + Local/Cloud strategies
+
+---
 
 ### [2026-04-30] - Closed BEE-70
 **Trigger detallado**: BEE-70 (🌊 API pública nueva: `BeepingClient` actor-based + `AsyncStream<BeepingEvent>`) cerrada en plan en day 3 del milestone (mismo día que BEE-69 — sesión productiva). Entregada en single commit con:
