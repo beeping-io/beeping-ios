@@ -13,15 +13,51 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-30 (trigger: Closed BEE-71 — net delta 0 days)
+- **Última actualización**: 2026-04-30 (trigger: Closed BEE-72 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 34 SP closed, 60 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 37 SP closed, 57 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-30] - Closed BEE-72
+**Trigger detallado**: BEE-72 (🛠️ Builder DSL: `.local()` / `.cloud(apiKey:endpoint:)`) cerrada en plan en day 3 del milestone (cuarta tarea del día — sesión muy productiva). Single commit con:
+- `BeepingLogLevel.swift` (~25 líneas) — `public enum: Sendable, Equatable` placeholder, BEE-74 lo wireea a os.Logger
+- `BeepingClientBuilder.swift` (~100 líneas) — `public struct: Sendable` fluent con `.mode/.logLevel/.telemetryEnabled/.build()`
+- `BeepingClient` extended — internal init añade `logLevel` + `telemetryEnabled` parameters (defaults backwards-compat); `static func local()` + `static func cloud(apiKey:endpoint:)` factory methods
+- `BuilderDSLTests.swift` (~120 líneas) — 9 Swift Testing tests cubriendo factories, build path, fluent chain preservation, defaults, Sendable, LogLevel cases
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=3, SP real ~2 — groundwork de BEE-71 hizo trivial el wiring)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados (negativo = más pronto)
+- (ninguno significativo a nivel milestone — buffer creciente queda en margen)
+
+#### Retrasados (positivo = más tarde)
+- (ninguno)
+
+#### Sin cambio
+- BEE-73..BEE-82 (10 tasks restantes, 57 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅; BEE-80/81/82 al final siguen ⚠️ por dependencia con R1)
+
+#### Velocity actualizada
+- Day 3 (2026-04-30): +27 SP cerrados en total (BEE-69 + BEE-70 + BEE-71 + BEE-72) → cumulative **12.3 SP/día** across 3 working days
+- 4.3 SP/día por encima del asumido 8 SP/día — buffer ~5+ días si esta velocity se sostiene
+
+#### Stub features documentadas (no actuadas en BEE-72)
+- `BeepingLogLevel` settings se guardan en el actor pero no se actúan; wiring real en BEE-74 (os.Logger + custom wrapper + trace-IDs)
+- `telemetryEnabled` flag se guarda pero no se actúa; wiring real en BEE-75 (telemetry hook)
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(api): BEE-72 add BeepingClientBuilder fluent DSL + factory methods
+
+---
 
 ### [2026-04-30] - Closed BEE-71
 **Trigger detallado**: BEE-71 (🎭 Strategy pattern: `LocalEncoder` C++ via ObjC++ + `CloudEncoder` URLSession) cerrada en plan en day 3 del milestone (mismo día que BEE-69 + BEE-70 — sesión muy productiva). Single commit con:

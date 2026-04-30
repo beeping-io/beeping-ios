@@ -84,6 +84,12 @@ public actor BeepingClient {
     private let encoder: any BeepingEncoder
     private var streams: [UUID: AsyncStream<Event>.Continuation] = [:]
 
+    // BEE-72: builder-set knobs. Stored here so future tasks (BEE-74
+    // os.Logger wiring, BEE-75 telemetry hook) can read them; they are
+    // intentionally NOT acted on in BEE-72.
+    internal let logLevel: BeepingLogLevel
+    internal let telemetryEnabled: Bool
+
     // MARK: - Init
 
     /// Creates a new client configured to decode the given mode. The
@@ -99,6 +105,8 @@ public actor BeepingClient {
         let w = BeepingCoreWrapper()
         self.wrapper = w
         self.encoder = LocalEncoder(wrapper: w)
+        self.logLevel = .info
+        self.telemetryEnabled = false
         w.configure(mode: mode)
         Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
             Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
@@ -106,18 +114,55 @@ public actor BeepingClient {
     }
 
     /// Internal initializer that lets the caller pick the encoder
-    /// strategy. Used by BEE-72 (public `.local()` / `.cloud(...)`
-    /// factory methods) and by tests that want to inject a stub encoder.
-    /// The decode path (mic capture) is always local — only the encode
+    /// strategy and the builder-set knobs. Used by `BeepingClientBuilder`
+    /// (BEE-72) and by tests that want to inject a stub encoder. The
+    /// decode path (mic capture) is always local — only the encode
     /// strategy is configurable here.
-    internal init(encoder: any BeepingEncoder, mode: BeepingMode = .all) {
+    internal init(
+        encoder: any BeepingEncoder,
+        mode: BeepingMode = .all,
+        logLevel: BeepingLogLevel = .info,
+        telemetryEnabled: Bool = false
+    ) {
         let w = BeepingCoreWrapper()
         self.wrapper = w
         self.encoder = encoder
+        self.logLevel = logLevel
+        self.telemetryEnabled = telemetryEnabled
         w.configure(mode: mode)
         Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
             Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
         })
+    }
+
+    // MARK: - Public factory methods (BEE-72)
+
+    /// Returns a builder configured to emit through the **on-device**
+    /// encoder (the C++ engine via the ObjC++ bridge — `LocalEncoder`).
+    /// Default mode is `.all`; chain `.mode(_:)` to restrict.
+    ///
+    /// ```swift
+    /// let client = BeepingClient.local().build()
+    /// ```
+    public static func local() -> BeepingClientBuilder {
+        BeepingClientBuilder(encoderFactory: { LocalEncoder(wrapper: BeepingCoreWrapper()) })
+    }
+
+    /// Returns a builder configured to emit through the **cloud**
+    /// encoder (URLSession to `beepbox-server` — `CloudEncoder`).
+    /// Default mode is `.all`.
+    ///
+    /// ```swift
+    /// let client = BeepingClient
+    ///     .cloud(apiKey: "your-key", endpoint: URL(string: "https://api.beeping.io")!)
+    ///     .build()
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - apiKey: server-issued API key (sent as `X-API-Key` header).
+    ///   - endpoint: base URL of the `beepbox-server` instance.
+    public static func cloud(apiKey: String, endpoint: URL) -> BeepingClientBuilder {
+        BeepingClientBuilder(encoderFactory: { CloudEncoder(apiKey: apiKey, endpoint: endpoint) })
     }
 
     /// Helper to factor out the closure boilerplate used by both inits.
