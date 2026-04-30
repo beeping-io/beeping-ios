@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        Privacy manifest for the `Beeping` framework. Mandatory since
+        May 2024 for any binary shipped to the App Store. Apps that
+        embed this framework must include their own
+        `PrivacyInfo.xcprivacy` AND inherit the declarations below.
+
+        Authoritative reference:
+          https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
+
+        Beeping's privacy posture, per `docs/PRODUCTO.md` section 9:
+          - We do NOT track. We do NOT collect any PII. We do NOT use
+            any required-reason API category.
+          - Microphone access is governed by `NSMicrophoneUsageDescription`
+            in the consumer's Info.plist; that is NOT a Privacy Manifest
+            concern (it is a separate Apple permission system).
+          - When BEE-75 lands the telemetry hook, the consumer's app
+            controls opt-in. Since the SDK doesn't ship a backend by
+            default, no NSPrivacyTrackingDomains entries are needed
+            from the framework side.
+    -->
+
+    <!-- We do not track users (no IDFA / no fingerprinting / no cross-app
+         data joining). Per Apple: NSPrivacyTracking=true requires user
+         consent via App Tracking Transparency. -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <!-- Domains contacted for tracking purposes. Empty because we don't
+         track and the SDK doesn't have a built-in backend. The consumer
+         app's Cloud-mode endpoint (BEE-71) is configured at runtime by
+         the integrating app and is the consumer's compliance concern. -->
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!-- Categories of data collected from the user. Empty: the SDK only
+         processes audio frames in-memory (decoder discards them
+         immediately) and emits decoded short identifiers (≤9 chars,
+         non-PII by design). -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <!-- Required-reason APIs used (with their reason codes). Empty
+         because the SDK does not currently use any of:
+            - File timestamp APIs        (NSPrivacyAccessedAPICategoryFileTimestamp)
+            - System boot time APIs      (NSPrivacyAccessedAPICategorySystemBootTime)
+            - Disk space APIs            (NSPrivacyAccessedAPICategoryDiskSpace)
+            - Active keyboard APIs       (NSPrivacyAccessedAPICategoryActiveKeyboards)
+            - User defaults APIs         (NSPrivacyAccessedAPICategoryUserDefaults)
+         If a future task introduces any of these (e.g. caching an API
+         key in UserDefaults, BEE-72 builder DSL), this array MUST be
+         updated with the appropriate `NSPrivacyAccessedAPIType` +
+         `NSPrivacyAccessedAPITypeReasons` entry. -->
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array/>
+</dict>
+</plist>

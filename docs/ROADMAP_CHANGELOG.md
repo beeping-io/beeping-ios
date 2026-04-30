@@ -13,15 +13,48 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-29 (trigger: Closed BEE-68 — net delta 0 days)
+- **Última actualización**: 2026-04-30 (trigger: Closed BEE-69 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 15 SP closed, 79 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 18 SP closed, 76 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-30] - Closed BEE-69
+**Trigger detallado**: BEE-69 (🔒 iOS 15 mínimo + `PrivacyInfo.xcprivacy` con declared API reasons) cerrada en plan en day 3 del milestone. La mitad del work (iOS 15 deployment target) ya estaba cubierta por BEE-68 Fase 1; sólo el manifest de privacy fue trabajo nuevo: `/PrivacyInfo.xcprivacy` (4 claves obligatorias declarando "no tracking, no PII, no required-reason APIs"), wired into `project.pbxproj` Resources build phase del Beeping target.
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=3 ≈ SP real ~1, pero al ritmo del milestone no afecta)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados (negativo = más pronto)
+- (ninguno significativo — el "ahorro" implícito de tener iOS 15 ya hecho se absorbe en el margen del 20%)
+
+#### Retrasados (positivo = más tarde)
+- (ninguno)
+
+#### Sin cambio
+- BEE-70..BEE-82 (13 tasks restantes, 76 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅; BEE-80/81/82 al final siguen ⚠️ por dependencia con R1 — Phase 1 `beeping-core` releases)
+
+#### Velocity actualizada
+- Day 1 (2026-04-28): 2 SP closed → cumulative 2.0 SP/día
+- Day 2 (2026-04-29): 13 SP closed → cumulative 7.5 SP/día
+- Day 3 (2026-04-30): 3 SP closed → cumulative **6.0 SP/día** (debajo del asumido 8 pero dentro de margen)
+- Re-evaluar tras BEE-70 (8 SP, prio 1) que será el siguiente test grande de velocity.
+
+#### Aclaración técnica documentada
+- `xcrun privacy_compliance` mencionado en la descripción original de BEE-69 NO existe como CLI público de Apple — investigado y confirmado. La validación canónica es `plutil -lint` (sintaxis) + Xcode archive validator + App Store Connect submission. Documentado en el comment de cierre de la tarea para que no se perpetúe el mito.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(privacy): BEE-69 add PrivacyInfo.xcprivacy + iOS 15 confirmation
+
+---
 
 ### [2026-04-29] - Closed BEE-68
 **Trigger detallado**: BEE-68 (🔄 Migración completa ObjC → Swift 6 con strict concurrency, Sendable, actors) cerrada en plan en day 2 del milestone, después de una pausa de sesión entre fases 3 y 4. Entregada en 8 fases (10 commits): Xcode toolchain Swift 6, ObjC++ bridge `BeepingC.{h,mm}`, Swift Sendable types, Swift internal wrappers, public Beeping facade `@MainActor`, Swift Testing migration, legacy ObjC cleanup, ROADMAP recalc.
