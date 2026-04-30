@@ -14,7 +14,11 @@ import Foundation
 /// `BEEPING_MODE_AUDIBLE..BEEPING_MODE_CUSTOM` from `BeepingCoreLib_api.h`,
 /// **NOT** the legacy `MODE_AUDIBLE..MODE_CUSTOM` typedef in
 /// `BeepingCore.h` (which conflated tokens and modes in one NS_ENUM).
-internal enum BeepingMode: Int32, Sendable {
+///
+/// Promoted from `internal` to `public` in BEE-70 because it appears in
+/// `BeepingClient.init(mode:)`. Factory methods that wrap mode selection
+/// (`.local()` / `.cloud(...)`) land in BEE-71/72.
+public enum BeepingMode: Int32, Sendable {
     /// Old audible mode. Deprecated in `BeepingCoreLib_api.h`; kept only
     /// for completeness — do not select.
     case audibleOld    = 0

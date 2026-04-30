@@ -11,9 +11,12 @@
 
 import Foundation
 
-/// Errors surfaced by the SDK. `Sendable` so the future actor-based API
-/// (BEE-70) can pass values across isolation domains without `@unchecked`.
-internal enum BeepingError: Error, Sendable {
+/// Errors surfaced by the SDK. `Sendable` so the actor-based API
+/// (`BeepingClient`, BEE-70) can pass values across isolation domains
+/// without `@unchecked`. Promoted from `internal` to `public` in BEE-70
+/// because it appears in the public `BeepingClient.Event.failed(_:)`
+/// case payload.
+public enum BeepingError: Error, Sendable, Equatable {
     /// `AVAudioSession` couldn't be activated — typically because the user
     /// denied microphone access or the session was claimed by another app.
     case missingMicrophonePermission

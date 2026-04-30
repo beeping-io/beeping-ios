@@ -13,15 +13,51 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-30 (trigger: Closed BEE-69 — net delta 0 days)
+- **Última actualización**: 2026-04-30 (trigger: Closed BEE-70 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 18 SP closed, 76 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 26 SP closed, 68 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-30] - Closed BEE-70
+**Trigger detallado**: BEE-70 (🌊 API pública nueva: `BeepingClient` actor-based + `AsyncStream<BeepingEvent>`) cerrada en plan en day 3 del milestone (mismo día que BEE-69 — sesión productiva). Entregada en single commit con:
+- `BeepingClient.swift` (~180 líneas) — `public actor` con nested `Event` enum, `init(mode:)` síncrono, `listen() -> AsyncStream<Event>` multi-listener, `send(_ payload:) async throws`, `close() async`
+- `BeepingPayload.swift` (~75 líneas) — `public struct: Sendable, Equatable`
+- `BeepingClientTests.swift` (~115 líneas) — 9 tests Swift Testing
+- Promoción `BeepingError` + `BeepingMode` a `public`
+- `BeepingError` añade `Equatable` (necesario para auto-synthesis de `Event.failed(BeepingError)`)
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=8, SP real ~6 — la implementación se benefició del groundwork de BEE-68)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados (negativo = más pronto)
+- (ninguno significativo a nivel milestone — ahorro implícito absorbido por margen)
+
+#### Retrasados (positivo = más tarde)
+- (ninguno)
+
+#### Sin cambio
+- BEE-71..BEE-82 (12 tasks restantes, 68 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅; BEE-80/81/82 al final siguen ⚠️ por dependencia con R1 — Phase 1 `beeping-core` releases)
+
+#### Velocity actualizada
+- Day 3 (2026-04-30): +8 SP closed (BEE-69 + BEE-70) → cumulative **8.7 SP/día** across 3 working days
+- Por primera vez por encima del asumido 8 SP/día. Buffer creciente.
+
+#### Auto-correction nota
+Al cerrar BEE-69 anuncié que BEE-70 resolvería el warning "shadows module 'Beeping'". **Inexacto**: la descripción de BEE-70 no pide renombrar la legacy class. El warning sigue allowlisted; su resolución requiere deprecar la legacy `Beeping` ObjC class, que es scope independiente (posiblemente como parte del cleanup hacia 1.0). Documentado en el comment de cierre.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(api): BEE-70 add BeepingClient actor + AsyncStream<Event>
+
+---
 
 ### [2026-04-30] - Closed BEE-69
 **Trigger detallado**: BEE-69 (🔒 iOS 15 mínimo + `PrivacyInfo.xcprivacy` con declared API reasons) cerrada en plan en day 3 del milestone. La mitad del work (iOS 15 deployment target) ya estaba cubierta por BEE-68 Fase 1; sólo el manifest de privacy fue trabajo nuevo: `/PrivacyInfo.xcprivacy` (4 claves obligatorias declarando "no tracking, no PII, no required-reason APIs"), wired into `project.pbxproj` Resources build phase del Beeping target.

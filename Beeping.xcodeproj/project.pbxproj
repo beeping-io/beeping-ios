@@ -23,6 +23,9 @@
 		BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000046 /* SendableConformanceTests.swift */; };
 		BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */; };
 		BC0001000000000000000051 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000050 /* PrivacyInfo.xcprivacy */; };
+		BC0001000000000000000061 /* BeepingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000060 /* BeepingClient.swift */; };
+		BC0001000000000000000063 /* BeepingPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000062 /* BeepingPayload.swift */; };
+		BC0001000000000000000065 /* BeepingClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000064 /* BeepingClientTests.swift */; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
@@ -62,6 +65,9 @@
 		BC0001000000000000000046 /* SendableConformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableConformanceTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingFrameworkSmokeTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000050 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		BC0001000000000000000060 /* BeepingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingClient.swift; sourceTree = "<group>"; };
+		BC0001000000000000000062 /* BeepingPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingPayload.swift; sourceTree = "<group>"; };
+		BC0001000000000000000064 /* BeepingClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingClientTests.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -109,6 +115,8 @@
 				BC0001000000000000000030 /* Beeping.swift */,
 				BC0001000000000000000014 /* BeepingEvent.swift */,
 				BC0001000000000000000016 /* BeepingDelegate.swift */,
+				BC0001000000000000000060 /* BeepingClient.swift */,
+				BC0001000000000000000062 /* BeepingPayload.swift */,
 			);
 			name = API;
 			sourceTree = "<group>";
@@ -174,6 +182,7 @@
 				BC0001000000000000000044 /* NativeBridgeSmokeTests.swift */,
 				BC0001000000000000000046 /* SendableConformanceTests.swift */,
 				BC0001000000000000000048 /* BeepingFrameworkSmokeTests.swift */,
+				BC0001000000000000000064 /* BeepingClientTests.swift */,
 				41E1E2ED1AFA5EFE00987410 /* Supporting Files */,
 			);
 			path = BeepingCoreTests;
@@ -314,6 +323,7 @@
 				BC0001000000000000000045 /* NativeBridgeSmokeTests.swift in Sources */,
 				BC0001000000000000000047 /* SendableConformanceTests.swift in Sources */,
 				BC0001000000000000000049 /* BeepingFrameworkSmokeTests.swift in Sources */,
+				BC0001000000000000000065 /* BeepingClientTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,6 +339,8 @@
 				BC0001000000000000000017 /* BeepingDelegate.swift in Sources */,
 				BC0001000000000000000021 /* BeepingCoreWrapper.swift in Sources */,
 				BC0001000000000000000023 /* AudioEngine.swift in Sources */,
+				BC0001000000000000000061 /* BeepingClient.swift in Sources */,
+				BC0001000000000000000063 /* BeepingPayload.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

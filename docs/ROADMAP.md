@@ -18,17 +18,17 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-04-30 (Closed BEE-69 — net delta 0 days) |
+| **Last update** | 2026-04-30 (Closed BEE-70 — net delta 0 days) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks; **18 SP closed**, 76 SP remaining)
+- **Story points**: 94 (16 tasks; **26 SP closed**, 68 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (3/16 tasks closed — BEE-67, BEE-68, BEE-69)
+- **Status**: ✅ En tiempo (4/16 tasks closed — BEE-67, BEE-68, BEE-69, BEE-70)
 
 ### Per-task projections
 
@@ -41,7 +41,7 @@
 | 1 | BEE-67 | 2 | 🏷️ Rename + Apache-2.0 + Conventional Commits | 2026-04-28 | 2026-04-28 | ✅ **DONE** |
 | 2 | BEE-68 | 13 | 🔄 ObjC → Swift 6 + strict concurrency | 2026-04-28 | 2026-04-29 | ✅ **DONE** |
 | 3 | BEE-69 | 3 | 🔒 iOS 15 min + PrivacyInfo.xcprivacy | 2026-04-30 | 2026-04-30 | ✅ **DONE** |
-| 4 | BEE-70 | 8 | 🌊 BeepingClient actor + AsyncStream | 2026-05-04 | 2026-05-05 | ✅ |
+| 4 | BEE-70 | 8 | 🌊 BeepingClient actor + AsyncStream | 2026-04-30 | 2026-04-30 | ✅ **DONE** |
 | 5 | BEE-71 | 8 | 🎭 Strategy: LocalEncoder + CloudEncoder | 2026-05-05 | 2026-05-06 | ✅ |
 | 6 | BEE-72 | 3 | 🛠️ Builder DSL `.local()` / `.cloud(...)` | 2026-05-06 | 2026-05-06 | ✅ |
 | 7 | BEE-73 | 3 | 🔌 Cliente HTTP via swift-openapi-generator | 2026-05-07 | 2026-05-07 | ✅ |
@@ -91,6 +91,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-04-28 | 2 / 94 | 92 | 2.0 (day 1) | BEE-67 closed in plan; cumulative velocity = 2.0 SP/day (single day, partial) |
 | 2026-04-29 | 15 / 94 | 79 | 13.0 (day 2) | BEE-68 closed in plan in 8 phases over days 1-2; cumulative velocity = 7.5 SP/day across 2 working days |
 | 2026-04-30 | 18 / 94 | 76 | 3.0 (day 3) | BEE-69 closed in plan (most work was already done by BEE-68 Fase 1 inheriting iOS 15 setting); cumulative velocity = 6.0 SP/day across 3 working days |
+| 2026-04-30 | 26 / 94 | 68 | +8.0 (day 3 cont.) | BEE-70 closed in plan, same day as BEE-69; cumulative velocity = 8.7 SP/day across 3 working days — ahora ligeramente por encima del asumido 8 SP/día |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.
