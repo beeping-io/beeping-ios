@@ -3,24 +3,28 @@
 //  Beeping
 //
 //  `BeepingEncoder` strategy that routes encoding through `beepbox-server`
-//  via a plain `URLSession`. The server returns audio bytes that a future
-//  task (BEE-73 OpenAPI-generated client) will hand to `AudioEngine` for
-//  playback; for BEE-71 we only verify the request succeeded.
+//  via `URLSession`. Type-safe Codable types live in
+//  `BeepboxAPITypes.swift` and mirror the OpenAPI spec at
+//  `OpenAPI/openapi.yaml` (vendored from `beepbox-server`).
 //
-//  Endpoint contract (preliminary, refined by `beepbox` OpenAPI spec in BEE-73):
+//  Endpoint contract (per spec):
 //
 //    POST {endpoint}/v1/encode
 //    Headers:
-//      X-API-Key:    <apiKey>
-//      Content-Type: application/json
+//      Authorization: Bearer <apiKey>           (Apple HTTP scheme bearer)
+//      Content-Type:  application/json
 //    Body:
-//      { "payload": "<9-char decodedString>" }
-//    Response:
-//      200 OK + audio/wav body  (BEE-73 will play this)
-//      4xx/5xx                  → throws BeepingError.decoderInternal
+//      EncodeRequest { key, mode?, sampleRate?, duration?, start?,
+//                      interval?, volumeBeeps? }
+//    Responses:
+//      200 audio/wav          → server accepted; body is the encoded WAV
+//      400 ValidationErrorResponse
+//      429/500 ErrorResponse
 //
-//  `URLSession` is injectable to enable URLProtocol-based mocking in tests
-//  without standing up a real backend.
+//  In BEE-73 we don't yet hand the response audio bytes to AudioEngine
+//  for playback — that wiring is a follow-up task. BEE-71 documented the
+//  intent; BEE-73 ships the corrected contract and Codable types so the
+//  next step can plug in playback against the right shape.
 //
 
 import Foundation
@@ -40,28 +44,56 @@ internal actor CloudEncoder: BeepingEncoder {
         let url = endpoint.appendingPathComponent("v1/encode")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encodeBody(payload: payload)
 
-        let (_, response) = try await session.data(for: request)
+        let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BeepingError.decoderInternal(reason: "Cloud encode: non-HTTP response")
         }
+
         guard (200..<300).contains(http.statusCode) else {
-            throw BeepingError.decoderInternal(
-                reason: "Cloud encode: HTTP \(http.statusCode)"
-            )
+            throw Self.mapErrorResponse(status: http.statusCode, body: data)
         }
-        // BEE-73 will receive the audio bytes here and forward them to
-        // AudioEngine for playback. For BEE-71 the contract is just
-        // "the server accepted the payload"; the audio path is local-only.
+
+        // BEE-73 stops here — `data` holds the audio/wav bytes returned
+        // by the server. Playing it back through AudioEngine is a
+        // follow-up task; for now the contract is "the server accepted".
+        _ = data
     }
 
-    // MARK: - JSON body
+    // MARK: - Helpers
+
+    private static let jsonEncoder: JSONEncoder = {
+        let e = JSONEncoder()
+        e.outputFormatting = [.sortedKeys]
+        return e
+    }()
+
+    private static let jsonDecoder = JSONDecoder()
 
     private static func encodeBody(payload: BeepingPayload) throws -> Data {
-        let object: [String: String] = ["payload": payload.decodedString]
-        return try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
+        // The OpenAPI spec takes a 5-char `key`. BeepingPayload exposes
+        // `key` directly; the 9-char `decodedString` is metadata-y (key
+        // + 4-char base32 timestamp) used by the local engine but
+        // server-side the timestamp is generated server-side.
+        let body = EncodeRequest(key: payload.key)
+        return try jsonEncoder.encode(body)
+    }
+
+    private static func mapErrorResponse(status: Int, body: Data) -> BeepingError {
+        // 400 = validation; 429/500 = generic. Try the validation shape
+        // first, fall back to the generic shape, fall back to a raw
+        // status-code message.
+        if let validation = try? jsonDecoder.decode(ValidationErrorResponse.self, from: body),
+           validation.error != nil || (validation.errors?.isEmpty == false) {
+            return .decoderInternal(reason: "Cloud encode HTTP \(status): \(validation.displayMessage)")
+        }
+        if let generic = try? jsonDecoder.decode(ErrorResponse.self, from: body) {
+            let hint = generic.hint.map { " (\($0))" } ?? ""
+            return .decoderInternal(reason: "Cloud encode HTTP \(status): \(generic.error)\(hint)")
+        }
+        return .decoderInternal(reason: "Cloud encode HTTP \(status): no parseable error body")
     }
 }

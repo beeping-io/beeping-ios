@@ -13,15 +13,51 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-30 (trigger: Closed BEE-72 — net delta 0 days)
+- **Última actualización**: 2026-04-30 (trigger: Closed BEE-73 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 37 SP closed, 57 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 40 SP closed, 54 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-04-30] - Closed BEE-73 (partial: generator integration deferred to BEE-80)
+**Trigger detallado**: BEE-73 (🔌 Cliente HTTP generado desde OpenAPI / swift-openapi-generator de Apple) cerrada en day 3 del milestone — 5ª task del día. Single commit con:
+- `OpenAPI/openapi.yaml` (vendored copy del beepbox spec, 427 líneas, OpenAPI 3.1)
+- `BeepboxAPITypes.swift` (~110 líneas) — Codable types **manually mirrored** matching la spec
+- `CloudEncoder.swift` refactorizado a la spec REAL (auth `Authorization: Bearer` no X-API-Key, body `EncodeRequest{key}` no `{payload}`)
+- `EncoderStrategyTests.swift` reescrito al contrato corregido + Codable round-trip tests
+- `.github/workflows/ci.yml` con step "Validate vendored OpenAPI spec" (`ruby -ryaml`)
+
+**Discovery importante durante el task**: BEE-71 implementó el CloudEncoder con un contrato preliminar que NO matcheaba la spec real de beepbox-server. El "escape hatch" de BEE-71 ("if CloudEncoder revela mismatch, ajustar contracto") se disparó. BEE-73 corrige.
+
+**Scope honesty**: `swift-openapi-generator` como SwiftPM build plugin NO se integra en BEE-73 — requiere Package.swift (BEE-80). Lo que entrega BEE-73 es la **fundación**: spec vendoreada, Codable types hand-mirrored matching exactamente lo que el generator produciría, cliente HTTP type-safe + spec-correcto. BEE-80 hará el swap por generación automática.
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=3, SP real=~3 — discovery+fix tomó la mitad)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados / Retrasados / Sin cambio
+- (ninguno significativo a nivel milestone — buffer creciente queda en margen)
+- BEE-74..BEE-82 (9 tasks restantes, 54 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅)
+
+#### Velocity actualizada
+- Day 3 (2026-04-30): +30 SP cerrados en total (BEE-69+70+71+72+73 = 5 tasks day 3)
+- Cumulative velocity: **13.3 SP/día** across 3 working days
+- 5.3 SP/día por encima del asumido 8 SP/día — buffer real de ~6 días si esta velocity se sostiene
+
+#### Drift detection nota
+La spec vendoreada es un snapshot. Sin generación automática, NO hay drift detection entre la spec y los Codable types hand-written. BEE-80 lo arregla. Mientras tanto: re-sync manual cuando beepbox actualice + revisar Codable types.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(http): BEE-73 vendor openapi.yaml + Codable types + correct CloudEncoder contract
+
+---
 
 ### [2026-04-30] - Closed BEE-72
 **Trigger detallado**: BEE-72 (🛠️ Builder DSL: `.local()` / `.cloud(apiKey:endpoint:)`) cerrada en plan en day 3 del milestone (cuarta tarea del día — sesión muy productiva). Single commit con:

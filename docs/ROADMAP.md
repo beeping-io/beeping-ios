@@ -18,17 +18,17 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-04-30 (Closed BEE-72 — net delta 0 days) |
+| **Last update** | 2026-04-30 (Closed BEE-73 — net delta 0 days) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks; **37 SP closed**, 57 SP remaining)
+- **Story points**: 94 (16 tasks; **40 SP closed**, 54 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (6/16 tasks closed — BEE-67..BEE-72)
+- **Status**: ✅ En tiempo (7/16 tasks closed — BEE-67..BEE-73)
 
 ### Per-task projections
 
@@ -44,7 +44,7 @@
 | 4 | BEE-70 | 8 | 🌊 BeepingClient actor + AsyncStream | 2026-04-30 | 2026-04-30 | ✅ **DONE** |
 | 5 | BEE-71 | 8 | 🎭 Strategy: LocalEncoder + CloudEncoder | 2026-04-30 | 2026-04-30 | ✅ **DONE** |
 | 6 | BEE-72 | 3 | 🛠️ Builder DSL `.local()` / `.cloud(...)` | 2026-04-30 | 2026-04-30 | ✅ **DONE** |
-| 7 | BEE-73 | 3 | 🔌 Cliente HTTP via swift-openapi-generator | 2026-05-07 | 2026-05-07 | ✅ |
+| 7 | BEE-73 | 3 | 🔌 Cliente HTTP via swift-openapi-generator | 2026-04-30 | 2026-04-30 | ✅ **DONE (partial — generator deferred to BEE-80)** |
 | 8 | BEE-74 | 3 | 🪵 Logging os.Logger + trace-ID | 2026-05-07 | 2026-05-08 | ✅ |
 | 9 | BEE-75 | 5 | 📡 Telemetry hook + privacy tests | 2026-05-08 | 2026-05-11 | ✅ |
 | 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | 2026-05-11 | 2026-05-13 | ✅ |
@@ -94,6 +94,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-04-30 | 26 / 94 | 68 | +8.0 (day 3 cont.) | BEE-70 closed in plan, same day as BEE-69; cumulative velocity = 8.7 SP/day across 3 working days — ahora ligeramente por encima del asumido 8 SP/día |
 | 2026-04-30 | 34 / 94 | 60 | +8.0 (day 3 cont.) | BEE-71 closed in plan, same day as BEE-69+BEE-70 (productive day); cumulative velocity = 11.3 SP/day across 3 working days — buffer creciente |
 | 2026-04-30 | 37 / 94 | 57 | +3.0 (day 3 cont.) | BEE-72 closed in plan, same day as BEE-69+70+71 (4 tasks day 3 — record); cumulative velocity = 12.3 SP/día — buffer ~5+ días |
+| 2026-04-30 | 40 / 94 | 54 | +3.0 (day 3 cont.) | BEE-73 closed in plan, **5 tasks closed day 3** (BEE-69+70+71+72+73). Generator integration deferred to BEE-80 (requires Package.swift); BEE-73 entrega contrato corregido + Codable types hand-mirrored. Cumulative velocity = 13.3 SP/día |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.

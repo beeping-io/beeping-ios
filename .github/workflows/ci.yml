@@ -24,6 +24,14 @@ jobs:
       - name: Validate Xcode project (list targets + schemes)
         run: xcodebuild -list -project Beeping.xcodeproj
 
+      - name: Validate vendored OpenAPI spec
+        # Ensures `OpenAPI/openapi.yaml` (the vendored copy of
+        # beepbox-server's spec) is well-formed YAML. Drift detection
+        # between the spec and the hand-written Codable types in
+        # BeepboxAPITypes.swift lands in BEE-80 (swift-openapi-generator
+        # build plugin) — this step is a syntax-only gate.
+        run: ruby -ryaml -e "YAML.load_file('OpenAPI/openapi.yaml')"
+
       - name: Validate Xcode project resolves to JSON
         run: xcodebuild -list -project Beeping.xcodeproj -json | python3 -m json.tool > /dev/null
 
