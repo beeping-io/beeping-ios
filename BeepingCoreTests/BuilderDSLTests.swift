@@ -48,7 +48,8 @@ struct BuilderDSLTests {
 
     @Test("BeepingClient.cloud(apiKey:endpoint:) returns a builder")
     func cloudReturnsBuilder() {
-        let builder: BeepingClientBuilder = BeepingClient
+        let builder: BeepingClientBuilder =
+            BeepingClient
             .cloud(apiKey: "test", endpoint: URL(string: "https://api.beeping.io")!)
         _ = builder
     }
@@ -81,7 +82,8 @@ struct BuilderDSLTests {
         // Full HTTP round-trip via the builder is verified separately
         // when BEE-73 lands the OpenAPI client (which DOES support
         // session injection in its public API).
-        let client = BeepingClient
+        let client =
+            BeepingClient
             .cloud(apiKey: "k", endpoint: URL(string: "https://api.beeping.io")!)
             .build()
         _ = client

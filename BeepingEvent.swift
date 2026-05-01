@@ -27,8 +27,8 @@ public final class BeepingEvent: NSObject, Sendable {
 
     @objc(BeepingEventStatus)
     public enum Status: Int, Sendable {
-        case start  = 0
-        case endOk  = 1
+        case start = 0
+        case endOk = 1
         case endBad = 2
     }
 
@@ -57,14 +57,14 @@ public final class BeepingEvent: NSObject, Sendable {
         confidenceNoise: Float,
         receivedBeepsVolume: Float
     ) {
-        self.status              = status
-        self.key                 = key
-        self.decodedString       = decodedString
-        self.mode                = mode
-        self.timestamp           = timestamp
-        self.confidence          = confidence
-        self.confidenceError     = confidenceError
-        self.confidenceNoise     = confidenceNoise
+        self.status = status
+        self.key = key
+        self.decodedString = decodedString
+        self.mode = mode
+        self.timestamp = timestamp
+        self.confidence = confidence
+        self.confidenceError = confidenceError
+        self.confidenceNoise = confidenceNoise
         self.receivedBeepsVolume = receivedBeepsVolume
         super.init()
     }

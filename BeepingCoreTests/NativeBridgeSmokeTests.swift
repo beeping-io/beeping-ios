@@ -31,7 +31,7 @@ struct NativeBridgeSmokeTests {
         // and BEEPING_Destroy without aborting. ARC handles deallocation.
         var core: BCNativeCore? = BCNativeCore()
         #expect(core != nil)
-        core = nil   // -> dealloc
+        core = nil  // -> dealloc
         // No assertion needed; ASan / UBSan in Debug builds would catch
         // double-free or use-after-free if the C API is misbehaving.
     }
@@ -40,9 +40,10 @@ struct NativeBridgeSmokeTests {
     func configureWithDefaultModeSucceeds() {
         let core = BCNativeCore()
         // BEEPING_MODE_ALL = 5 from BeepingCoreLib_api.h
-        let result = core.configure(withMode: 5,
-                                    sampleRate: 44100,
-                                    bufferSize: 1024)
+        let result = core.configure(
+            withMode: 5,
+            sampleRate: 44100,
+            bufferSize: 1024)
         #expect(result == 0)
     }
 }

@@ -32,6 +32,27 @@ jobs:
         # build plugin) — this step is a syntax-only gate.
         run: ruby -ryaml -e "YAML.load_file('OpenAPI/openapi.yaml')"
 
+      - name: Install SwiftLint
+        # macos-latest runners have homebrew preinstalled.
+        run: brew install swiftlint
+
+      - name: SwiftLint (strict)
+        # Any warning fails the build. Configured rules + rationale in
+        # /.swiftlint.yml. Added in BEE-77.
+        run: swiftlint --strict
+
+      - name: swift-format lint (strict)
+        # Apple's swift-format is bundled with Xcode (`xcrun swift-format`).
+        # Configured rules in /.swift-format. Added in BEE-77.
+        run: |
+          xcrun swift-format lint --strict \
+            --configuration .swift-format \
+            $(find . -name "*.swift" \
+              -not -path "./node_modules/*" \
+              -not -path "./Beeping.xcodeproj/*" \
+              -not -path "./.build/*" \
+              -not -path "./build/*")
+
       - name: Validate Xcode project resolves to JSON
         run: xcodebuild -list -project Beeping.xcodeproj -json | python3 -m json.tool > /dev/null
 

@@ -34,7 +34,7 @@ public struct BeepingClientBuilder: Sendable {
     private var mode: BeepingMode = .all
     private var logLevel: BeepingLogLevel = .info
     private var telemetryEnabled: Bool = false
-    private var telemetryHook: (any TelemetryHook)? = nil
+    private var telemetryHook: (any TelemetryHook)?
 
     // MARK: - Init (internal — constructed via factory methods on BeepingClient)
 

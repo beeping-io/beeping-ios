@@ -21,25 +21,25 @@ import Foundation
 public enum BeepingMode: Int32, Sendable {
     /// Old audible mode. Deprecated in `BeepingCoreLib_api.h`; kept only
     /// for completeness — do not select.
-    case audibleOld    = 0
+    case audibleOld = 0
 
     /// Old non-audible mode. Deprecated; do not select.
     case nonAudibleOld = 1
 
     /// Audible tones in the human-hearing band.
-    case audible       = 2
+    case audible = 2
 
     /// Non-audible (ultrasonic) tones above ~16 kHz.
-    case nonAudible    = 3
+    case nonAudible = 3
 
     /// Hidden tones — perceptually masked carrier.
-    case hidden        = 4
+    case hidden = 4
 
     /// Decoder accepts any of the above; call `decodedMode` to find which
     /// one was matched.
-    case all           = 5
+    case all = 5
 
     /// Custom frequency range; use `setCustomBaseFreq:beepsSeparation:`
     /// to configure.
-    case custom        = 6
+    case custom = 6
 }

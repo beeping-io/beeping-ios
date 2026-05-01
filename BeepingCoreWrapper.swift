@@ -40,8 +40,8 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
     private var _audioEngine: AudioEngine?
 
     private var _decodedString: String?
-    private var _isListening:   Bool = false
-    private var _isEmitting:    Bool = false
+    private var _isListening: Bool = false
+    private var _isEmitting: Bool = false
 
     // os_unfair_lock back to iOS 10. iOS 16+ unlocks `OSAllocatedUnfairLock`,
     // a Swift-native API; we target iOS 15+ so we use the C primitive
@@ -85,12 +85,15 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
 
     // MARK: - Configuration
 
-    internal func configure(mode: BeepingMode,
-                            sampleRate: Float = 44100,
-                            bufferSize: Int32 = 1024) {
-        let result = _handle.configure(withMode: mode.rawValue,
-                                       sampleRate: sampleRate,
-                                       bufferSize: bufferSize)
+    internal func configure(
+        mode: BeepingMode,
+        sampleRate: Float = 44100,
+        bufferSize: Int32 = 1024
+    ) {
+        let result = _handle.configure(
+            withMode: mode.rawValue,
+            sampleRate: sampleRate,
+            bufferSize: bufferSize)
         if result != 0 {
             log.error("BEEPING_Configure failed: result=\(result)")
         } else {
@@ -155,13 +158,13 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         return Self.fromBase32(s.dropFirst(5).prefix(4))
     }
 
-    internal var decodedMode: Int           { Int(_handle.decodedMode) }
-    internal var confidence: Float          { _handle.confidence }
-    internal var confidenceError: Float     { _handle.confidenceError }
-    internal var confidenceNoise: Float     { _handle.confidenceNoise }
+    internal var decodedMode: Int { Int(_handle.decodedMode) }
+    internal var confidence: Float { _handle.confidence }
+    internal var confidenceError: Float { _handle.confidenceError }
+    internal var confidenceNoise: Float { _handle.confidenceNoise }
     internal var receivedBeepsVolume: Float { _handle.receivedBeepsVolume }
-    internal var decodingBeginFreq: Float   { _handle.decodingBeginFreq }
-    internal var decodingEndFreq: Float     { _handle.decodingEndFreq }
+    internal var decodingBeginFreq: Float { _handle.decodingBeginFreq }
+    internal var decodingEndFreq: Float { _handle.decodingEndFreq }
 
     internal static var libraryVersion: String { BCNativeCore.version() }
     internal static var frameworkVersion: String {
@@ -196,13 +199,15 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         }
     }
 
-    private static func buildEvent(token: Int32,
-                                   decoded: String?,
-                                   mode: Int,
-                                   confidence: Float,
-                                   confidenceError: Float,
-                                   confidenceNoise: Float,
-                                   volume: Float) -> BeepingEvent? {
+    private static func buildEvent(
+        token: Int32,
+        decoded: String?,
+        mode: Int,
+        confidence: Float,
+        confidenceError: Float,
+        confidenceNoise: Float,
+        volume: Float
+    ) -> BeepingEvent? {
         // Token semantics from `BeepingCoreLib_api.h`:
         //   -2 = start, -3 = end (decoded data ready or invalid)
         // `decoded == nil` on -3 indicates the data was invalid (END_BAD).
@@ -216,22 +221,25 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
 
         switch token {
         case -2:
-            return BeepingEvent(status: .start, key: nil, decodedString: nil,
-                                mode: 0, timestamp: 0,
-                                confidence: 0, confidenceError: 0,
-                                confidenceNoise: 0, receivedBeepsVolume: 0)
+            return BeepingEvent(
+                status: .start, key: nil, decodedString: nil,
+                mode: 0, timestamp: 0,
+                confidence: 0, confidenceError: 0,
+                confidenceNoise: 0, receivedBeepsVolume: 0)
         case -3 where decoded != nil:
-            return BeepingEvent(status: .endOk, key: key,
-                                decodedString: decoded, mode: mode, timestamp: timestamp,
-                                confidence: confidence, confidenceError: confidenceError,
-                                confidenceNoise: confidenceNoise,
-                                receivedBeepsVolume: volume)
+            return BeepingEvent(
+                status: .endOk, key: key,
+                decodedString: decoded, mode: mode, timestamp: timestamp,
+                confidence: confidence, confidenceError: confidenceError,
+                confidenceNoise: confidenceNoise,
+                receivedBeepsVolume: volume)
         case -3:
-            return BeepingEvent(status: .endBad, key: nil, decodedString: nil,
-                                mode: mode, timestamp: 0,
-                                confidence: confidence, confidenceError: confidenceError,
-                                confidenceNoise: confidenceNoise,
-                                receivedBeepsVolume: volume)
+            return BeepingEvent(
+                status: .endBad, key: nil, decodedString: nil,
+                mode: mode, timestamp: 0,
+                confidence: confidence, confidenceError: confidenceError,
+                confidenceNoise: confidenceNoise,
+                receivedBeepsVolume: volume)
         default:
             return nil
         }

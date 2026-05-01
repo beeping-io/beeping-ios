@@ -51,11 +51,13 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     override func startLoading() {
         Self.lastRequest = request
         guard let responder = Self.responder else {
-            client?.urlProtocol(self, didFailWithError: NSError(
-                domain: "MockURLProtocol",
-                code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "No responder set"]
-            ))
+            client?.urlProtocol(
+                self,
+                didFailWithError: NSError(
+                    domain: "MockURLProtocol",
+                    code: -1,
+                    userInfo: [NSLocalizedDescriptionKey: "No responder set"]
+                ))
             return
         }
         let (data, response) = responder(request)

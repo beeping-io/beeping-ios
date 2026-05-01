@@ -83,9 +83,10 @@ internal final class AudioEngine: @unchecked Sendable {
             // CI runs Xcode 16.x, where the new spelling doesn't exist
             // yet. Stay on the old spelling until BEE-69 raises Xcode min
             // and BEE-79 drops legacy SDK support.
-            try session.setCategory(.playAndRecord,
-                                    mode: .default,
-                                    options: [.defaultToSpeaker, .allowBluetooth])
+            try session.setCategory(
+                .playAndRecord,
+                mode: .default,
+                options: [.defaultToSpeaker, .allowBluetooth])
             try session.setPreferredSampleRate(44100)
             try session.setActive(true)
             log.info("AVAudioSession active: .playAndRecord 44.1kHz")

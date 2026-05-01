@@ -43,10 +43,10 @@ public enum TelemetryEvent: Sendable, Equatable {
     /// Stable categories for `errorOccurred`. Add cases as new error
     /// surfaces appear; never log free-form error messages.
     public enum ErrorCategory: String, Sendable, Equatable, CaseIterable {
-        case audio       // AVAudioSession / RemoteIO setup or runtime
-        case network     // URLSession transport / timeout
-        case auth        // 401/403 from beepbox-server
-        case decoder     // C engine internal failure / END_BAD
-        case nativeLib   // libBeepingCoreUniversal.a load / link issues
+        case audio  // AVAudioSession / RemoteIO setup or runtime
+        case network  // URLSession transport / timeout
+        case auth  // 401/403 from beepbox-server
+        case decoder  // C engine internal failure / END_BAD
+        case nativeLib  // libBeepingCoreUniversal.a load / link issues
     }
 }

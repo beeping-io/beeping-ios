@@ -100,7 +100,7 @@ struct EncoderStrategyTests {
         let body = request.httpBody ?? request.bodyStreamData()
         let json = try #require(body.flatMap { try JSONSerialization.jsonObject(with: $0) as? [String: Any] })
         #expect(json["key"] as? String == "abcde")
-        #expect(json["payload"] == nil)   // old shape gone
+        #expect(json["payload"] == nil)  // old shape gone
     }
 
     // MARK: - CloudEncoder error mapping
@@ -111,8 +111,8 @@ struct EncoderStrategyTests {
         defer { MockURLProtocol.reset() }
 
         let validationJSON = """
-        {"errors":["key must be exactly 5 base32 characters [0-9a-v]"]}
-        """.data(using: .utf8)!
+            {"errors":["key must be exactly 5 base32 characters [0-9a-v]"]}
+            """.data(using: .utf8)!
 
         MockURLProtocol.responder = { request in
             let response = HTTPURLResponse(
@@ -138,8 +138,8 @@ struct EncoderStrategyTests {
         defer { MockURLProtocol.reset() }
 
         let errJSON = """
-        {"error":"Rate limit exceeded","hint":"Retry after 20 seconds"}
-        """.data(using: .utf8)!
+            {"error":"Rate limit exceeded","hint":"Retry after 20 seconds"}
+            """.data(using: .utf8)!
 
         MockURLProtocol.responder = { request in
             let response = HTTPURLResponse(
@@ -214,7 +214,7 @@ struct EncoderStrategyTests {
         actor SpyEncoder: BeepingEncoder {
             var calledWith: [String] = []
             func encode(_ payload: BeepingPayload) async throws {
-                calledWith.append(payload.key)   // BEE-73: key, not decodedString
+                calledWith.append(payload.key)  // BEE-73: key, not decodedString
             }
         }
 
@@ -229,8 +229,8 @@ struct EncoderStrategyTests {
 
 // MARK: - URLRequest body helper
 
-private extension URLRequest {
-    func bodyStreamData() -> Data? {
+extension URLRequest {
+    fileprivate func bodyStreamData() -> Data? {
         guard let stream = httpBodyStream else { return nil }
         stream.open()
         defer { stream.close() }

@@ -116,9 +116,11 @@ public actor BeepingClient {
         self.telemetryClient = TelemetryClient(enabled: false, hook: nil)
         self.modeForTelemetry = mode
         w.configure(mode: mode)
-        Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
-            Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
-        })
+        Self.wireEvents(
+            wrapper: w,
+            dispatch: { [weak self] legacy in
+                Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
+            })
     }
 
     /// Internal initializer that lets the caller pick the encoder
@@ -141,9 +143,11 @@ public actor BeepingClient {
         self.telemetryClient = TelemetryClient(enabled: telemetryEnabled, hook: telemetryHook)
         self.modeForTelemetry = mode
         w.configure(mode: mode)
-        Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
-            Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
-        })
+        Self.wireEvents(
+            wrapper: w,
+            dispatch: { [weak self] legacy in
+                Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
+            })
     }
 
     // MARK: - Public factory methods (BEE-72)

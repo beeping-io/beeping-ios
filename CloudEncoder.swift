@@ -87,7 +87,8 @@ internal actor CloudEncoder: BeepingEncoder {
         // first, fall back to the generic shape, fall back to a raw
         // status-code message.
         if let validation = try? jsonDecoder.decode(ValidationErrorResponse.self, from: body),
-           validation.error != nil || (validation.errors?.isEmpty == false) {
+            validation.error != nil || (validation.errors?.isEmpty == false)
+        {
             return .decoderInternal(reason: "Cloud encode HTTP \(status): \(validation.displayMessage)")
         }
         if let generic = try? jsonDecoder.decode(ErrorResponse.self, from: body) {

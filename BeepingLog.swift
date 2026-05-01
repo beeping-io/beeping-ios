@@ -40,7 +40,7 @@ public struct BeepingLog: Sendable {
     public init(
         category: String,
         level: BeepingLogLevel = .info,
-        traceID: String = BeepingLog.generateTraceID()
+        traceID: String = Self.generateTraceID()
     ) {
         self.logger = Logger(subsystem: "io.beeping.sdk", category: category)
         self.level = level

@@ -55,15 +55,18 @@ struct TelemetryTests {
     func privacyGate_disabledNoEmissions() async throws {
         let spy = SpyTelemetryHook()
         let client = BeepingClient.local()
-            .telemetryEnabled(false)        // explicitly opt-out
-            .telemetryHook(spy)             // hook IS set, but should be ignored
+            .telemetryEnabled(false)  // explicitly opt-out
+            .telemetryHook(spy)  // hook IS set, but should be ignored
             .build()
 
         // Trigger lifecycle events that would normally emit telemetry.
         let stream = await client.listen()
         // Schedule close so the listen stream terminates.
-        Task { try? await Task.sleep(for: .milliseconds(50)); await client.close() }
-        for await _ in stream { /* drain */ }
+        Task {
+            try? await Task.sleep(for: .milliseconds(50))
+            await client.close()
+        }
+        for await _ in stream { /* drain */  }
 
         // Allow any pending Task to finish.
         try await Task.sleep(for: .milliseconds(100))
@@ -104,7 +107,7 @@ struct TelemetryTests {
     func optIn_noHookSafe() async {
         let client = BeepingClient.local()
             .telemetryEnabled(true)
-            .build()                          // hook is nil
+            .build()  // hook is nil
         await client.close()
     }
 

@@ -54,7 +54,10 @@ struct BeepingClientTests {
         let stream = await client.listen()
 
         // Schedule the close after the stream is established.
-        Task { try? await Task.sleep(for: .milliseconds(50)); await client.close() }
+        Task {
+            try? await Task.sleep(for: .milliseconds(50))
+            await client.close()
+        }
 
         var sawStopped = false
         for await event in stream {

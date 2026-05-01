@@ -49,17 +49,17 @@ public enum BeepingLogLevel: Sendable, Equatable, Comparable {
     /// **Higher index = more verbose**.
     private var severityIndex: Int {
         switch self {
-        case .off:    return 0
-        case .fault:  return 1
-        case .error:  return 2
-        case .warn:   return 3
-        case .info:   return 4
-        case .debug:  return 5
-        case .trace:  return 6
+        case .off: return 0
+        case .fault: return 1
+        case .error: return 2
+        case .warn: return 3
+        case .info: return 4
+        case .debug: return 5
+        case .trace: return 6
         }
     }
 
-    public static func < (lhs: BeepingLogLevel, rhs: BeepingLogLevel) -> Bool {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.severityIndex < rhs.severityIndex
     }
 }

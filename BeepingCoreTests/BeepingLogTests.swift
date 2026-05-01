@@ -87,12 +87,12 @@ struct BeepingLogTests {
 
     @Test("BeepingLogLevel ordering: off < fault < error < warn < info < debug < trace")
     func levelOrdering() {
-        #expect(BeepingLogLevel.off    < BeepingLogLevel.fault)
-        #expect(BeepingLogLevel.fault  < BeepingLogLevel.error)
-        #expect(BeepingLogLevel.error  < BeepingLogLevel.warn)
-        #expect(BeepingLogLevel.warn   < BeepingLogLevel.info)
-        #expect(BeepingLogLevel.info   < BeepingLogLevel.debug)
-        #expect(BeepingLogLevel.debug  < BeepingLogLevel.trace)
+        #expect(BeepingLogLevel.off < BeepingLogLevel.fault)
+        #expect(BeepingLogLevel.fault < BeepingLogLevel.error)
+        #expect(BeepingLogLevel.error < BeepingLogLevel.warn)
+        #expect(BeepingLogLevel.warn < BeepingLogLevel.info)
+        #expect(BeepingLogLevel.info < BeepingLogLevel.debug)
+        #expect(BeepingLogLevel.debug < BeepingLogLevel.trace)
     }
 
     @Test("BeepingLogLevel >= comparison gates correctly")

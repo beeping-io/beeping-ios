@@ -18,9 +18,9 @@ import Testing
 @MainActor
 final class SpyDelegate: NSObject, BeepingDelegate {
     var beepIdCalls: Int = 0
-    var eventCalls:  Int = 0
-    var lastKey:     String?
-    var lastEvent:   BeepingEvent?
+    var eventCalls: Int = 0
+    var lastKey: String?
+    var lastEvent: BeepingEvent?
 
     func beepId(with beepId: String) {
         beepIdCalls += 1
@@ -120,7 +120,7 @@ struct BeepingDelegateTests {
         let delegate = freshDelegate()
         let event = BeepingEvent(
             status: .endOk,
-            key: nil,                       // legacy edge case: status endOk but key is nil
+            key: nil,  // legacy edge case: status endOk but key is nil
             decodedString: nil,
             mode: 0,
             timestamp: 0,
