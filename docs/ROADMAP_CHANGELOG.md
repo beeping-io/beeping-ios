@@ -13,15 +13,47 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-05-01 (trigger: Closed BEE-75 — net delta 0 days)
+- **Última actualización**: 2026-05-01 (trigger: Closed BEE-77 + BEE-76 deferred — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 48 SP closed, 46 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 50 SP closed, 44 SP remaining; BEE-76 deferred) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-01] - Closed BEE-77 + BEE-76 deferred (re-ordered)
+**Trigger detallado**: BEE-77 (🧼 SwiftLint + swift-format en CI) cerrada en plan — config strict + auto-format de 16 ficheros + 3 nuevos pasos de CI. Same day, BEE-76 (🧪 Tests con snapshot + property + coverage) **revertida a Backlog y reordenada al final del milestone** porque 4/5 entregables están bloqueados por BEE-79 (simulator unblock) + BEE-80 (Package.swift para SwiftCheck + swift-snapshot-testing).
+
+**Re-ordering rationale**: hacer BEE-76 ahora forzaría 4 "deferred" annotations consecutivas (patrón inflado tras BEE-73 ya parcial). Cleaner: BEE-77 → BEE-78 → BEE-79 → BEE-80 → BEE-81 → BEE-82 → BEE-76 (cierre). El task de tests grande consolida toda la suite del milestone con las dependencias ya disponibles.
+
+**Net delta global**: 0 días (sin slip; BEE-77 en plan, BEE-76 reordering no afecta fecha fin)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados / Retrasados / Sin cambio
+- (ninguno significativo a nivel milestone — buffer creciente queda en margen)
+- BEE-78..BEE-82 + BEE-76 (6 tasks restantes, 44 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅)
+
+#### Velocity actualizada
+- Day 4 (2026-05-01): +10 SP closed (BEE-74 + BEE-75 + BEE-77) → cumulative **12.5 SP/día** across 4 working days
+- Buffer real ~5 días si esta velocity se sostiene
+
+#### Tasks cerradas en BEE-77
+- `.swiftlint.yml` strict mode con disabled/opt_in rules + rationale inline
+- `.swift-format` config Apple JSON
+- CI workflow con `brew install swiftlint` + `swiftlint --strict` + `xcrun swift-format lint --strict`
+- 16 ficheros auto-formatted (mecánico)
+- 4 fixes manuales (Self refs, column alignment, redundant nil)
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — chore(lint): BEE-77 add SwiftLint + swift-format CI gates
+
+---
 
 ### [2026-05-01] - Closed BEE-75
 **Trigger detallado**: BEE-75 (📡 Telemetry hook con opt-out + tests de privacy) cerrada en plan en day 4 del milestone (segunda task del día). Single commit con:

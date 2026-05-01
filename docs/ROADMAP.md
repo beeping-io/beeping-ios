@@ -18,17 +18,17 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-05-01 (Closed BEE-75 — net delta 0 days) |
+| **Last update** | 2026-05-01 (Closed BEE-77 — net delta 0 days; BEE-76 deferred to end-of-milestone) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks; **48 SP closed** — over half!, 46 SP remaining)
+- **Story points**: 94 (16 tasks; **50 SP closed**, 44 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (9/16 tasks closed — BEE-67..BEE-75)
+- **Status**: ✅ En tiempo (10/16 tasks closed — BEE-67..BEE-75 + BEE-77; BEE-76 deferred to end-of-milestone after BEE-79+80 unblock dependencies)
 
 ### Per-task projections
 
@@ -47,8 +47,8 @@
 | 7 | BEE-73 | 3 | 🔌 Cliente HTTP via swift-openapi-generator | 2026-04-30 | 2026-04-30 | ✅ **DONE (partial — generator deferred to BEE-80)** |
 | 8 | BEE-74 | 3 | 🪵 Logging os.Logger + trace-ID | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
 | 9 | BEE-75 | 5 | 📡 Telemetry hook + privacy tests | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
-| 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | 2026-05-11 | 2026-05-13 | ✅ |
-| 11 | BEE-77 | 2 | 🧼 SwiftLint + swift-format en CI | 2026-05-13 | 2026-05-13 | ✅ |
+| 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | DEFERRED | (post BEE-79/80) | ⏸️ DEFERRED |
+| 11 | BEE-77 | 2 | 🧼 SwiftLint + swift-format en CI | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
 | 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | 2026-05-13 | 2026-05-14 | ✅ |
 | 13 | BEE-79 | 5 | 🔗 Consumir beeping-core via GH Releases | 2026-05-15 | 2026-05-15 | ✅ |
 | 14 | BEE-80 | 8 | 📦 SPM Package.swift + XCFramework firmado | 2026-05-15 | 2026-05-18 | ⚠️ |
@@ -97,6 +97,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-04-30 | 40 / 94 | 54 | +3.0 (day 3 cont.) | BEE-73 closed in plan, **5 tasks closed day 3** (BEE-69+70+71+72+73). Generator integration deferred to BEE-80 (requires Package.swift); BEE-73 entrega contrato corregido + Codable types hand-mirrored. Cumulative velocity = 13.3 SP/día |
 | 2026-05-01 | 43 / 94 | 51 | 3.0 (day 4) | BEE-74 closed in plan — **half-milestone reached** (8/16 tasks). os.Logger wrapper + 7-level enum + trace-ID propagation. Cumulative velocity = 10.75 SP/día across 4 days |
 | 2026-05-01 | 48 / 94 | 46 | +5.0 (day 4 cont.) | BEE-75 closed in plan — telemetry infrastructure (TelemetryClient actor + TelemetryHook protocol + 12 privacy tests). Cumulative velocity = 12.0 SP/día across 4 days |
+| 2026-05-01 | 50 / 94 | 44 | +2.0 (day 4 cont.) | BEE-77 closed in plan — SwiftLint + swift-format CI gates. Auto-formatted 16 .swift files. BEE-76 reordered to **end-of-milestone** (after BEE-79+80 unblock SPM deps + simulator runs). Cumulative velocity = 12.5 SP/día |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.
