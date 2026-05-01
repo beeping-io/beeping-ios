@@ -39,7 +39,10 @@ public enum BeepingMode: Int32, Sendable {
     /// one was matched.
     case all = 5
 
-    /// Custom frequency range; use `setCustomBaseFreq:beepsSeparation:`
-    /// to configure.
+    /// Custom frequency range. Reserved value — the underlying configuration
+    /// hook (`BEEPING_SetCustomBaseFreq`) is not exposed by the current
+    /// `beeping-core` C API. Selecting `.custom` will configure the engine
+    /// with the mode value but the engine falls back to its default base
+    /// frequency until upstream surfaces the setter again.
     case custom = 6
 }

@@ -83,10 +83,6 @@ void bcCheckStatus(OSStatus status, const char *step) {
     return BEEPING_Configure(static_cast<int>(mode), sampleRate, bufferSize, _cHandle);
 }
 
-- (int32_t)setCustomBaseFreq:(float)baseFreq beepsSeparation:(int32_t)separation {
-    return BEEPING_SetCustomBaseFreq(baseFreq, static_cast<int>(separation), _cHandle);
-}
-
 - (float)decodingBeginFreq { return BEEPING_GetDecodingBeginFreq(_cHandle); }
 - (float)decodingEndFreq   { return BEEPING_GetDecodingEndFreq(_cHandle); }
 

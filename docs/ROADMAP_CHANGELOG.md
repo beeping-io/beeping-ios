@@ -13,15 +13,63 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-05-01 (trigger: Closed BEE-77 + BEE-76 deferred — net delta 0 days)
+- **Última actualización**: 2026-05-01 (trigger: Closed BEE-79 — XCFramework swap + simulator unblock; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 50 SP closed, 44 SP remaining; BEE-76 deferred) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 55 SP closed, 39 SP remaining; BEE-76 deferred) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-01] - Closed BEE-79 (partial — XCFramework rebuild local bridge)
+**Trigger detallado**: BEE-79 (🔗 Consumir `beeping-core` via GitHub Releases) cerrada **parcial** en day 4 (5ª task del día — record). Pivot estratégico: el legacy `libBeepingCoreUniversal.a` no tenía slice arm64-iphonesimulator, lo que bloqueaba BEE-78 (sample app on sim) y BEE-76 (tests on sim). En lugar de esperar al primer release oficial de `beeping-core` con artefactos iOS firmados (R1, indeterminado), se cross-compila localmente la C++ source de `beeping-core` para 3 slices iOS y se construye el XCFramework manualmente.
+
+**Sub-pasos ejecutados**:
+- CMake + Xcode SDKs cross-compile de `beeping-core` (C++20 sources) → 3 `.a` slices (arm64-iphoneos, arm64-iphonesimulator, x86_64-iphonesimulator), 19 MB cada uno
+- `lipo -create` para fat sim binary (arm64+x86_64) → `BeepingCore.xcframework` con 2 entries (`ios-arm64`, `ios-arm64_x86_64-simulator`)
+- Vendoreado en `Vendor/BeepingCore.xcframework/` (reemplaza el `.a` legacy)
+- `Beeping.xcodeproj/project.pbxproj` modificado: añadido `PBXFileReference` + `PBXBuildFile` + entry en grupo Frameworks + entry en `PBXFrameworksBuildPhase` del target Beeping. Removido `OTHER_LDFLAGS = "-lBeepingCoreUniversal"`, `LIBRARY_SEARCH_PATHS = $(PROJECT_DIR)`, `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64`. Añadido `$(PROJECT_DIR)/Vendor` a `FRAMEWORK_SEARCH_PATHS`
+- Bridge ObjC++ (`BeepingC.h/.mm` + `BeepingCoreWrapper.swift`) limpiado: removido `setCustomBaseFreq:beepsSeparation:` (símbolo `BEEPING_SetCustomBaseFreq` no expuesto en la API pública nueva de `beeping-core`)
+- `BeepingCoreLib_api.h` root sincronizado con `beeping-core/include/`
+- CI (`.github/workflows/ci.yml`): nuevo job `Build Beeping framework (arm64 iOS Simulator)` + 3 nuevas allowlist entries para warnings de auto-link (CoreAudioTypes/UIUtilities/SwiftUICore — emitidos por la nueva XCFramework, harmless)
+
+**Scope parcial documentado**: la pieza de "fetch automatizado del XCFramework desde GH Releases de `beeping-core`" queda diferida a BEE-82 (release-please + cosign) cuando upstream publique releases iOS firmados (R1). Mientras tanto, el XCFramework rebuild local sirve como bridge funcional — el SDK ya no depende del `.a` legacy y compila para device + simulador.
+
+**Net delta global**: 0 días (en plan, mismo día). BEE-79 estaba estimada para 2026-05-15 pero se ejecuta ahora porque BEE-78 (sample app) salió de scope (movida a repo separado para tutoriales) y BEE-79 era el único bloqueador real para los siguientes pasos.
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio — buffer creciente: +5 días vs plan inicial)
+
+#### Adelantados (negativo = más pronto)
+- BEE-79: 2026-05-15 → 2026-05-01 (-14 días) — cierre adelantado por pivot estratégico (BEE-78 fuera de scope abre slot)
+
+#### Sin cambio
+- BEE-80, BEE-81, BEE-82, BEE-76 (4 tasks restantes, 31 SP)
+
+#### Out of scope (movido a otro repo)
+- BEE-78 (📱 Sample app SwiftUI + debug console): los example apps van en un repositorio separado para tutoriales. Marcada `pending` en el tracker pero NO se ejecutará en este milestone. La tarea queda en backlog Linear sin reasignar.
+
+#### Cambios de estado de riesgo
+- R1 (`beeping-core` releases delay): impacto reducido a corto plazo — el XCFramework local bridge desbloquea las tareas downstream sin esperar al primer release oficial. R1 sigue 🟡 monitored porque BEE-82 (release-please con cosign) seguirá necesitando los releases reales de `beeping-core` para su integration tests, pero ya no es bloqueador del milestone.
+
+#### Velocity actualizada
+- Day 4 (2026-05-01): +5 SP closed (BEE-79) → cumulative **13.75 SP/día** across 4 working days
+- Buffer real estimado: ~6+ días si la velocity se sostiene (39 SP / 13.75 SP/día = 2.8 días raw → 3.5 días con margen)
+
+#### Tasks cerradas en BEE-79
+- 3 slices iOS de `beeping-core` cross-compiladas (arm64-device, arm64-sim, x86_64-sim)
+- `BeepingCore.xcframework` armado y vendoreado
+- `libBeepingCoreUniversal.a` (18 MB) eliminado del repo
+- pbxproj migrado a XCFramework linkage (PBXFileReference + PBXBuildFile + Frameworks build phase)
+- Bridge ObjC++ podado de símbolos no expuestos en la nueva API
+- CI con job de simulador adicional + allowlist actualizada
+- Linear BEE-79 description actualizada con las 2 secciones obligatorias (`## 🧪 Automated tests` + `## 🧑‍🔬 Human QA Checkpoint`)
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(linkage): BEE-79 swap libBeepingCoreUniversal.a → BeepingCore.xcframework
+
+---
 
 ### [2026-05-01] - Closed BEE-77 + BEE-76 deferred (re-ordered)
 **Trigger detallado**: BEE-77 (🧼 SwiftLint + swift-format en CI) cerrada en plan — config strict + auto-format de 16 ficheros + 3 nuevos pasos de CI. Same day, BEE-76 (🧪 Tests con snapshot + property + coverage) **revertida a Backlog y reordenada al final del milestone** porque 4/5 entregables están bloqueados por BEE-79 (simulator unblock) + BEE-80 (Package.swift para SwiftCheck + swift-snapshot-testing).

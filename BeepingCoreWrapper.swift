@@ -110,11 +110,6 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         _audioEngine = engine
     }
 
-    @discardableResult
-    internal func setCustomBaseFreq(_ freq: Float, beepsSeparation: Int32) -> Int32 {
-        return _handle.setCustomBaseFreq(freq, beepsSeparation: beepsSeparation)
-    }
-
     // MARK: - Listen
 
     internal func startListening() {

@@ -35,9 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
                   sampleRate:(float)sampleRate
                   bufferSize:(int32_t)bufferSize;
 
-/// Wraps `BEEPING_SetCustomBaseFreq`. Used only with custom mode.
-- (int32_t)setCustomBaseFreq:(float)baseFreq beepsSeparation:(int32_t)separation;
-
 /// Wraps `BEEPING_GetDecodingBeginFreq` / `BEEPING_GetDecodingEndFreq`.
 @property (readonly) float decodingBeginFreq;
 @property (readonly) float decodingEndFreq;

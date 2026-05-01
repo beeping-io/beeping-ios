@@ -18,17 +18,17 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-05-01 (Closed BEE-77 — net delta 0 days; BEE-76 deferred to end-of-milestone) |
+| **Last update** | 2026-05-01 (Closed BEE-79 — partial XCFramework rebuild bridge; net delta 0 days; BEE-78 out of scope per founder) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks; **50 SP closed**, 44 SP remaining)
+- **Story points**: 94 (16 tasks; **55 SP closed**, 39 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (10/16 tasks closed — BEE-67..BEE-75 + BEE-77; BEE-76 deferred to end-of-milestone after BEE-79+80 unblock dependencies)
+- **Status**: ✅ En tiempo (11/16 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-79; BEE-78 out of scope per founder — sample apps move to separate tutorials repo; BEE-76 deferred to end-of-milestone)
 
 ### Per-task projections
 
@@ -49,8 +49,8 @@
 | 9 | BEE-75 | 5 | 📡 Telemetry hook + privacy tests | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
 | 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | DEFERRED | (post BEE-79/80) | ⏸️ DEFERRED |
 | 11 | BEE-77 | 2 | 🧼 SwiftLint + swift-format en CI | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
-| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | 2026-05-13 | 2026-05-14 | ✅ |
-| 13 | BEE-79 | 5 | 🔗 Consumir beeping-core via GH Releases | 2026-05-15 | 2026-05-15 | ✅ |
+| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | OUT OF SCOPE | (separate tutorials repo) | ⏸️ MOVED |
+| 13 | BEE-79 | 5 | 🔗 Consumir beeping-core via GH Releases | 2026-05-01 | 2026-05-01 | ✅ **DONE (partial — local rebuild bridge; full upstream fetch pending BEE-82)** |
 | 14 | BEE-80 | 8 | 📦 SPM Package.swift + XCFramework firmado | 2026-05-15 | 2026-05-18 | ⚠️ |
 | 15 | BEE-81 | 5 | 🍫 CocoaPods podspec | 2026-05-18 | 2026-05-18 | ⚠️ |
 | 16 | BEE-82 | 5 | 🚀 release-please + cosign + GH Releases | 2026-05-18 | 2026-05-18 | ⚠️ |
@@ -98,6 +98,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-05-01 | 43 / 94 | 51 | 3.0 (day 4) | BEE-74 closed in plan — **half-milestone reached** (8/16 tasks). os.Logger wrapper + 7-level enum + trace-ID propagation. Cumulative velocity = 10.75 SP/día across 4 days |
 | 2026-05-01 | 48 / 94 | 46 | +5.0 (day 4 cont.) | BEE-75 closed in plan — telemetry infrastructure (TelemetryClient actor + TelemetryHook protocol + 12 privacy tests). Cumulative velocity = 12.0 SP/día across 4 days |
 | 2026-05-01 | 50 / 94 | 44 | +2.0 (day 4 cont.) | BEE-77 closed in plan — SwiftLint + swift-format CI gates. Auto-formatted 16 .swift files. BEE-76 reordered to **end-of-milestone** (after BEE-79+80 unblock SPM deps + simulator runs). Cumulative velocity = 12.5 SP/día |
+| 2026-05-01 | 55 / 94 | 39 | +5.0 (day 4 cont.) | BEE-79 closed **partial** in day 4 (5ª task del día — record). Pivot estratégico: cross-compile local de `beeping-core` C++ → 3 slices iOS → `BeepingCore.xcframework` vendoreado en `Vendor/`, libBeepingCoreUniversal.a (18 MB) eliminada. Simulator arm64 unblocked. **BEE-78 (sample app) marked OUT OF SCOPE per founder — moves to separate tutorials repo.** Cumulative velocity = **13.75 SP/día across 4 working days** — buffer ~6+ días. |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.

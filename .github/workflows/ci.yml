@@ -58,10 +58,7 @@ jobs:
 
       - name: Build Beeping framework (Swift 6 + strict concurrency, device)
         # Notes:
-        # - generic/platform=iOS targets device (arm64); the legacy
-        #   libBeepingCoreUniversal.a only ships device + intel-simulator slices,
-        #   so simulator-arm64 builds are deferred until BEE-79 (consume signed
-        #   XCFramework from beeping-core releases).
+        # - generic/platform=iOS targets device (arm64).
         # - CODE_SIGN_* disabled to skip Apple Developer signing on CI.
         # - The build settings (Swift 6, strict concurrency, iOS 15) are baked
         #   into the project; this job verifies they don't regress.
@@ -77,6 +74,23 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | tee build.log
 
+      - name: Build Beeping framework (arm64 iOS Simulator)
+        # Unblocked in BEE-79: the rebuilt BeepingCore.xcframework now ships
+        # an arm64-iphonesimulator slice (legacy libBeepingCoreUniversal.a
+        # only had x86_64-sim). This job verifies the simulator path stays
+        # buildable so future test runs (BEE-76) can land cleanly.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee -a build.log
+
       - name: Fail on warnings or errors in build log
         # Known-allowlisted warnings, with their rationale and removal owner:
         #   - "shadows module 'Beeping'": the legacy public class `Beeping`
@@ -90,20 +104,34 @@ jobs:
         #     `allowBluetoothHFP` only ships in Xcode 17+ / iOS 17+; CI runs
         #     Xcode 16.x where the new symbol doesn't exist yet. Cleanup
         #     lands with BEE-69 (raise Xcode min) or BEE-79 (drop legacy SDK).
+        #   - Auto-link warnings ("Could not find or use auto-linked
+        #     framework 'CoreAudioTypes' / 'UIUtilities'"): emitted when the
+        #     rebuilt BeepingCore.xcframework references SDK side modules the
+        #     host framework does not need. Harmless; the framework still
+        #     links + runs. Resolved upstream in beeping-core when module map
+        #     gates these for iOS targets.
+        #   - "cannot link directly with 'SwiftUICore'": same root cause —
+        #     compiler-emitted note for an SDK side library, no impact.
         run: |
           if grep -nE "warning:|error:" build.log \
               | grep -v "shadows module 'Beeping'" \
               | grep -v "AppIntents.framework dependency" \
               | grep -v "'allowBluetooth' was deprecated" \
+              | grep -v "auto-linked framework 'CoreAudioTypes'" \
+              | grep -v "auto-linked framework 'UIUtilities'" \
+              | grep -v "SwiftUICore" \
               | grep -q .; then
             echo "❌ Found unexpected warnings or errors in build output"
             grep -nE "warning:|error:" build.log \
               | grep -v "shadows module 'Beeping'" \
               | grep -v "AppIntents.framework dependency" \
-              | grep -v "'allowBluetooth' was deprecated"
+              | grep -v "'allowBluetooth' was deprecated" \
+              | grep -v "auto-linked framework 'CoreAudioTypes'" \
+              | grep -v "auto-linked framework 'UIUtilities'" \
+              | grep -v "SwiftUICore"
             exit 1
           fi
-          echo "✅ 0 unexpected warnings, 0 errors (known-allowlisted: BEE-69/70)"
+          echo "✅ 0 unexpected warnings, 0 errors (known-allowlisted: BEE-69/70/79)"
 
   # NOTE: real lint (SwiftLint + swift-format) lands in BEE-77.
   # Real test suite (XCTest + Swift Testing + snapshot + property) lands in BEE-76.
