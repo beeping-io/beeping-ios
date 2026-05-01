@@ -18,7 +18,7 @@
 | **Effort with margin** | ~14.1 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
 | **Global status** | ✅ En tiempo |
-| **Last update** | 2026-05-01 (Closed BEE-79 — partial XCFramework rebuild bridge; net delta 0 days; BEE-78 out of scope per founder) |
+| **Last update** | 2026-05-01 (Closed BEE-79 — partial XCFramework rebuild bridge; net delta 0 days. BEE-78 stays in scope as integration-test surface for the SDK; tutorial sample apps will go in a separate repo) |
 
 ---
 
@@ -28,7 +28,7 @@
 - **Story points**: 94 (16 tasks; **55 SP closed**, 39 SP remaining)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (11/16 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-79; BEE-78 out of scope per founder — sample apps move to separate tutorials repo; BEE-76 deferred to end-of-milestone)
+- **Status**: ✅ En tiempo (11/16 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-79; BEE-78 stays in scope as integration-test surface; tutorial sample apps will go in a separate repo; BEE-76 deferred to end-of-milestone)
 
 ### Per-task projections
 
@@ -49,7 +49,7 @@
 | 9 | BEE-75 | 5 | 📡 Telemetry hook + privacy tests | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
 | 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | DEFERRED | (post BEE-79/80) | ⏸️ DEFERRED |
 | 11 | BEE-77 | 2 | 🧼 SwiftLint + swift-format en CI | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
-| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | OUT OF SCOPE | (separate tutorials repo) | ⏸️ MOVED |
+| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | 2026-05-04 | 2026-05-05 | ✅ |
 | 13 | BEE-79 | 5 | 🔗 Consumir beeping-core via GH Releases | 2026-05-01 | 2026-05-01 | ✅ **DONE (partial — local rebuild bridge; full upstream fetch pending BEE-82)** |
 | 14 | BEE-80 | 8 | 📦 SPM Package.swift + XCFramework firmado | 2026-05-15 | 2026-05-18 | ⚠️ |
 | 15 | BEE-81 | 5 | 🍫 CocoaPods podspec | 2026-05-18 | 2026-05-18 | ⚠️ |

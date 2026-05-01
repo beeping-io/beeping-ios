@@ -18,7 +18,10 @@ import Foundation
 ///
 /// All callbacks are dispatched on the main queue by `Beeping`; consumers
 /// don't need to hop themselves. Heavy work should be moved off-thread by
-/// the consumer's implementation.
+/// the consumer's implementation. The `@MainActor` annotation makes the
+/// already-documented "main queue dispatch" contract explicit in the type
+/// system so Swift 6 strict concurrency can verify conformers respect it.
+@MainActor
 @objc(beepingDelegate)
 public protocol BeepingDelegate: NSObjectProtocol {
 

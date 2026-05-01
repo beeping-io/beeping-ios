@@ -13,7 +13,7 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-05-01 (trigger: Closed BEE-79 — XCFramework swap + simulator unblock; net delta 0 days)
+- **Última actualización**: 2026-05-01 (trigger: Closed BEE-79 — XCFramework swap + simulator unblock + delegate @MainActor follow-up; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
@@ -47,8 +47,8 @@
 #### Sin cambio
 - BEE-80, BEE-81, BEE-82, BEE-76 (4 tasks restantes, 31 SP)
 
-#### Out of scope (movido a otro repo)
-- BEE-78 (📱 Sample app SwiftUI + debug console): los example apps van en un repositorio separado para tutoriales. Marcada `pending` en el tracker pero NO se ejecutará en este milestone. La tarea queda en backlog Linear sin reasignar.
+#### Scope clarification (corrected mid-task)
+- BEE-78 (📱 Sample app SwiftUI + debug console): **stays in scope** como integration-test surface del SDK (founder confirmation). Los tutorial-oriented sample apps irán en un repositorio separado para contenido público; el sample app de BEE-78 sirve como E2E manual + integration test del flujo public API.
 
 #### Cambios de estado de riesgo
 - R1 (`beeping-core` releases delay): impacto reducido a corto plazo — el XCFramework local bridge desbloquea las tareas downstream sin esperar al primer release oficial. R1 sigue 🟡 monitored porque BEE-82 (release-please con cosign) seguirá necesitando los releases reales de `beeping-core` para su integration tests, pero ya no es bloqueador del milestone.
@@ -67,7 +67,18 @@
 - Linear BEE-79 description actualizada con las 2 secciones obligatorias (`## 🧪 Automated tests` + `## 🧑‍🔬 Human QA Checkpoint`)
 
 #### Commits relacionados (en `milestone/phase-9`)
-- `<este commit>` — feat(linkage): BEE-79 swap libBeepingCoreUniversal.a → BeepingCore.xcframework
+- `80c6520` — feat(linkage): BEE-79 swap libBeepingCoreUniversal.a → BeepingCore.xcframework
+- `<follow-up>` — fix(api): BEE-79 mark BeepingDelegate `@MainActor` + bump test target to iOS 16
+
+#### Follow-up (mismo día, mismo BEE-79)
+Tras correr la suite Swift Testing en el simulador desbloqueado, surgieron 2 bugs latentes:
+1. `SpyDelegate` (test) conformance crossing into MainActor bajo Swift 6 strict concurrency. Fix: anotar el protocolo `BeepingDelegate` como `@MainActor` (hace explícito en tipos lo que ya estaba en docs: "All callbacks are dispatched on the main queue") + isolated conformance `@MainActor BeepingDelegate` en `SpyDelegate`. Cero impact en API consumers — `Beeping` ya era `@MainActor` y dispatch ya hopeaba a main.
+2. `Task.sleep(for: .milliseconds(...))` requiere iOS 16+. Fix: bump del test target `IPHONEOS_DEPLOYMENT_TARGET` 15 → 16. El framework SDK público sigue iOS 15.
+
+Resultado: 29/29 tests Swift Testing pass + suite XCTest legacy pass. Hay un crash flaky en la primera ejecución de tests `BeepingClient` (audio engine concurrente sobre simulador sin mic real) — xctest auto-restarts y todo termina verde, pero esta flakiness queda anotada para BEE-76 (test consolidation, deferred). CI sigue restringido a framework build (sin tests) hasta BEE-76.
+
+#### Scope clarification (corrected mid-task)
+BEE-78 (📱 Sample app SwiftUI + debug console) **stays in scope** como integration-test surface del SDK (founder confirmation tras inicial misclassification). Los tutorial-oriented sample apps irán en un repositorio separado para contenido público; el sample app de BEE-78 sirve como E2E manual + integration test del flujo public API.
 
 ---
 

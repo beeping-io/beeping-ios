@@ -16,7 +16,7 @@ import Testing
 
 /// Spy delegate for verifying which selectors fire and with what data.
 @MainActor
-final class SpyDelegate: NSObject, BeepingDelegate {
+final class SpyDelegate: NSObject, @MainActor BeepingDelegate {
     var beepIdCalls: Int = 0
     var eventCalls: Int = 0
     var lastKey: String?
