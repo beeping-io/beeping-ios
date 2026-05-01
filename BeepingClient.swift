@@ -84,11 +84,17 @@ public actor BeepingClient {
     private let encoder: any BeepingEncoder
     private var streams: [UUID: AsyncStream<Event>.Continuation] = [:]
 
-    // BEE-72: builder-set knobs. Stored here so future tasks (BEE-74
-    // os.Logger wiring, BEE-75 telemetry hook) can read them; they are
-    // intentionally NOT acted on in BEE-72.
+    // BEE-72: builder-set knobs. BEE-74 wired up logLevel, BEE-75 wires
+    // up telemetry. They are stored here so internal components can
+    // read them and so tests can verify (via @testable import) that the
+    // builder's settings reached the actor.
     internal let logLevel: BeepingLogLevel
     internal let telemetryEnabled: Bool
+    internal let telemetryClient: TelemetryClient
+
+    /// Decoder mode this client was constructed with. Captured for
+    /// telemetry's `sessionStarted(mode:)` event.
+    private let modeForTelemetry: BeepingMode
 
     // MARK: - Init
 
@@ -107,6 +113,8 @@ public actor BeepingClient {
         self.encoder = LocalEncoder(wrapper: w)
         self.logLevel = .info
         self.telemetryEnabled = false
+        self.telemetryClient = TelemetryClient(enabled: false, hook: nil)
+        self.modeForTelemetry = mode
         w.configure(mode: mode)
         Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
             Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
@@ -122,13 +130,16 @@ public actor BeepingClient {
         encoder: any BeepingEncoder,
         mode: BeepingMode = .all,
         logLevel: BeepingLogLevel = .info,
-        telemetryEnabled: Bool = false
+        telemetryEnabled: Bool = false,
+        telemetryHook: (any TelemetryHook)? = nil
     ) {
         let w = BeepingCoreWrapper(logLevel: logLevel)
         self.wrapper = w
         self.encoder = encoder
         self.logLevel = logLevel
         self.telemetryEnabled = telemetryEnabled
+        self.telemetryClient = TelemetryClient(enabled: telemetryEnabled, hook: telemetryHook)
+        self.modeForTelemetry = mode
         w.configure(mode: mode)
         Self.wireEvents(wrapper: w, dispatch: { [weak self] legacy in
             Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
@@ -197,6 +208,13 @@ public actor BeepingClient {
             self.streams[id] = continuation
             self.wrapper.startListening()
 
+            // BEE-75: emit sessionStarted to telemetry. The actor
+            // serializes; the await is fire-and-forget via Task.
+            let mode = self.modeForTelemetry
+            Task { [weak self] in
+                await self?.telemetryClient.record(.sessionStarted(mode: mode))
+            }
+
             continuation.onTermination = { [weak self] _ in
                 Task { [weak self] in
                     await self?.removeStream(id: id)
@@ -218,6 +236,7 @@ public actor BeepingClient {
     ///   (network / auth / decoder failures, depending on mode).
     public func send(_ payload: BeepingPayload) async throws {
         try await encoder.encode(payload)
+        await telemetryClient.record(.beepEmitted)
     }
 
     /// Stops listening, terminates all `listen()` streams, and tears
@@ -231,6 +250,7 @@ public actor BeepingClient {
             continuation.finish()
         }
         streams.removeAll()
+        await telemetryClient.record(.sessionStopped)
     }
 
     // MARK: - Private
@@ -239,6 +259,26 @@ public actor BeepingClient {
         let event = Self.convert(legacy: legacyEvent)
         for continuation in streams.values {
             continuation.yield(event)
+        }
+        // BEE-75: emit telemetry for the converted event. Privacy-safe:
+        // only metrics + category propagate, never decoded data.
+        Task { [weak self] in
+            await self?.recordTelemetry(for: event)
+        }
+    }
+
+    private func recordTelemetry(for event: Event) async {
+        switch event {
+        case .decoded(let payload):
+            await telemetryClient.record(
+                .beepDecoded(confidence: payload.confidence, mode: payload.mode)
+            )
+        case .failed:
+            await telemetryClient.record(.errorOccurred(category: .decoder))
+        case .started, .stopped:
+            // .started has its own emission in `listen()` so we don't
+            // double-record here. .stopped is recorded in `close()`.
+            break
         }
     }
 

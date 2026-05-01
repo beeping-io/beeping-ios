@@ -34,6 +34,7 @@ public struct BeepingClientBuilder: Sendable {
     private var mode: BeepingMode = .all
     private var logLevel: BeepingLogLevel = .info
     private var telemetryEnabled: Bool = false
+    private var telemetryHook: (any TelemetryHook)? = nil
 
     // MARK: - Init (internal — constructed via factory methods on BeepingClient)
 
@@ -60,12 +61,25 @@ public struct BeepingClientBuilder: Sendable {
         return copy
     }
 
-    /// Whether the telemetry hook is opted in. Stored on the actor; the
-    /// actual hook wiring lands in BEE-75. Default `false` —
-    /// privacy-first per `docs/PRODUCTO.md` section 9.
+    /// Whether the telemetry hook is opted in. Default `false` —
+    /// privacy-first per `docs/PRODUCTO.md` section 9. Wired up in
+    /// BEE-75: when this is `true` AND a hook is set via
+    /// `.telemetryHook(_:)`, the SDK forwards typed metrics-only events
+    /// to the hook.
     public func telemetryEnabled(_ enabled: Bool) -> Self {
         var copy = self
         copy.telemetryEnabled = enabled
+        return copy
+    }
+
+    /// Sets the consumer-provided `TelemetryHook` sink (Sentry, Firebase,
+    /// Datadog, custom). If `nil` (default), the SDK never forwards
+    /// telemetry even when `telemetryEnabled(true)`. Per BEE-75 the hook
+    /// must conform to `Sendable` and is called from an internal actor
+    /// — implementations don't need to be main-thread-safe themselves.
+    public func telemetryHook(_ hook: (any TelemetryHook)?) -> Self {
+        var copy = self
+        copy.telemetryHook = hook
         return copy
     }
 
@@ -77,7 +91,8 @@ public struct BeepingClientBuilder: Sendable {
             encoder: encoderFactory(),
             mode: mode,
             logLevel: logLevel,
-            telemetryEnabled: telemetryEnabled
+            telemetryEnabled: telemetryEnabled,
+            telemetryHook: telemetryHook
         )
     }
 }

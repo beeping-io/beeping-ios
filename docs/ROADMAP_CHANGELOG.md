@@ -13,15 +13,47 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-05-01 (trigger: Closed BEE-74 — net delta 0 days)
+- **Última actualización**: 2026-05-01 (trigger: Closed BEE-75 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 43 SP closed, 51 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 48 SP closed, 46 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-01] - Closed BEE-75
+**Trigger detallado**: BEE-75 (📡 Telemetry hook con opt-out + tests de privacy) cerrada en plan en day 4 del milestone (segunda task del día). Single commit con:
+- `TelemetryEvent.swift` (~60 líneas) — `public enum: Sendable, Equatable` con casos typed metrics-only (`.sessionStarted(mode:)`, `.sessionStopped`, `.beepDecoded(confidence:mode:)`, `.beepEmitted`, `.errorOccurred(category:)`). Cero PII por construcción.
+- `TelemetryHook.swift` (~30 líneas) — `public protocol: Sendable` con `record(_:) async`
+- `TelemetryClient.swift` (~60 líneas) — `internal actor` con privacy gate (no-op cuando `enabled=false` o `hook=nil`)
+- `BeepingClient` wireado: emite `.sessionStarted` en `listen()`, `.beepEmitted` en `send()`, `.sessionStopped` en `close()`, `.beepDecoded` en dispatch endOk, `.errorOccurred(.decoder)` en dispatch failed
+- `BeepingClientBuilder` añade `.telemetryHook(_:)` fluent setter
+- `TelemetryTests.swift` (~210 líneas) — **12 privacy tests** incluyendo el critical "with telemetryEnabled=false + hook set, SpyHook captures 0 events"
+
+**Net delta global**: 0 días (en plan; SP planeado=5, SP real ~4 — groundwork de BEE-72/74 facilitó wiring)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados / Retrasados / Sin cambio
+- (ninguno significativo a nivel milestone)
+- BEE-76..BEE-82 (7 tasks restantes, 46 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅)
+
+#### Velocity actualizada
+- Day 4 (2026-05-01): +8 SP closed (BEE-74 + BEE-75) → cumulative **12.0 SP/día** across 4 working days
+- 4.0 SP/día por encima del asumido 8 SP/día — buffer real ~5+ días
+
+#### Honesty de scope
+"Telemetry visible en Beepbox" del DoD requiere endpoint `/v1/events` que no está en la spec OpenAPI (BEE-73). Built-in `BeepboxTelemetryHook` queda deferido hasta que ese endpoint exista. BEE-75 entrega infrastructure + protocol + privacy gates + tests — consumer puede inyectar su propio sink (Sentry, Firebase, etc.) hoy mismo.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(telemetry): BEE-75 add TelemetryHook + privacy gate + 12 tests
+
+---
 
 ### [2026-05-01] - Closed BEE-74 — half-milestone reached
 **Trigger detallado**: BEE-74 (🪵 Logging `os.Logger` + custom wrapper + trace-ID + niveles) cerrada en plan en day 4 del milestone. Single commit con:
