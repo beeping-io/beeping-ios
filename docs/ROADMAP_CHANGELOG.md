@@ -13,15 +13,48 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-04-30 (trigger: Closed BEE-73 — net delta 0 days)
+- **Última actualización**: 2026-05-01 (trigger: Closed BEE-74 — net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 40 SP closed, 54 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 43 SP closed, 51 SP remaining) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-01] - Closed BEE-74 — half-milestone reached
+**Trigger detallado**: BEE-74 (🪵 Logging `os.Logger` + custom wrapper + trace-ID + niveles) cerrada en plan en day 4 del milestone. Single commit con:
+- `BeepingLog.swift` (~140 líneas) — `public struct: Sendable` wrapper sobre `os.Logger` con subsystem fijo `io.beeping.sdk`, categorías por módulo, trace-ID 8-char hex compartido por sesión, métodos trace/debug/info/warn/error/fault, redaction helpers
+- `BeepingLogLevel.swift` extendido (5 → 7 cases: `.off, .fault, .error, .warn, .info, .debug, .trace`) + `Comparable` conformance via severity index
+- `BeepingCoreWrapper` + `AudioEngine` reemplazan `NSLog` por `BeepingLog`
+- `BeepingClient` propaga logLevel + traceID a wrapper + audio engine (mismo trace-ID compartido)
+- `BeepingLogTests.swift` (13 tests) cubriendo redaction, generación trace-ID, level gating, sendable
+
+**Hito alcanzado**: **8/16 tasks closed = 50% del milestone**. Half-way point.
+
+**Net delta global**: 0 días (cerramos en plan; SP planeado=3, SP real ~3 — autoclosure fix + propagation chain)
+**Nueva fecha fin estimada**: 2026-05-18 (sin cambio)
+**Nuevo estado global**: ✅ (sin cambio)
+
+#### Adelantados / Retrasados / Sin cambio
+- (ninguno significativo a nivel milestone)
+- BEE-75..BEE-82 (8 tasks restantes, 51 SP remaining)
+
+#### Cambios de estado de riesgo
+- (ninguno — global ✅)
+
+#### Velocity actualizada
+- Day 4 (2026-05-01): +3 SP closed → cumulative **10.75 SP/día** across 4 working days
+- 2.75 SP/día por encima del asumido 8 SP/día — buffer real ~5 días
+
+#### Issue menor durante implementación
+Primera versión usaba `@autoclosure () -> String` para evitar string construction si el log está gated, pero `os.Logger` rechaza `escaping autoclosure captures non-escaping parameter` (su interpolation evalúa lazily). Cambié a `String` plain — gating sigue funcionando, micro-perf perdida pero correctness ganada.
+
+#### Commits relacionados (en `milestone/phase-9`)
+- `<este commit>` — feat(log): BEE-74 add BeepingLog wrapper + 7-level enum + trace-ID
+
+---
 
 ### [2026-04-30] - Closed BEE-73 (partial: generator integration deferred to BEE-80)
 **Trigger detallado**: BEE-73 (🔌 Cliente HTTP generado desde OpenAPI / swift-openapi-generator de Apple) cerrada en day 3 del milestone — 5ª task del día. Single commit con:

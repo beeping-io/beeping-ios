@@ -2,31 +2,64 @@
 //  BeepingLogLevel.swift
 //  Beeping
 //
-//  Placeholder log-level enum exposed through `BeepingClientBuilder`.
-//  Stored on the actor but **not yet acted on** in BEE-72 — the wiring
-//  to `os.Logger` + the custom logger wrapper + trace-IDs lands in
-//  BEE-74. Until then this is a typed value the consumer can express
-//  intent with; it doesn't change runtime logging.
+//  Public verbosity level for the SDK's logger. Surfaced through
+//  `BeepingClientBuilder.logLevel(_:)` (BEE-72) and consumed by
+//  `BeepingLog` (BEE-74) to gate which messages are forwarded to
+//  `os.Logger`.
+//
+//  The `Comparable` conformance enables level checks like
+//  `level >= .info` inside the logger's gating logic — the convention
+//  is that **higher cases are more verbose**:
+//
+//      .off  <  .fault  <  .error  <  .warn  <  .info  <  .debug  <  .trace
+//
+//  So setting `.info` emits info / warn / error / fault messages but
+//  drops debug + trace. Setting `.off` emits nothing.
 //
 
 import Foundation
 
-/// Log verbosity for the Beeping SDK. Maps onto `os.Logger` levels in
-/// BEE-74; in BEE-72 it is a builder option only.
-public enum BeepingLogLevel: Sendable, Equatable {
+public enum BeepingLogLevel: Sendable, Equatable, Comparable {
+
     /// Silence the SDK's logger entirely.
     case off
 
-    /// Only fatal / unrecoverable errors.
+    /// Process-fatal failures only (host app would typically crash).
+    case fault
+
+    /// Errors / unrecoverable states.
     case error
 
-    /// Errors + warnings (recoverable / unexpected states).
+    /// Warnings — recoverable / unexpected states. Maps to
+    /// `os.Logger.notice` (os.Logger has no warn level).
     case warn
 
-    /// Errors + warnings + lifecycle events. Default.
+    /// Errors + warnings + lifecycle events. **Default** for production.
     case info
 
-    /// Everything, including audio-thread events. Verbose; use only
-    /// during development or active troubleshooting.
+    /// Everything except trace; useful during development.
     case debug
+
+    /// Most verbose, including audio-thread events. Use only during
+    /// active troubleshooting; `os.Logger` has no trace level so this
+    /// maps to `.debug` underneath.
+    case trace
+
+    /// Severity ranking used by the `Comparable` conformance.
+    /// **Higher index = more verbose**.
+    private var severityIndex: Int {
+        switch self {
+        case .off:    return 0
+        case .fault:  return 1
+        case .error:  return 2
+        case .warn:   return 3
+        case .info:   return 4
+        case .debug:  return 5
+        case .trace:  return 6
+        }
+    }
+
+    public static func < (lhs: BeepingLogLevel, rhs: BeepingLogLevel) -> Bool {
+        lhs.severityIndex < rhs.severityIndex
+    }
 }

@@ -119,11 +119,10 @@ struct BuilderDSLTests {
 
     // MARK: - BeepingLogLevel
 
-    @Test("BeepingLogLevel cases match the documented set")
+    @Test("BeepingLogLevel cases match the documented set (BEE-74 expanded to 7)")
     func logLevelCases() {
-        let all: [BeepingLogLevel] = [.off, .error, .warn, .info, .debug]
-        // Compile-time assertion: this array compiles iff all cases
-        // exist with the expected names.
+        // BEE-74 added .fault + .trace to the original BEE-72 set.
+        let all: [BeepingLogLevel] = [.off, .fault, .error, .warn, .info, .debug, .trace]
         _ = all
     }
 

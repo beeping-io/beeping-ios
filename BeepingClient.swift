@@ -102,7 +102,7 @@ public actor BeepingClient {
     ///   any audible / non-audible / hidden tone. Other values let you
     ///   restrict decoding for performance or privacy reasons.
     public init(mode: BeepingMode = .all) {
-        let w = BeepingCoreWrapper()
+        let w = BeepingCoreWrapper(logLevel: .info)
         self.wrapper = w
         self.encoder = LocalEncoder(wrapper: w)
         self.logLevel = .info
@@ -124,7 +124,7 @@ public actor BeepingClient {
         logLevel: BeepingLogLevel = .info,
         telemetryEnabled: Bool = false
     ) {
-        let w = BeepingCoreWrapper()
+        let w = BeepingCoreWrapper(logLevel: logLevel)
         self.wrapper = w
         self.encoder = encoder
         self.logLevel = logLevel

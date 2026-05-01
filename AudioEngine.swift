@@ -35,6 +35,7 @@ internal final class AudioEngine: @unchecked Sendable {
 
     private let _controller: BCAudioUnitController
     private let _serialQueue = DispatchQueue(label: "io.beeping.audio.events")
+    private let log: BeepingLog
 
     /// Set by `BeepingCoreWrapper`. Always invoked on `_serialQueue`,
     /// never on the real-time audio thread.
@@ -42,8 +43,9 @@ internal final class AudioEngine: @unchecked Sendable {
 
     // MARK: - Init
 
-    internal init(core: BCNativeCore) {
+    internal init(core: BCNativeCore, log: BeepingLog = BeepingLog(category: "audio")) {
         self._controller = BCAudioUnitController(core: core)
+        self.log = log
         // Wire the controller's audio-thread callback to hop onto our
         // serial queue before invoking the consumer's closure.
         self._controller.onToken = { [weak self] token, decoded in
@@ -86,9 +88,9 @@ internal final class AudioEngine: @unchecked Sendable {
                                     options: [.defaultToSpeaker, .allowBluetooth])
             try session.setPreferredSampleRate(44100)
             try session.setActive(true)
+            log.info("AVAudioSession active: .playAndRecord 44.1kHz")
         } catch {
-            // BEE-74 will replace NSLog with os.Logger + trace-IDs.
-            NSLog("[AudioEngine] AVAudioSession setup failed: \(error)")
+            log.error("AVAudioSession setup failed: \(error)")
         }
     }
 }

@@ -54,11 +54,23 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
     /// `configure(...)`.
     internal var onEvent: (@Sendable (BeepingEvent) -> Void)?
 
+    private let log: BeepingLog
+    private let logLevel: BeepingLogLevel
+    private let traceID: String
+
     // MARK: - Init
 
-    internal init() {
+    internal init(logLevel: BeepingLogLevel = .info, traceID: String? = nil) {
         self._handle = BCNativeCore()
+        self.logLevel = logLevel
+        self.traceID = traceID ?? BeepingLog.generateTraceID()
+        self.log = BeepingLog(category: "core", level: logLevel, traceID: self.traceID)
     }
+
+    /// Exposed for AudioEngine construction so it shares the same
+    /// trace-ID and level setting.
+    internal var currentLogLevel: BeepingLogLevel { logLevel }
+    internal var currentTraceID: String { traceID }
 
     // MARK: - Locking helper
 
@@ -80,12 +92,15 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
                                        sampleRate: sampleRate,
                                        bufferSize: bufferSize)
         if result != 0 {
-            // Match legacy behavior: log + soldier on. Real diagnostics
-            // surface in BEE-74 (os.Logger + trace-IDs).
-            NSLog("[BeepingCoreWrapper] BEEPING_Configure failed (\(result))")
+            log.error("BEEPING_Configure failed: result=\(result)")
+        } else {
+            log.info("Configured: mode=\(mode) sampleRate=\(sampleRate) bufferSize=\(bufferSize)")
         }
 
-        let engine = AudioEngine(core: _handle)
+        let engine = AudioEngine(
+            core: _handle,
+            log: BeepingLog(category: "audio", level: logLevel, traceID: traceID)
+        )
         engine.onAudioToken = { [weak self] token, decodedString in
             self?.handleAudioToken(token, decodedString: decodedString)
         }
