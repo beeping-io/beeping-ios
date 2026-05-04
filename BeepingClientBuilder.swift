@@ -30,7 +30,10 @@ public struct BeepingClientBuilder: Sendable {
 
     // MARK: - Stored config (immutable after `build()`)
 
-    private let encoderFactory: @Sendable () -> any BeepingEncoder
+    /// Factory receives the configured `BeepingCoreWrapper` so local-mode
+    /// encoders can share the same engine handle that the listener uses.
+    /// Cloud-mode encoders ignore the parameter.
+    private let encoderFactory: @Sendable (BeepingCoreWrapper) -> any BeepingEncoder
     private var mode: BeepingMode = .all
     private var logLevel: BeepingLogLevel = .info
     private var telemetryEnabled: Bool = false
@@ -38,7 +41,7 @@ public struct BeepingClientBuilder: Sendable {
 
     // MARK: - Init (internal — constructed via factory methods on BeepingClient)
 
-    internal init(encoderFactory: @escaping @Sendable () -> any BeepingEncoder) {
+    internal init(encoderFactory: @escaping @Sendable (BeepingCoreWrapper) -> any BeepingEncoder) {
         self.encoderFactory = encoderFactory
     }
 
@@ -85,10 +88,17 @@ public struct BeepingClientBuilder: Sendable {
 
     // MARK: - Build
 
-    /// Constructs a `BeepingClient` with the accumulated config.
+    /// Constructs a `BeepingClient` with the accumulated config. Creates and
+    /// configures the wrapper here so the encoder factory can attach to the
+    /// same engine handle (critical for `LocalEncoder`, which would crash
+    /// against an unconfigured handle in `BEEPING_EncodeDataToAudioBuffer`).
     public func build() -> BeepingClient {
-        BeepingClient(
-            encoder: encoderFactory(),
+        let wrapper = BeepingCoreWrapper(logLevel: logLevel)
+        wrapper.configure(mode: mode)
+        let encoder = encoderFactory(wrapper)
+        return BeepingClient(
+            wrapper: wrapper,
+            encoder: encoder,
             mode: mode,
             logLevel: logLevel,
             telemetryEnabled: telemetryEnabled,

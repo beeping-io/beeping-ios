@@ -128,6 +128,12 @@ public actor BeepingClient {
     /// (BEE-72) and by tests that want to inject a stub encoder. The
     /// decode path (mic capture) is always local — only the encode
     /// strategy is configurable here.
+    ///
+    /// The two-arg variant lets the builder share its already-configured
+    /// `BeepingCoreWrapper` between encode and decode paths. The
+    /// single-arg variant constructs and configures a fresh wrapper for
+    /// callers that don't supply one (kept for source compatibility with
+    /// pre-fix usages and existing tests).
     internal init(
         encoder: any BeepingEncoder,
         mode: BeepingMode = .all,
@@ -136,15 +142,35 @@ public actor BeepingClient {
         telemetryHook: (any TelemetryHook)? = nil
     ) {
         let w = BeepingCoreWrapper(logLevel: logLevel)
-        self.wrapper = w
+        w.configure(mode: mode)
+        self.init(
+            wrapper: w,
+            encoder: encoder,
+            mode: mode,
+            logLevel: logLevel,
+            telemetryEnabled: telemetryEnabled,
+            telemetryHook: telemetryHook
+        )
+    }
+
+    /// Init used by `BeepingClientBuilder.build()` so the local encoder and
+    /// the listener share the same configured wrapper.
+    internal init(
+        wrapper: BeepingCoreWrapper,
+        encoder: any BeepingEncoder,
+        mode: BeepingMode,
+        logLevel: BeepingLogLevel,
+        telemetryEnabled: Bool,
+        telemetryHook: (any TelemetryHook)?
+    ) {
+        self.wrapper = wrapper
         self.encoder = encoder
         self.logLevel = logLevel
         self.telemetryEnabled = telemetryEnabled
         self.telemetryClient = TelemetryClient(enabled: telemetryEnabled, hook: telemetryHook)
         self.modeForTelemetry = mode
-        w.configure(mode: mode)
         Self.wireEvents(
-            wrapper: w,
+            wrapper: wrapper,
             dispatch: { [weak self] legacy in
                 Task { [weak self] in await self?.dispatch(legacyEvent: legacy) }
             })
@@ -160,7 +186,7 @@ public actor BeepingClient {
     /// let client = BeepingClient.local().build()
     /// ```
     public static func local() -> BeepingClientBuilder {
-        BeepingClientBuilder(encoderFactory: { LocalEncoder(wrapper: BeepingCoreWrapper()) })
+        BeepingClientBuilder(encoderFactory: { wrapper in LocalEncoder(wrapper: wrapper) })
     }
 
     /// Returns a builder configured to emit through the **cloud**
@@ -177,7 +203,7 @@ public actor BeepingClient {
     ///   - apiKey: server-issued API key (sent as `X-API-Key` header).
     ///   - endpoint: base URL of the `beepbox-server` instance.
     public static func cloud(apiKey: String, endpoint: URL) -> BeepingClientBuilder {
-        BeepingClientBuilder(encoderFactory: { CloudEncoder(apiKey: apiKey, endpoint: endpoint) })
+        BeepingClientBuilder(encoderFactory: { _ in CloudEncoder(apiKey: apiKey, endpoint: endpoint) })
     }
 
     /// Helper to factor out the closure boilerplate used by both inits.
