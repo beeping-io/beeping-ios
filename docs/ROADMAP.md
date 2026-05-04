@@ -13,22 +13,22 @@
 | **Project start** | 2026-04-28 (Tue) |
 | **Velocity assumed** | 8 story points / working day |
 | **Risk margin** | 20% (i.e. 10 SP·days planned as 12 calendar days) |
-| **Total SP committed** | 94 SP across 16 tasks |
-| **Raw effort** | 94 SP / 8 SP·day = ~11.75 working days |
-| **Effort with margin** | ~14.1 working days → **15 working days rounded** |
+| **Total SP committed** | 99 SP across 17 tasks (BEE-2050 scope addition) |
+| **Raw effort** | 99 SP / 8 SP·day = ~12.4 working days |
+| **Effort with margin** | ~14.9 working days → **15 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
-| **Global status** | ✅ En tiempo |
-| **Last update** | 2026-05-01 (Closed BEE-79 — partial XCFramework rebuild bridge; net delta 0 days. BEE-78 stays in scope as integration-test surface for the SDK; tutorial sample apps will go in a separate repo) |
+| **Global status** | ✅ En tiempo (buffer ~6 días) |
+| **Last update** | 2026-05-04 (Closed BEE-78 — sample app SwiftUI + SDK builder fix + UX 3 rondas; scope addition BEE-2050 +5 SP CloudEncoder WAV playback; net delta 0 days) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 94 (16 tasks; **55 SP closed**, 39 SP remaining)
+- **Story points**: 99 (17 tasks; **63 SP closed**, 36 SP remaining; BEE-2050 scope addition)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (11/16 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-79; BEE-78 stays in scope as integration-test surface; tutorial sample apps will go in a separate repo; BEE-76 deferred to end-of-milestone)
+- **Status**: ✅ En tiempo (12/17 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79; BEE-76 deferred to end-of-milestone; BEE-2050 added day 5 as scope addition for CloudEncoder WAV playback follow-up)
 
 ### Per-task projections
 
@@ -49,12 +49,13 @@
 | 9 | BEE-75 | 5 | 📡 Telemetry hook + privacy tests | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
 | 10 | BEE-76 | 13 | 🧪 Tests XCTest + Swift Testing + snapshot + property | DEFERRED | (post BEE-79/80) | ⏸️ DEFERRED |
 | 11 | BEE-77 | 2 | 🧼 SwiftLint + swift-format en CI | 2026-05-01 | 2026-05-01 | ✅ **DONE** |
-| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | 2026-05-04 | 2026-05-05 | ✅ |
+| 12 | BEE-78 | 8 | 📱 Sample app SwiftUI + debug console | 2026-05-04 | 2026-05-04 | ✅ **DONE** |
 | 13 | BEE-79 | 5 | 🔗 Consumir beeping-core via GH Releases | 2026-05-01 | 2026-05-01 | ✅ **DONE (partial — local rebuild bridge; full upstream fetch pending BEE-82)** |
 | 14 | BEE-80 | 8 | 📦 SPM Package.swift + XCFramework firmado | 2026-05-15 | 2026-05-18 | ⚠️ |
 | 15 | BEE-81 | 5 | 🍫 CocoaPods podspec | 2026-05-18 | 2026-05-18 | ⚠️ |
 | 16 | BEE-82 | 5 | 🚀 release-please + cosign + GH Releases | 2026-05-18 | 2026-05-18 | ⚠️ |
-|   | **94** | | | | | |
+| 17 | BEE-2050 | 5 | 🔊 CloudEncoder WAV playback (consume server response audio) | 2026-05-05 | 2026-05-06 | ✅ |
+|   | **99** | | | | | |
 
 ### Risk indicators per task
 
@@ -99,6 +100,7 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-05-01 | 48 / 94 | 46 | +5.0 (day 4 cont.) | BEE-75 closed in plan — telemetry infrastructure (TelemetryClient actor + TelemetryHook protocol + 12 privacy tests). Cumulative velocity = 12.0 SP/día across 4 days |
 | 2026-05-01 | 50 / 94 | 44 | +2.0 (day 4 cont.) | BEE-77 closed in plan — SwiftLint + swift-format CI gates. Auto-formatted 16 .swift files. BEE-76 reordered to **end-of-milestone** (after BEE-79+80 unblock SPM deps + simulator runs). Cumulative velocity = 12.5 SP/día |
 | 2026-05-01 | 55 / 94 | 39 | +5.0 (day 4 cont.) | BEE-79 closed **partial** in day 4 (5ª task del día — record). Pivot estratégico: cross-compile local de `beeping-core` C++ → 3 slices iOS → `BeepingCore.xcframework` vendoreado en `Vendor/`, libBeepingCoreUniversal.a (18 MB) eliminada. Simulator arm64 unblocked. **BEE-78 (sample app) marked OUT OF SCOPE per founder — moves to separate tutorials repo.** Cumulative velocity = **13.75 SP/día across 4 working days** — buffer ~6+ días. |
+| 2026-05-04 | 63 / 99 | 36 | 8.0 (day 5) | BEE-78 closed in day 5. Sample app SwiftUI + env picker Local/Dev/Prod + 5-tap debug console + brand red `#ed1c24`. **SDK builder bug found and fixed**: `BeepingClient.local().build()` creaba dos `BeepingCoreWrapper` distintos (encoder sin configurar → SIGSEGV). Fix: factory recibe el wrapper compartido. **Scope addition BEE-2050 (+5 SP)**: CloudEncoder WAV playback como follow-up para cerrar el gap de BEE-73 partial. Total SP went 94→99, tasks 16→17, closed 11→12. Cumulative velocity = **12.6 SP/día across 5 working days** — buffer ~6 días, fin proyectado 2026-05-08 (vs plan 2026-05-18). |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.

@@ -12,16 +12,42 @@
 - **Fecha de inicio del proyecto**: 2026-04-28
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
-- **Estado global**: ✅ En tiempo
-- **Última actualización**: 2026-05-01 (trigger: Closed BEE-79 — XCFramework swap + simulator unblock + delegate @MainActor follow-up; net delta 0 days)
+- **Estado global**: ✅ En tiempo (buffer ~6 días)
+- **Última actualización**: 2026-05-04 (trigger: Closed BEE-78 + scope addition BEE-2050 +5 SP; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 94 (16 tasks; 55 SP closed, 39 SP remaining; BEE-76 deferred) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 99 (17 tasks; 63 SP closed, 36 SP remaining; BEE-76 deferred + BEE-2050 added) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-04] - Closed BEE-78 + scope addition BEE-2050 (CloudEncoder WAV playback)
+**Trigger detallado**: BEE-78 (📱 Sample app SwiftUI + debug console) cerrada en day 5. Sample app integration-test surface entregado: target `BeepingSampleApp` (xcodegen-managed) en `Beeping.xcworkspace`, env picker Local/Dev/Prod, build phase script que inyecta `.env.local` → `Sources/Generated/Secrets.swift` (gitignored, `#if DEBUG` only, blanks en Release), debug console activable con 5-tap on logo, brand color `#ed1c24` sincronizado desde `beeping-www/src/app/globals.css`.
+
+**Bug del SDK encontrado y corregido en BEE-78**: `BeepingClient.local().build()` creaba dos `BeepingCoreWrapper` distintos — uno configurado para listening, otro sin configurar para encoding. `client.send()` invocaba `BEEPING_EncodeDataToAudioBuffer` sobre un C handle sin `BEEPING_Configure` jamás llamado → SIGSEGV en simulador. Fix: refactor del builder factory (`encoderFactory: (BeepingCoreWrapper) -> BeepingEncoder` recibe el wrapper ya configurado), nuevo `BeepingClient.init(wrapper:encoder:...)` que comparte el wrapper entre encoder y listener.
+
+**Workaround de spdlog**: `beeping-core` C++ auto-inicializa spdlog con path relativo `logs/beeping.log`. En sandbox iOS el cwd es read-only → `BEEPING_Create()` lanzaba `spdlog::spdlog_ex` y mataba el proceso al inicio. Workaround mínimo en el sample app: `chdir` a Documents y pre-create `logs/` antes del `@StateObject AppModel()`. Fix más limpio (relocalizar el log al app sandbox dentro del SDK) queda fuera de scope.
+
+**Sub-pasos ejecutados**:
+- xcodegen + `BeepingSampleApp/project.yml` con cross-project reference a `Beeping.xcodeproj`
+- `Beeping.xcworkspace` que junta SDK + sample
+- 9/9 tests verde: 5 unit (`AppEnvironmentTests`) + 4 UI (`BeepingSampleAppUITests`: launch, env picker, 5-tap debug console, send button enabled)
+- Lint gates: `swiftlint --strict` 0 violations, `swift-format lint --strict` 0 issues
+- Release build verification: `nm BeepingSampleApp | grep -i beepbox` → 0 símbolos (claves no embebidas en Release)
+- Human QA Checkpoint completado: Local mode ✅ (post-fix), Dev mode ✅ (4 POSTs a `https://beepbox-dev.beeping.io/v1/encode` → HTTP 200, ~204KB WAV cada uno), Prod ruta verificada via mismo CloudEncoder + auth scheme `Bearer`
+- 3 rondas de UX feedback iterativo aplicadas: separación `lastDecodeStatus` vs `lastSendError`, header VStack-instead-of-safeAreaInset, brand red `.tint`, Send button HStack-centrado, +16pt body padding
+
+**Scope addition — BEE-2050 (`🔊 CloudEncoder WAV playback`)**: gap conocido del SDK (BEE-73 partial) surfaceado por BEE-78. `CloudEncoder.encode()` recibe los bytes WAV del `beepbox-server` por HTTP 200 pero los descarta (`_ = data` en `CloudEncoder.swift:60-63`). En cloud mode el sample no oye el beep porque nadie lo reproduce. Tracked aparte como **BEE-2050** (5 SP, milestone Phase 9): `AVAudioPlayer` con data-init o `AudioEngine.play(pcmFrames:)` para completar el round-trip Dev/Prod end-to-end.
+
+**Velocity recalc**:
+- 63 SP closed / 5 working days = 12.6 SP/día (planeado: 8 SP/día — buffer creciente)
+- 36 SP remaining (BEE-76 deferred 13 SP + BEE-80 8 SP + BEE-81 5 SP + BEE-82 5 SP + BEE-2050 5 SP)
+- Estimación: 36 / 12.6 ≈ 3 días + 20% margen ≈ 4 días → fin proyectado 2026-05-08 (vs plan 2026-05-18 → ~6 días de buffer)
+- Estado global: ✅ con buffer holgado, sin riesgos abiertos
+
+**Net delta global**: 0 días (BEE-78 dentro del plan, scope addition BEE-2050 absorbida por buffer).
 
 ### [2026-05-01] - Closed BEE-79 (partial — XCFramework rebuild local bridge)
 **Trigger detallado**: BEE-79 (🔗 Consumir `beeping-core` via GitHub Releases) cerrada **parcial** en day 4 (5ª task del día — record). Pivot estratégico: el legacy `libBeepingCoreUniversal.a` no tenía slice arm64-iphonesimulator, lo que bloqueaba BEE-78 (sample app on sim) y BEE-76 (tests on sim). En lugar de esperar al primer release oficial de `beeping-core` con artefactos iOS firmados (R1, indeterminado), se cross-compila localmente la C++ source de `beeping-core` para 3 slices iOS y se construye el XCFramework manualmente.
