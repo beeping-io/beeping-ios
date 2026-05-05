@@ -5,23 +5,24 @@ struct RootView: View {
     @State private var showingDebug = false
     @State private var logoTapCount = 0
     @State private var logoTapResetTask: Task<Void, Never>?
+    @State private var sendText: String = "hello"
 
     var body: some View {
         VStack(spacing: 0) {
             header
-            TabView {
-                SendView()
-                    .tabItem { Label("Send", systemImage: "paperplane") }
-                    .accessibilityIdentifier("send_tab")
-                ReceiveView()
-                    .tabItem { Label("Receive", systemImage: "ear") }
-                    .accessibilityIdentifier("receive_tab")
+            Form {
+                sendSection
+                listenerSection
+                activitySection
             }
-            .padding(.top, 16)
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
         }
         .background(Color(.systemGroupedBackground))
         .sheet(isPresented: $showingDebug) { DebugConsole() }
     }
+
+    // MARK: - Header
 
     private var header: some View {
         HStack {
@@ -44,6 +45,150 @@ struct RootView: View {
                 .frame(height: 0.5)
         }
     }
+
+    // MARK: - Send
+
+    private var sendSection: some View {
+        Section {
+            TextField("Text to encode", text: $sendText)
+                .textInputAutocapitalization(.never)
+                .accessibilityIdentifier("send_text_field")
+            Button {
+                Task { await model.send(sendText) }
+            } label: {
+                HStack {
+                    Spacer()
+                    Image(systemName: "paperplane.fill")
+                    Text("Send")
+                        .fontWeight(.semibold)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(model.client == nil || sendText.trimmingCharacters(in: .whitespaces).isEmpty)
+            .accessibilityIdentifier("send_button")
+            if let last = model.lastSent {
+                LabeledContent("Last sent", value: last)
+                    .font(.system(.subheadline, design: .monospaced))
+                    .accessibilityIdentifier("last_sent_label")
+            }
+            if let err = model.lastSendError {
+                LabeledContent("Last send error") {
+                    Text(err)
+                        .foregroundStyle(.red)
+                        .font(.system(.caption2, design: .monospaced))
+                        .multilineTextAlignment(.trailing)
+                }
+                .accessibilityIdentifier("last_error_label")
+            }
+        } header: {
+            sectionHeader(symbol: "paperplane.fill", title: "Send")
+        }
+    }
+
+    // MARK: - Listener
+
+    private var listenerSection: some View {
+        Section {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(model.isListening ? Color.green : Color.gray)
+                    .frame(width: 8, height: 8)
+                Text(model.isListening ? "Listening" : "Idle")
+                    .font(.subheadline)
+                    .accessibilityIdentifier("listener_status")
+                Spacer()
+                Text(pipelineLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            if let payload = model.lastDecoded {
+                LabeledContent("decoded", value: payload.decodedString)
+                    .font(.system(.subheadline, design: .monospaced))
+                    .accessibilityIdentifier("decoded_event_label")
+                LabeledContent("key", value: payload.key)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                LabeledContent("confidence", value: String(format: "%.2f", payload.confidence))
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            } else if case .noSignal(let reason) = model.lastDecodeStatus {
+                Text(reason)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+            } else {
+                Text("(no decoded payload yet)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            sectionHeader(symbol: "ear", title: "Listener")
+        }
+    }
+
+    private var pipelineLabel: String {
+        switch model.lastDecodeStatus {
+        case .idle:        return "idle"
+        case .listening:   return "waiting for valid beep…"
+        case .decoded:     return "decoded ✓"
+        case .noSignal:    return "no valid signal"
+        }
+    }
+
+    // MARK: - Activity
+
+    private var activitySection: some View {
+        Section {
+            if model.logs.isEmpty {
+                Text("(no events yet)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(model.logs.suffix(8).reversed()) { entry in
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(Self.timeFormatter.string(from: entry.timestamp))
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                        Text(entry.message)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(entry.level == .error ? .red : .primary)
+                            .lineLimit(2)
+                    }
+                }
+            }
+        } header: {
+            HStack {
+                sectionHeader(symbol: "list.bullet.rectangle", title: "Recent activity")
+                Spacer()
+                Button {
+                    showingDebug = true
+                } label: {
+                    Text("Open console")
+                        .font(.caption)
+                }
+                .accessibilityIdentifier("open_console_button")
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func sectionHeader(symbol: String, title: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .foregroundStyle(BeepingBrand.red)
+            Text(title)
+        }
+        .font(.footnote.weight(.semibold))
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss"
+        return f
+    }()
 
     private func handleLogoTap() {
         logoTapCount += 1

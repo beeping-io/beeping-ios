@@ -32,12 +32,22 @@ final class AppModel: ObservableObject {
         client = environment.makeClient()
         isListening = false
         append(.info, "env=\(environment.rawValue) client=\(client == nil ? "nil" : "ok")")
+        // Auto-start the listener — the test surface is "always listening".
+        // Send-then-decode is the natural loop and the user shouldn't have
+        // to toggle it manually.
+        if client != nil {
+            startListening()
+        }
     }
 
     func startListening() {
         guard let client else { return }
         guard listenTask == nil else { return }
         isListening = true
+        // Optimistically reflect the listening state. The C engine only
+        // emits `.started` once it processes its first token, which never
+        // happens in an idle simulator.
+        if lastDecodeStatus == .idle { lastDecodeStatus = .listening }
         append(.info, "listening started")
         listenTask = Task { [weak self, client] in
             let stream = await client.listen()
