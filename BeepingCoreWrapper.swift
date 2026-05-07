@@ -39,6 +39,13 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
     private let _handle: BCNativeCore
     private var _audioEngine: AudioEngine?
 
+    // BEE-2050: dedicated decoder handle for cloud-mode loopback. The
+    // listener's `_handle` is driven by the real-time audio thread on its
+    // own RemoteIO; sharing it for synchronous WAV decode would race with
+    // that callback. A second `BCNativeCore` lets us decode the cloud
+    // response on a Swift caller's thread without disturbing the listener.
+    private var _loopbackHandle: BCNativeCore?
+
     private var _decodedString: String?
     private var _isListening: Bool = false
     private var _isEmitting: Bool = false
@@ -137,6 +144,87 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         withLock { _isEmitting = true }
         _audioEngine?.markEmitting(true)
         _audioEngine?.start()
+    }
+
+    // MARK: - Cloud-mode loopback decode (BEE-2050)
+
+    /// Feeds the WAV bytes returned by `beepbox-server` through a
+    /// dedicated `BCNativeCore` decoder, fires `onEvent` for any
+    /// start/end tokens the engine emits along the way. Used by
+    /// `CloudEncoder` to surface a `decoded` event in the same app
+    /// without depending on speaker→mic acoustic loopback (iOS Simulator
+    /// has no such loop; the listener's mic captures from Mac mic input,
+    /// not the simulator's speaker output).
+    ///
+    /// The dedicated handle is configured lazily on first call so the
+    /// extra C engine instance is only paid for in cloud mode.
+    internal func decodeLoopback(wav data: Data, mode: BeepingMode) {
+        guard let samples = WAVParser.float32Samples(from: data) else {
+            log.error("loopback: WAV parse failed (\(data.count) bytes)")
+            return
+        }
+
+        let handle: BCNativeCore = {
+            if let existing = _loopbackHandle { return existing }
+            let h = BCNativeCore()
+            _ = h.configure(withMode: mode.rawValue, sampleRate: 44100, bufferSize: 1024)
+            _loopbackHandle = h
+            return h
+        }()
+
+        log.info("loopback: feeding \(samples.count) frames to dedicated decoder")
+        let chunkSize = 1024
+        var idx = 0
+        var endTokenSeen = false
+        while idx < samples.count {
+            let end = min(idx + chunkSize, samples.count)
+            var chunk = Array(samples[idx..<end])
+            let code = chunk.withUnsafeMutableBufferPointer { buf -> Int32 in
+                guard let base = buf.baseAddress else { return 0 }
+                return handle.__decodeAudioBuffer(base, size: Int32(buf.count))
+            }
+            if let event = buildLoopbackEvent(token: code, handle: handle) {
+                onEvent?(event)
+                if event.status == BeepingEvent.Status.endOk
+                    || event.status == BeepingEvent.Status.endBad
+                {
+                    endTokenSeen = true
+                }
+            }
+            idx = end
+        }
+        if !endTokenSeen {
+            log.info("loopback: drained input without an end token")
+        }
+    }
+
+    private func buildLoopbackEvent(token: Int32, handle: BCNativeCore) -> BeepingEvent? {
+        switch token {
+        case -2:
+            return BeepingEvent(
+                status: .start, key: nil, decodedString: nil,
+                mode: 0, timestamp: 0,
+                confidence: 0, confidenceError: 0,
+                confidenceNoise: 0, receivedBeepsVolume: 0)
+        case -3:
+            var raw = [CChar](repeating: 0, count: 64)
+            let status = raw.withUnsafeMutableBufferPointer { ptr -> Int32 in
+                guard let base = ptr.baseAddress else { return 0 }
+                return handle.__getDecodedData(into: base)
+            }
+            let decoded: String? = status > 0 ? String(cString: raw) : nil
+            return Self.buildEvent(
+                token: -3,
+                decoded: decoded,
+                mode: Int(handle.decodedMode),
+                confidence: handle.confidence,
+                confidenceError: handle.confidenceError,
+                confidenceNoise: handle.confidenceNoise,
+                volume: handle.receivedBeepsVolume
+            )
+        default:
+            return nil
+        }
     }
 
     // MARK: - Decoded data getters (legacy API surface)

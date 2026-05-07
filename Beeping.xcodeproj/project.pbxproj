@@ -41,6 +41,9 @@
 		BC0001000000000000000113 /* TelemetryHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000112 /* TelemetryHook.swift */; };
 		BC0001000000000000000115 /* TelemetryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000114 /* TelemetryClient.swift */; };
 		BC0001000000000000000117 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000116 /* TelemetryTests.swift */; };
+		BC0001000000000000000201 /* WAVPlaybackSink.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000200 /* WAVPlaybackSink.swift */; };
+		BC0001000000000000000211 /* CloudEncoderPlaybackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000210 /* CloudEncoderPlaybackTests.swift */; };
+		BC0001000000000000000221 /* WAVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000220 /* WAVParser.swift */; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
@@ -100,6 +103,9 @@
 		BC0001000000000000000112 /* TelemetryHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryHook.swift; sourceTree = "<group>"; };
 		BC0001000000000000000114 /* TelemetryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryClient.swift; sourceTree = "<group>"; };
 		BC0001000000000000000116 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000200 /* WAVPlaybackSink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WAVPlaybackSink.swift; sourceTree = "<group>"; };
+		BC0001000000000000000210 /* CloudEncoderPlaybackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudEncoderPlaybackTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000220 /* WAVParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WAVParser.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -187,6 +193,8 @@
 				BC0001000000000000000070 /* BeepingEncoder.swift */,
 				BC0001000000000000000072 /* LocalEncoder.swift */,
 				BC0001000000000000000074 /* CloudEncoder.swift */,
+				BC0001000000000000000200 /* WAVPlaybackSink.swift */,
+				BC0001000000000000000220 /* WAVParser.swift */,
 				BC0001000000000000000090 /* BeepboxAPITypes.swift */,
 				BC0001000000000000000092 /* openapi.yaml */,
 				BC0001000000000000000114 /* TelemetryClient.swift */,
@@ -231,6 +239,7 @@
 				BC0001000000000000000064 /* BeepingClientTests.swift */,
 				BC0001000000000000000076 /* MockURLProtocol.swift */,
 				BC0001000000000000000078 /* EncoderStrategyTests.swift */,
+				BC0001000000000000000210 /* CloudEncoderPlaybackTests.swift */,
 				BC0001000000000000000084 /* BuilderDSLTests.swift */,
 				BC0001000000000000000102 /* BeepingLogTests.swift */,
 				BC0001000000000000000116 /* TelemetryTests.swift */,
@@ -377,6 +386,7 @@
 				BC0001000000000000000065 /* BeepingClientTests.swift in Sources */,
 				BC0001000000000000000077 /* MockURLProtocol.swift in Sources */,
 				BC0001000000000000000079 /* EncoderStrategyTests.swift in Sources */,
+				BC0001000000000000000211 /* CloudEncoderPlaybackTests.swift in Sources */,
 				BC0001000000000000000085 /* BuilderDSLTests.swift in Sources */,
 				BC0001000000000000000103 /* BeepingLogTests.swift in Sources */,
 				BC0001000000000000000117 /* TelemetryTests.swift in Sources */,
@@ -400,6 +410,8 @@
 				BC0001000000000000000071 /* BeepingEncoder.swift in Sources */,
 				BC0001000000000000000073 /* LocalEncoder.swift in Sources */,
 				BC0001000000000000000075 /* CloudEncoder.swift in Sources */,
+				BC0001000000000000000201 /* WAVPlaybackSink.swift in Sources */,
+				BC0001000000000000000221 /* WAVParser.swift in Sources */,
 				BC0001000000000000000081 /* BeepingLogLevel.swift in Sources */,
 				BC0001000000000000000083 /* BeepingClientBuilder.swift in Sources */,
 				BC0001000000000000000091 /* BeepboxAPITypes.swift in Sources */,

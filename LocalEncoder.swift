@@ -28,9 +28,31 @@ internal actor LocalEncoder: BeepingEncoder {
     }
 
     func encode(_ payload: BeepingPayload) async throws {
-        // The legacy C engine doesn't surface errors; play(code:) is
-        // fire-and-forget. If a future engine version returns a status
-        // we can map it to BeepingError here.
+        // Defensive validation: the C engine's ReedSolomon path SIGSEGVs
+        // when fed non-base32 input (any char outside `[0-9a-v]`, or a
+        // length other than the expected 9 chars: 5 key + 4 timestamp).
+        // Throw a typed error so callers see a clean failure instead of
+        // a process crash. Upstream beeping-core should also reject the
+        // same input but the SDK can't depend on that yet.
+        try Self.validateForCEngine(code: payload.decodedString)
+
+        // The legacy C engine doesn't surface errors past validation;
+        // play(code:) is fire-and-forget once the input is well-formed.
         wrapper.play(code: payload.decodedString)
+    }
+
+    /// Beepbox payloads are 9 lowercase base32 chars: 5-char key +
+    /// 4-char timestamp. Anything else is rejected at the Swift layer
+    /// to prevent the C engine from crashing on malformed input.
+    private static func validateForCEngine(code: String) throws {
+        guard code.count == 9 else {
+            throw BeepingError.decoderInternal(
+                reason: "LocalEncoder: payload must be 9 base32 chars (got \(code.count))")
+        }
+        let allowed = Set("0123456789abcdefghijklmnopqrstuv")
+        for c in code where !allowed.contains(c) {
+            throw BeepingError.decoderInternal(
+                reason: "LocalEncoder: payload \"\(code)\" contains non-base32 char '\(c)'")
+        }
     }
 }

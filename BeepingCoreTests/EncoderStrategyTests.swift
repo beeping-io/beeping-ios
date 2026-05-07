@@ -47,6 +47,10 @@ struct EncoderStrategyTests {
     @Test("LocalEncoder.encode does not throw on a benign payload")
     func localEncoderDoesNotThrow() async throws {
         let wrapper = BeepingCoreWrapper()
+        // Wrapper must be configured before `play(code:)` reaches the
+        // C engine — calling encode against an unconfigured handle
+        // SIGSEGVs inside `BCNativeCore.encode(...:type:)`.
+        wrapper.configure(mode: .all)
         let encoder = LocalEncoder(wrapper: wrapper)
         try await encoder.encode(samplePayload())
     }
@@ -69,7 +73,8 @@ struct EncoderStrategyTests {
 
         MockURLProtocol.responder = { request in
             // 200 with empty audio body. Audio playback is out of scope
-            // for the encoder unit test.
+            // for this request-shape test — the spy sink absorbs the
+            // bytes without invoking AVAudioPlayer.
             let response = HTTPURLResponse(
                 url: request.url!,
                 statusCode: 200,
@@ -82,7 +87,8 @@ struct EncoderStrategyTests {
         let encoder = CloudEncoder(
             apiKey: "bk_secret_abc",
             endpoint: URL(string: "https://api.beeping.io")!,
-            session: mockedSession()
+            session: mockedSession(),
+            playbackSink: NoopPlaybackSink()
         )
         try await encoder.encode(samplePayload(key: "abcde", decoded: "abcde0001"))
 

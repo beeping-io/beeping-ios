@@ -186,7 +186,7 @@ public actor BeepingClient {
     /// let client = BeepingClient.local().build()
     /// ```
     public static func local() -> BeepingClientBuilder {
-        BeepingClientBuilder(encoderFactory: { wrapper in LocalEncoder(wrapper: wrapper) })
+        BeepingClientBuilder(encoderFactory: { wrapper, _ in LocalEncoder(wrapper: wrapper) })
     }
 
     /// Returns a builder configured to emit through the **cloud**
@@ -203,7 +203,11 @@ public actor BeepingClient {
     ///   - apiKey: server-issued API key (sent as `X-API-Key` header).
     ///   - endpoint: base URL of the `beepbox-server` instance.
     public static func cloud(apiKey: String, endpoint: URL) -> BeepingClientBuilder {
-        BeepingClientBuilder(encoderFactory: { _ in CloudEncoder(apiKey: apiKey, endpoint: endpoint) })
+        BeepingClientBuilder(encoderFactory: { wrapper, mode in
+            CloudEncoder(
+                apiKey: apiKey, endpoint: endpoint,
+                mode: mode, loopbackWrapper: wrapper)
+        })
     }
 
     /// Helper to factor out the closure boilerplate used by both inits.
