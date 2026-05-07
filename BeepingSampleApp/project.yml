@@ -44,16 +44,6 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
-    preBuildScripts:
-      - name: Generate Secrets.swift
-        script: |
-          set -euo pipefail
-          "${SRCROOT}/Scripts/generate-secrets.sh" "${CONFIGURATION}"
-        outputFiles:
-          - $(SRCROOT)/Sources/Generated/Secrets.swift
-        basedOnDependencyAnalysis: false
-        runOnlyWhenInstalling: false
-
   BeepingSampleAppUITests:
     type: bundle.ui-testing
     platform: iOS

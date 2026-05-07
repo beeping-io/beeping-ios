@@ -2,18 +2,19 @@ import Foundation
 import SwiftUI
 import Beeping
 
+/// Listener-only state for the sample app. The send path moved out of
+/// the app entirely (BEE-2220): a Mac-side `scripts/send-beep.sh` calls
+/// `beepbox-server`, gets a WAV, and plays it through the host speakers.
+/// The simulator/device's mic captures it and the SDK's `BeepingClient`
+/// decodes — that's the round-trip we demonstrate. The SDK still ships
+/// the encode side (`BeepingClient.local()` / `.cloud(...)` factories
+/// remain in the public API) — this sample just exercises decode.
 @MainActor
 final class AppModel: ObservableObject {
 
-    @Published var environment: AppEnvironment = .local {
-        didSet { rebuildClient() }
-    }
-
     @Published private(set) var client: BeepingClient?
     @Published private(set) var lastDecoded: BeepingPayload?
-    @Published private(set) var lastSendError: String?
     @Published private(set) var lastDecodeStatus: DecodeStatus = .idle
-    @Published private(set) var lastSent: String?
     @Published private(set) var isListening: Bool = false
     @Published private(set) var logs: [LogEntry] = []
 
@@ -29,12 +30,9 @@ final class AppModel: ObservableObject {
         if let oldClient = client {
             Task { await oldClient.close() }
         }
-        client = environment.makeClient()
+        client = BeepingClient.local().build()
         isListening = false
-        append(.info, "env=\(environment.rawValue) client=\(client == nil ? "nil" : "ok")")
-        // Auto-start the listener — the test surface is "always listening".
-        // Send-then-decode is the natural loop and the user shouldn't have
-        // to toggle it manually.
+        append(.info, "client=\(client == nil ? "nil" : "ok")")
         if client != nil {
             startListening()
         }
@@ -46,7 +44,7 @@ final class AppModel: ObservableObject {
         isListening = true
         // Optimistically reflect the listening state. The C engine only
         // emits `.started` once it processes its first token, which never
-        // happens in an idle simulator.
+        // happens in an idle simulator without input.
         if lastDecodeStatus == .idle { lastDecodeStatus = .listening }
         append(.info, "listening started")
         listenTask = Task { [weak self, client] in
@@ -65,32 +63,6 @@ final class AppModel: ObservableObject {
         append(.info, "listening stopped")
     }
 
-    func send(_ text: String) async {
-        guard let client else { return }
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        let payload = BeepingPayload(
-            key: "samp1",
-            decodedString: trimmed.padding(toLength: 9, withPad: " ", startingAt: 0),
-            mode: Int(BeepingMode.audible.rawValue),
-            timestamp: Int(Date().timeIntervalSince1970),
-            confidence: 1.0,
-            confidenceError: 0.0,
-            confidenceNoise: 0.0,
-            receivedBeepsVolume: 0.0
-        )
-        append(.info, "send → \"\(trimmed)\" via \(environment.rawValue)")
-        do {
-            try await client.send(payload)
-            lastSent = trimmed
-            lastSendError = nil
-            append(.info, "sent OK")
-        } catch {
-            lastSendError = "\(error)"
-            append(.error, "send failed: \(error)")
-        }
-    }
-
     private func handle(_ event: BeepingClient.Event) {
         switch event {
         case .started:
@@ -99,7 +71,10 @@ final class AppModel: ObservableObject {
         case .decoded(let payload):
             lastDecoded = payload
             lastDecodeStatus = .decoded
-            append(.info, "event: decoded \"\(payload.decodedString)\" conf=\(String(format: "%.2f", payload.confidence))")
+            append(
+                .info,
+                "event: decoded \"\(payload.decodedString)\" "
+                    + "conf=\(String(format: "%.2f", payload.confidence))")
         case .failed(let err):
             // The decoder emits endBad whenever the mic captures audio with
             // valid start/end markers but invalid payload (very common in

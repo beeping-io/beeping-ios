@@ -1,17 +1,19 @@
 import SwiftUI
 
+/// Listener-only sample app (BEE-2220). Beeps are produced by a Mac-side
+/// `scripts/send-beep.sh` that hits beepbox-server and plays the WAV
+/// through the host speakers; this app just demonstrates the SDK's
+/// decode pipeline picking them up via mic.
 struct RootView: View {
     @EnvironmentObject var model: AppModel
     @State private var showingDebug = false
     @State private var logoTapCount = 0
     @State private var logoTapResetTask: Task<Void, Never>?
-    @State private var sendText: String = "hello"
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Form {
-                sendSection
                 listenerSection
                 activitySection
             }
@@ -34,7 +36,10 @@ struct RootView: View {
             Text("Beeping Sample")
                 .font(.headline)
             Spacer()
-            EnvPicker()
+            Text("listener")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("mode_label")
         }
         .padding(.horizontal)
         .padding(.vertical, 10)
@@ -43,46 +48,6 @@ struct RootView: View {
             Rectangle()
                 .fill(Color(.separator))
                 .frame(height: 0.5)
-        }
-    }
-
-    // MARK: - Send
-
-    private var sendSection: some View {
-        Section {
-            TextField("Text to encode", text: $sendText)
-                .textInputAutocapitalization(.never)
-                .accessibilityIdentifier("send_text_field")
-            Button {
-                Task { await model.send(sendText) }
-            } label: {
-                HStack {
-                    Spacer()
-                    Image(systemName: "paperplane.fill")
-                    Text("Send")
-                        .fontWeight(.semibold)
-                    Spacer()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(model.client == nil || sendText.trimmingCharacters(in: .whitespaces).isEmpty)
-            .accessibilityIdentifier("send_button")
-            if let last = model.lastSent {
-                LabeledContent("Last sent", value: last)
-                    .font(.system(.subheadline, design: .monospaced))
-                    .accessibilityIdentifier("last_sent_label")
-            }
-            if let err = model.lastSendError {
-                LabeledContent("Last send error") {
-                    Text(err)
-                        .foregroundStyle(.red)
-                        .font(.system(.caption2, design: .monospaced))
-                        .multilineTextAlignment(.trailing)
-                }
-                .accessibilityIdentifier("last_error_label")
-            }
-        } header: {
-            sectionHeader(symbol: "paperplane.fill", title: "Send")
         }
     }
 
