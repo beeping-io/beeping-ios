@@ -1,0 +1,15 @@
+# Podfile — Beeping iOS SDK CocoaPods consumer smoke test (BEE-81).
+#
+# Validates `Beeping.podspec` end-to-end: pod install resolves the
+# vendored xcframework, and the generated workspace builds for the
+# iOS Simulator. The path consumption (`:path => '../..'`) is the
+# local-development flow used by Flutter plugins under active
+# integration; the production-time `:git => ..., :tag => ...`
+# consumption lands when BEE-82 publishes signed tagged releases.
+
+platform :ios, '15.0'
+use_frameworks!
+
+target 'PodConsumer' do
+  pod 'Beeping', :path => '../..'
+end

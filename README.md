@@ -69,6 +69,43 @@ A minimal smoke consumer lives in [`Examples/SPMConsumer`](Examples/SPMConsumer)
 
 ---
 
+## 🍫 Installing via CocoaPods
+
+Secondary distribution (BEE-81) — primarily for Flutter plugins and React
+Native modules whose tooling still expects CocoaPods. `Beeping.podspec`
+lives at the repo root and vendors the same XCFramework SPM consumes.
+
+For local development against this repository:
+
+1. Build the XCFramework (same as SPM):
+
+   ```bash
+   ./build.sh
+   ```
+
+2. Reference the pod by path in your `Podfile`:
+
+   ```ruby
+   platform :ios, '15.0'
+   use_frameworks!
+
+   target 'YourApp' do
+     pod 'Beeping', :path => '../beeping-ios'
+   end
+   ```
+
+3. `pod install`, open the generated `.xcworkspace`, and `import Beeping`.
+
+A minimal smoke consumer lives in [`Examples/PodConsumer`](Examples/PodConsumer) —
+run `./scripts/test-pod-consumer.sh` from the repo root to verify the
+podspec end to end (build XCFramework → xcodegen → pod install →
+xcodebuild build).
+
+> Trunk publication (`pod 'Beeping'` without a path) lands in **BEE-82**
+> alongside the SPM `url:checksum:` switch.
+
+---
+
 ## 🎯 Target API (post-Phase 9)
 
 ```swift
