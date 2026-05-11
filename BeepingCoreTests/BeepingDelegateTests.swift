@@ -42,7 +42,7 @@ struct BeepingDelegateTests {
     /// preserved) but rotate delegates so they don't interfere.
     private func freshDelegate() -> SpyDelegate {
         let delegate = SpyDelegate()
-        Beeping.shared().delegate = delegate
+        BeepingLegacy.shared().delegate = delegate
         return delegate
     }
 
@@ -61,7 +61,7 @@ struct BeepingDelegateTests {
             receivedBeepsVolume: -5
         )
 
-        Beeping.shared()._injectEventForTesting(event)
+        BeepingLegacy.shared()._injectEventForTesting(event)
 
         #expect(delegate.eventCalls == 1)
         #expect(delegate.beepIdCalls == 1)
@@ -86,7 +86,7 @@ struct BeepingDelegateTests {
             receivedBeepsVolume: 0
         )
 
-        Beeping.shared()._injectEventForTesting(event)
+        BeepingLegacy.shared()._injectEventForTesting(event)
 
         #expect(delegate.eventCalls == 1)
         #expect(delegate.beepIdCalls == 0)
@@ -108,7 +108,7 @@ struct BeepingDelegateTests {
             receivedBeepsVolume: 0
         )
 
-        Beeping.shared()._injectEventForTesting(event)
+        BeepingLegacy.shared()._injectEventForTesting(event)
 
         #expect(delegate.eventCalls == 1)
         #expect(delegate.beepIdCalls == 0)
@@ -130,7 +130,7 @@ struct BeepingDelegateTests {
             receivedBeepsVolume: 0
         )
 
-        Beeping.shared()._injectEventForTesting(event)
+        BeepingLegacy.shared()._injectEventForTesting(event)
 
         #expect(delegate.eventCalls == 1)
         #expect(delegate.beepIdCalls == 0)

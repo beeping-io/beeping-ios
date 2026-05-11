@@ -1,14 +1,25 @@
 #!/usr/bin/env bash
+#
+# Build dist/Beeping.xcframework from Beeping.xcodeproj.
+#
+# Output is a self-contained XCFramework with two slices:
+#   - ios-arm64                       (device)
+#   - ios-arm64_x86_64-simulator      (simulator)
+#
+# `BeepingCore.xcframework` (the static C engine) lives in Vendor/ and
+# is wired into the project at build time — the Beeping.framework binary
+# embeds its symbols, so SPM/CocoaPods consumers don't need to link it
+# separately. That swap happened in BEE-79 (libBeepingCoreUniversal.a →
+# xcframework); the legacy `-lBeepingCoreUniversal` EXTRA_LDFLAGS is gone.
+#
 
 set -euo pipefail
 
-# Configuración (puedes sobreescribir vía variables de entorno)
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_PATH="${PROJECT_PATH:-Beeping.xcodeproj}"
 SCHEME="${SCHEME:-Beeping}"
 CONFIGURATION="${CONFIGURATION:-Release}"
 FRAMEWORK_NAME="${FRAMEWORK_NAME:-Beeping}"
-EXTRA_LDFLAGS="${EXTRA_LDFLAGS:--L${ROOT_DIR} -lBeepingCoreUniversal}"
 BUILD_ROOT="$ROOT_DIR/build"
 ARCHIVES_DIR="$BUILD_ROOT/archives"
 DIST_DIR="$ROOT_DIR/dist"
@@ -30,10 +41,6 @@ fi
 
 if [ -z "$SCHEME" ]; then
   abort "SCHEME no puede estar vacío. Define la variable de entorno SCHEME."
-fi
-
-if [ ! -f "$ROOT_DIR/libBeepingCoreUniversal.a" ] && [ "$EXTRA_LDFLAGS" = "-L${ROOT_DIR} -lBeepingCoreUniversal" ]; then
-  echo "Aviso: libBeepingCoreUniversal.a no encontrada en la raíz. Ajusta EXTRA_LDFLAGS o coloca la librería."
 fi
 
 echo "==> Configuración"
@@ -61,7 +68,6 @@ COMMON_ARCHIVE_ARGS=(
   -configuration "$CONFIGURATION"
   SKIP_INSTALL=NO
   BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
-  "OTHER_LDFLAGS=$EXTRA_LDFLAGS"
 )
 
 echo "==> Archivando (iOS device)"

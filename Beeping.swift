@@ -18,6 +18,16 @@
 //  `BeepingClient` type with `AsyncStream<BeepingEvent>`; this class
 //  persists alongside it for backward ObjC compat through 0.x.
 //
+//  ## Swift class name (BEE-80)
+//
+//  The Swift class is `BeepingLegacy`, not `Beeping`. A class whose
+//  name matches its module breaks `library evolution` swiftinterface
+//  generation in any consumer that does `import Beeping`: nested types
+//  like `Beeping.TelemetryEvent.ErrorCategory` get reparsed as
+//  *member type of class `Beeping`*, which fails. ObjC consumers still
+//  see `Beeping` via `@objc(Beeping)`; Swift consumers transitioning
+//  from the legacy singleton spell it `BeepingLegacy.shared()`.
+//
 //  ## Concurrency model
 //
 //  The class is `@MainActor`-isolated. Internally it owns a
@@ -32,16 +42,16 @@
 import Foundation
 
 @MainActor
-@objc(Beeping)
-public final class Beeping: NSObject {
+@objc(BeepingLegacy)
+public final class BeepingLegacy: NSObject {
 
     // MARK: - Singleton
 
-    private static let _shared = Beeping()
+    private static let _shared = BeepingLegacy()
 
-    /// The shared instance. ObjC: `[Beeping instance]`. Swift: `Beeping.shared()`.
+    /// The shared instance. ObjC: `[Beeping instance]`. Swift: `BeepingLegacy.shared()`.
     @objc(instance)
-    public class func shared() -> Beeping {
+    public class func shared() -> BeepingLegacy {
         return _shared
     }
 

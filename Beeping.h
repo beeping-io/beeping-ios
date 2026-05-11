@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class Beeping;               // defined in Beeping.swift / Beeping-Swift.h
+@class BeepingLegacy;         // defined in Beeping.swift / Beeping-Swift.h (renamed in BEE-80 to unshadow the module)
 @class BeepingEvent;          // defined in BeepingEvent.swift / Beeping-Swift.h
 @protocol beepingDelegate;    // defined in BeepingDelegate.swift / Beeping-Swift.h
 

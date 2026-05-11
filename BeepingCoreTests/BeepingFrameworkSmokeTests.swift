@@ -21,16 +21,16 @@ struct BeepingFrameworkSmokeTests {
 
     @Test("Singleton resolves to a non-nil instance")
     func singletonExists() {
-        let instance = Beeping.shared()
-        // `Beeping.shared()` returns `Beeping`, not `Beeping?` — there's
+        let instance = BeepingLegacy.shared()
+        // `BeepingLegacy.shared()` returns `Beeping`, not `Beeping?` — there's
         // nothing to compare; reaching here without crashing is the test.
         _ = instance
     }
 
     @Test("Singleton is stable (same identity across calls)")
     func singletonIsStable() {
-        let a = Beeping.shared()
-        let b = Beeping.shared()
+        let a = BeepingLegacy.shared()
+        let b = BeepingLegacy.shared()
         #expect(a === b)
     }
 }

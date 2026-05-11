@@ -34,12 +34,44 @@ implemented** — track Phase 9 progress for availability.
 
 ---
 
+## 📦 Installing via Swift Package Manager
+
+The SDK ships as a Swift Package primary distribution (BEE-80). The
+package vends a single `Beeping` library backed by a pre-built
+`.binaryTarget` — consumers don't need to compile the C engine or
+ObjC++ bridge themselves.
+
+For local development against this repository:
+
+1. Clone the repo and build the XCFramework:
+
+   ```bash
+   ./build.sh
+   ```
+
+   That populates `dist/Beeping.xcframework` (gitignored, ~5 MB), which
+   is what the root `Package.swift` resolves with its `.binaryTarget`.
+
+2. Add a local-path dependency from your consumer:
+
+   ```swift
+   .package(path: "../beeping-ios")
+   ```
+
+   Then add `.product(name: "Beeping", package: "beeping-ios")` to your
+   target's dependencies and `import Beeping`.
+
+A minimal smoke consumer lives in [`Examples/SPMConsumer`](Examples/SPMConsumer) — run
+`./scripts/test-spm-consumer.sh` from the repo root to build it end to end.
+
+> Remote `url:checksum:` consumption (i.e. `.package(url: "https://github.com/beeping-io/beeping-ios", from: ...)`)
+> lands in **BEE-82** once release-please publishes signed GitHub Releases.
+
+---
+
 ## 🎯 Target API (post-Phase 9)
 
 ```swift
-// Swift Package Manager dependency (target — not yet published)
-// .package(url: "https://github.com/beeping-io/beeping-ios", from: "0.0.0")
-
 import Beeping
 
 let client = BeepingClient(
