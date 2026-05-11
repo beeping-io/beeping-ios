@@ -15,14 +15,14 @@
 #
 # Usage:
 #
-#   ./scripts/verify-release.sh v0.0.1
+#   ./scripts/verify-release.sh v0.0.0
 #
 
 set -euo pipefail
 
 TAG="${1:-}"
 if [[ -z "$TAG" ]]; then
-  echo "usage: $0 <tag, e.g. v0.0.1>" >&2
+  echo "usage: $0 <tag, e.g. v0.0.0>" >&2
   exit 2
 fi
 

@@ -7,14 +7,18 @@ name: Release please
 # the matching GitHub Release, which then triggers `release.yml`
 # downstream (build + sign + upload assets).
 #
-# 0.x rule (per ~/.claude/CLAUDE.md):
-#   No salto automático a 1.0.0. `bump-minor-pre-major` y
-#   `bump-patch-for-minor-pre-major` are set so:
-#     - feat:        → minor bump within 0.x (0.0.0 → 0.1.0)
-#     - fix:         → patch bump (0.0.0 → 0.0.1)
-#     - feat!: / BREAKING CHANGE → minor (NOT major) while in 0.x.
-#   Salto a 1.0.0 cuando llegue debe ser `Release-As: 1.0.0` explícito
-#   en un commit message — coordinado con el resto del ecosistema.
+# 0.x rule (per ~/.claude/CLAUDE.md + per-project decision 2026-05-11):
+#   - First release-please run proposes v0.0.0 (initial-version in config).
+#   - Every subsequent 0.x release is a MINOR bump:
+#       0.0.0 → 0.1.0 → 0.2.0 → ...
+#     because `bump-patch-for-minor-pre-major: false` makes `feat:` go
+#     minor instead of patch, and `bump-minor-pre-major: true` makes
+#     BREAKING go minor instead of major.
+#   - `fix:` would naturally go patch (0.x.0 → 0.x.1); in practice we
+#     only ship feat-containing releases during 0.x, so all releases
+#     end up 0.X.0.
+#   - Salto a 1.0.0 = manual `Release-As: 1.0.0` footer in a commit,
+#     coordinated with the rest of the ecosystem, AFTER device QA.
 
 on:
   push:

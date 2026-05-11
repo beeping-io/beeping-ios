@@ -116,7 +116,7 @@ artifact provenance with the bundled signature alone.
 Quick check:
 
 ```bash
-./scripts/verify-release.sh v0.0.1
+./scripts/verify-release.sh v0.0.0
 ```
 
 That script downloads the release assets, confirms the SHA256
