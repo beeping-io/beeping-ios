@@ -13,22 +13,22 @@
 | **Project start** | 2026-04-28 (Tue) |
 | **Velocity assumed** | 8 story points / working day |
 | **Risk margin** | 20% (i.e. 10 SP·days planned as 12 calendar days) |
-| **Total SP committed** | 99 SP across 17 tasks (BEE-2050 scope addition) |
-| **Raw effort** | 99 SP / 8 SP·day = ~12.4 working days |
-| **Effort with margin** | ~14.9 working days → **15 working days rounded** |
+| **Total SP committed** | 104 SP across 18 tasks (BEE-2050 + BEE-2220 scope additions) |
+| **Raw effort** | 104 SP / 8 SP·day = ~13.0 working days |
+| **Effort with margin** | ~15.6 working days → **16 working days rounded** |
 | **Estimated end date** | **2026-05-18 (Mon)** |
-| **Global status** | ✅ En tiempo (buffer ~6 días) |
-| **Last update** | 2026-05-04 (Closed BEE-78 — sample app SwiftUI + SDK builder fix + UX 3 rondas; scope addition BEE-2050 +5 SP CloudEncoder WAV playback; net delta 0 days) |
+| **Global status** | ✅ En tiempo (buffer ~5 días) |
+| **Last update** | 2026-05-11 (Closed BEE-2050 + BEE-2220 — CloudEncoder WAV playback + sample app QA pivot; net delta 0 days) |
 
 ---
 
 ## 📍 Active milestone — 🍎 Phase 9 — beeping-ios (Swift 6)
 
 - **Linear ID**: `3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
-- **Story points**: 99 (17 tasks; **63 SP closed**, 36 SP remaining; BEE-2050 scope addition)
+- **Story points**: 104 (18 tasks; **73 SP closed**, 31 SP remaining; BEE-2050 + BEE-2220 scope additions)
 - **Start**: 2026-04-28 (Tue)
 - **End estimate**: 2026-05-18 (Mon)
-- **Status**: ✅ En tiempo (12/17 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79; BEE-76 deferred to end-of-milestone; BEE-2050 added day 5 as scope addition for CloudEncoder WAV playback follow-up)
+- **Status**: ✅ En tiempo (14/18 tasks closed — BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79 + BEE-2050 + BEE-2220; BEE-76 deferred to end-of-milestone)
 
 ### Per-task projections
 
@@ -54,8 +54,9 @@
 | 14 | BEE-80 | 8 | 📦 SPM Package.swift + XCFramework firmado | 2026-05-15 | 2026-05-18 | ⚠️ |
 | 15 | BEE-81 | 5 | 🍫 CocoaPods podspec | 2026-05-18 | 2026-05-18 | ⚠️ |
 | 16 | BEE-82 | 5 | 🚀 release-please + cosign + GH Releases | 2026-05-18 | 2026-05-18 | ⚠️ |
-| 17 | BEE-2050 | 5 | 🔊 CloudEncoder WAV playback (consume server response audio) | 2026-05-05 | 2026-05-06 | ✅ |
-|   | **99** | | | | | |
+| 17 | BEE-2050 | 5 | 🔊 CloudEncoder WAV playback (consume server response audio) | 2026-05-05 | 2026-05-06 | ✅ **DONE** |
+| 18 | BEE-2220 | 5 | 🧪 QA pivot: listener-only sample app + send-beep.sh host-side encoder | 2026-05-07 | 2026-05-11 | ✅ **DONE** |
+|   | **104** | | | | | |
 
 ### Risk indicators per task
 
@@ -101,6 +102,8 @@ P = probability · I = impact · 🟢 = on track · 🟡 = monitor · 🔴 = act
 | 2026-05-01 | 50 / 94 | 44 | +2.0 (day 4 cont.) | BEE-77 closed in plan — SwiftLint + swift-format CI gates. Auto-formatted 16 .swift files. BEE-76 reordered to **end-of-milestone** (after BEE-79+80 unblock SPM deps + simulator runs). Cumulative velocity = 12.5 SP/día |
 | 2026-05-01 | 55 / 94 | 39 | +5.0 (day 4 cont.) | BEE-79 closed **partial** in day 4 (5ª task del día — record). Pivot estratégico: cross-compile local de `beeping-core` C++ → 3 slices iOS → `BeepingCore.xcframework` vendoreado en `Vendor/`, libBeepingCoreUniversal.a (18 MB) eliminada. Simulator arm64 unblocked. **BEE-78 (sample app) marked OUT OF SCOPE per founder — moves to separate tutorials repo.** Cumulative velocity = **13.75 SP/día across 4 working days** — buffer ~6+ días. |
 | 2026-05-04 | 63 / 99 | 36 | 8.0 (day 5) | BEE-78 closed in day 5. Sample app SwiftUI + env picker Local/Dev/Prod + 5-tap debug console + brand red `#ed1c24`. **SDK builder bug found and fixed**: `BeepingClient.local().build()` creaba dos `BeepingCoreWrapper` distintos (encoder sin configurar → SIGSEGV). Fix: factory recibe el wrapper compartido. **Scope addition BEE-2050 (+5 SP)**: CloudEncoder WAV playback como follow-up para cerrar el gap de BEE-73 partial. Total SP went 94→99, tasks 16→17, closed 11→12. Cumulative velocity = **12.6 SP/día across 5 working days** — buffer ~6 días, fin proyectado 2026-05-08 (vs plan 2026-05-18). |
+| 2026-05-06 | 68 / 99 | 31 | 5.0 (day 6) | BEE-2050 closed. **CloudEncoder WAV playback**: `WAVPlaybackSink` protocol + `AVAudioPlayerSink` default (forces `.overrideOutputAudioPort(.speaker)` to bypass `.playAndRecord` receiver policy), mode propagation through `BeepingClientBuilder` to server enum (otherwise defaults to inaudible 17.8 kHz), `BeepingCoreWrapper.decodeLoopback(wav:mode:)` with dedicated `BCNativeCore` for in-app loopback decode bypassing speaker→mic acoustic loop. **Defensive fix in `LocalEncoder.encode`**: validates 9 base32 chars before C engine (ReedSolomon SIGSEGVs on bad input). 3 new unit tests (`CloudEncoderPlaybackTests`). Cumulative velocity = **11.3 SP/día across 6 working days**, buffer ~7 días. |
+| 2026-05-11 | 73 / 104 | 31 | 5.0 (day 9) | BEE-2220 closed. **QA pivot — listener-only sample app + `send-beep.sh` host-side encoder + cloud round-trip integration tests**. Sample app drops Send UI, env picker, secrets generator; auto-listens on launch. `scripts/send-beep.sh` (bash 3.2 compat) does 9 reps × volume 0.1→0.9 calling beepbox-server + afplay. Critical addition: 3 `CloudRoundTripIntegrationTests` that POST to `/v1/encode` for each of 3 modes (audible/inaudible/all) and assert `decodeLoopback` reconstructs the key — proves SDK end-to-end without microphone or speaker. Device QA deferred (no hardware available). Scope addition BEE-2220 (+5 SP): total 99→104, tasks 17→18, closed 13→14. Cumulative velocity = **8.1 SP/día across 9 working days**, buffer ~5 días (lost 1 day on mic permission debugging that turned out to be a sim limitation, not a SDK bug). |
 
 This table grows with every closed task. Velocity is recalculated as
 `closed_SP / working_days_elapsed` and feeds the recalc of the table above.

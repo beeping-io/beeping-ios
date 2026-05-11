@@ -12,16 +12,36 @@
 - **Fecha de inicio del proyecto**: 2026-04-28
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
-- **Estado global**: ✅ En tiempo (buffer ~6 días)
-- **Última actualización**: 2026-05-04 (trigger: Closed BEE-78 + scope addition BEE-2050 +5 SP; net delta 0 days)
+- **Estado global**: ✅ En tiempo (buffer ~5 días)
+- **Última actualización**: 2026-05-11 (trigger: Closed BEE-2050 + BEE-2220; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 99 (17 tasks; 63 SP closed, 36 SP remaining; BEE-76 deferred + BEE-2050 added) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 73 SP closed, 31 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-11] - Closed BEE-2050 + BEE-2220 (CloudEncoder WAV playback + sample app QA pivot)
+
+**Trigger detallado**: Doble cierre tras 5 días de trabajo continuo sobre el cloud-mode QA. BEE-2050 (CloudEncoder WAV playback) entregada con 3 piezas: `WAVPlaybackSink` protocol con default `AVAudioPlayerSink` que fuerza `AVAudioSession.overrideOutputAudioPort(.speaker)` para sortear la policy de `.playAndRecord` que defaulta al receiver; mode propagation completa del builder al wire (sin esto el server defaultea a `inaudible` 17.8 kHz, inaudible en altavoces de Mac); y `BeepingCoreWrapper.decodeLoopback(wav:mode:)` con `BCNativeCore` dedicado para in-app loopback decode (descubierto necesario al ver que el simulator self-loop no funciona). Bonus: defensive validation en `LocalEncoder.encode` para evitar SIGSEGV del C engine ReedSolomon con input non-base32 (9 chars `[0-9a-v]` requeridos).
+
+**BEE-2220 (QA pivot)**: durante el QA de BEE-2050 descubrimos que el simulator no enruta speaker→mic acústicamente (su mic captura del Mac mic input device, no hay loopback automático). Ni single-sim, ni dual-sim. Pivotamos a 3 entregables:
+1. **Sample app cleanup**: drop Send UI + env picker + secrets generator + base32 helpers. Auto-listen on launch. Single-screen Form con Listener + Activity sections.
+2. **`scripts/send-beep.sh`**: host-side encoder/player con args `--mode|--env|--key|--target`, 9 reps × volumen rampeado 0.1→0.9, gap 1s. POST a beepbox + `afplay`. Compatible bash 3.2 (mktemp source vs process substitution porque macOS ships bash 3.2).
+3. **`CloudRoundTripIntegrationTests`** (3 tests): para cada uno de los 3 server modes, POST → recibe WAV → feed a `decodeLoopback` → asserta `.endOk` con el mismo key y `confidence > 0.5`. Demuestra determinísticamente que el SDK funciona end-to-end **sin micrófono ni altavoz** — el path acústico queda para QA con device físico cuando esté disponible.
+
+**Net delta global**: 0 días. Cierre BEE-2050 + BEE-2220 estuvo en plan (estimación combinada 10 SP, real ~10 SP). Scope total Phase 9: 94 → 99 → 104 SP (dos additions de 5 SP). Buffer reducido de 6 → 5 días por scope addition BEE-2220, pero sigue holgado vs fin proyectado 2026-05-18.
+
+**Milestones afectados**:
+- 🍎 Phase 9: 12/17 → 14/18 tasks (Done = BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79 + BEE-2050 + BEE-2220; pendientes BEE-76 (deferred) + BEE-80 + BEE-81 + BEE-82). 63 → 73 SP closed.
+
+**Cambios de estado de riesgo**: ninguno. R1-R8 sin actualización.
+
+**Pendiente trasladado a roadmap externo**: device-physical QA del listener (loopback acústico speaker→mic en aire). Bloqueado por hardware availability. No bloquea otras tareas — `send-beep.sh --target device` queda listo para esa fase.
+
+---
 
 ### [2026-05-04] - Closed BEE-78 + scope addition BEE-2050 (CloudEncoder WAV playback)
 **Trigger detallado**: BEE-78 (📱 Sample app SwiftUI + debug console) cerrada en day 5. Sample app integration-test surface entregado: target `BeepingSampleApp` (xcodegen-managed) en `Beeping.xcworkspace`, env picker Local/Dev/Prod, build phase script que inyecta `.env.local` → `Sources/Generated/Secrets.swift` (gitignored, `#if DEBUG` only, blanks en Release), debug console activable con 5-tap on logo, brand color `#ed1c24` sincronizado desde `beeping-www/src/app/globals.css`.
