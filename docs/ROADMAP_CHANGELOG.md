@@ -13,15 +13,45 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo (buffer ~5 días)
-- **Última actualización**: 2026-05-11 (trigger: Closed BEE-81; net delta 0 days)
+- **Última actualización**: 2026-05-11 (trigger: Closed BEE-82; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 86 SP closed, 18 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 91 SP closed, 13 SP remaining; only BEE-76 left as milestone closer) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-11] - Closed BEE-82 (release-please + cosign + GitHub Releases pipeline)
+
+**Trigger detallado**: BEE-82 entregado mismo día — **4 closures en un solo working day** (BEE-2050 + BEE-2220 + BEE-80 + BEE-81 + BEE-82). Release pipeline completo configurado + validado syntactically:
+
+1. **release-please** con `initial-version: 0.0.0`, `bump-minor-pre-major: true`, `bump-patch-for-minor-pre-major: false`. Per per-project decision 2026-05-11 (founder-confirmed): primera release v0.0.0; subsequent 0.x releases = minor bumps (v0.1.0, v0.2.0, ...); salto a 1.0.0 = `Release-As: 1.0.0` manual coordinado con ecosistema post-device-QA.
+
+2. **Two-workflow flow**: `release-please.yml` (push to main → release PR) + `release.yml` (release.published → build XCFramework via `./build.sh` → zip + SHA256 → cosign sign-blob keyless OIDC con `id-token: write` permission → syft CycloneDX SBOM → `gh release upload` 4 assets).
+
+3. **Consumer verification**: `scripts/verify-release.sh <tag>` — `cosign verify-blob --certificate-identity-regexp` pinned a `https://github.com/beeping-io/beeping-ios/.github/workflows/release.yml@refs/tags/v.*`. Anyone can verify; forks fail the regexp.
+
+4. **VERSION + Beeping.podspec compat**: VERSION ganó marker `x-release-please-version`; podspec lee `.strip.split.first` para tolerar el comentario sin romper `s.version`.
+
+5. **README** "🔏 Verifying releases" section.
+
+**Validación local**: actionlint clean en ambos workflows; cosign smoke (file-based key proxy del keyless OIDC) round-trip OK; podspec parsing post-marker `\"version\": \"0.0.0\"` ✅.
+
+**Net delta**: 0 días. Estimación 5 SP, real ~2h (un commit + un fix para versioning rule del founder). Velocidad acumulada: **10.1 SP/día**. Buffer ~6 días vs fin proyectado 2026-05-18.
+
+**Pendiente trasladado a milestone close (founder action)**:
+- Primera publicación real v0.0.0 end-to-end smoke = sucede cuando merges `milestone/phase-9 → develop → main` → release-please opens v0.0.0 PR → founder merges → tag + Release dispara release.yml → assets publicados + firmados.
+- CocoaPods Trunk push (separate setup: `pod trunk register` + `COCOAPODS_TRUNK_TOKEN` secret).
+- Package.swift switch `path:` → `url:checksum:` (post-first-release manual update).
+
+**Milestones afectados**:
+- 🍎 Phase 9: 16/18 → 17/18 tasks (Done = BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79 + BEE-80 + BEE-81 + BEE-82 + BEE-2050 + BEE-2220; **only BEE-76 left**). 86 → 91 SP closed.
+
+**Cambios de estado de riesgo**: R2 (Apple notarization cost) sigue resuelto — cosign keyless covers supply chain en 0.x, Apple cert se posterga a 1.0.0 transition. Sin nuevos riesgos.
+
+---
 
 ### [2026-05-11] - Closed BEE-81 (CocoaPods secondary distribution)
 
