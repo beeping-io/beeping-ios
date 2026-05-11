@@ -13,15 +13,34 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo (buffer ~5 días)
-- **Última actualización**: 2026-05-11 (trigger: Closed BEE-2050 + BEE-2220; net delta 0 days)
+- **Última actualización**: 2026-05-11 (trigger: Closed BEE-80; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 73 SP closed, 31 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 81 SP closed, 23 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-11] - Closed BEE-80 (SPM primary distribution + XCFramework + legacy class rename)
+
+**Trigger detallado**: BEE-80 entregado mismo día que BEE-2050 + BEE-2220, en una sesión productiva post-pivot. 3 piezas:
+
+1. **`Package.swift`** at root con `.binaryTarget(name: \"Beeping\", path: \"dist/Beeping.xcframework\")`. Tools version 5.9, platform `.iOS(.v15)`, library product `Beeping`. Path-based variant para consumo local; el `url:checksum:` (con cosign-signed release) explícitamente diferido a BEE-82 según plan original.\n\n2. **`Examples/SPMConsumer/`** — biblioteca consumidora mínima que importa `Beeping` y referencia tipos públicos (`BeepingClient.local().mode(.audible).build()`, `BeepingMode.audible`, `BeepingError.audioSessionInterrupted`, etc). El build es el gate: si la swiftinterface del binary target rompe, este no compila.\n\n3. **`scripts/test-spm-consumer.sh`** — script end-to-end: `./build.sh` → `swift package describe` → `xcodebuild build -scheme SPMConsumer -destination 'generic/platform=iOS Simulator'`. ~31s total. Verifica que el XCFramework es consumible desde fuera del Xcode project.
+
+**Issue crítico fixed mid-flight**: la clase Swift `Beeping` (legacy ObjC singleton facade) compartía nombre con el módulo. Para SPM consumers via `import Beeping` + library evolution, la swiftinterface generation fallaba con `'TelemetryEvent' is not a member type of class 'Beeping.Beeping'` — el parser interpretaba `Beeping.X` como `(class Beeping).X`, no como `(module Beeping).X`. Solución: rename completo `Beeping` → `BeepingLegacy` (Swift class + `@objc(BeepingLegacy)` + umbrella header `@class BeepingLegacy;`). ObjC consumers que dependían de `[Beeping instance]` (none active en este repo) deben migrar a `[BeepingLegacy instance]`. Tests `BeepingDelegateTests` + `BeepingFrameworkSmokeTests` actualizados.
+
+**`build.sh` cleanup**: dropped el legacy `EXTRA_LDFLAGS=-lBeepingCoreUniversal` que ya no aplicaba (BEE-79 cambió a `BeepingCore.xcframework` wireada via project.pbxproj). El xcframework output es self-contained — verified via `nm`: `_BEEPING_Configure`, `_BEEPING_EncodeDataToAudioBuffer`, `_BEEPING_DecodeAudioBuffer` aparecen como `T` en el binario.
+
+**Net delta**: 0 días. Estimación 8 SP, real ~5h (rename ate ~1h). Velocidad acumulada: 9.0 SP/día. Buffer ~5-6 días vs fin proyectado 2026-05-18.
+
+**Milestones afectados**:
+- 🍎 Phase 9: 14/18 → 15/18 tasks (Done = BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79 + BEE-80 + BEE-2050 + BEE-2220; pendientes BEE-76 (deferred) + BEE-81 + BEE-82). 73 → 81 SP closed.
+
+**Cambios de estado de riesgo**: ninguno. R1 (`beeping-core` releases delay) y R4 (swift-openapi-generator API churn) siguen en monitoreo.
+
+---
 
 ### [2026-05-11] - Closed BEE-2050 + BEE-2220 (CloudEncoder WAV playback + sample app QA pivot)
 
