@@ -13,15 +13,36 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo (buffer ~5 días)
-- **Última actualización**: 2026-05-11 (trigger: Closed BEE-80; net delta 0 days)
+- **Última actualización**: 2026-05-11 (trigger: Closed BEE-81; net delta 0 days)
 
 | # | Milestone | Story points | Inicio est. | Fin est. | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 81 SP closed, 23 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 86 SP closed, 18 SP remaining; BEE-76 deferred + BEE-2050 + BEE-2220 added) | 2026-04-28 | 2026-05-18 | ✅ |
 
 ---
 
 ## 📜 History
+
+### [2026-05-11] - Closed BEE-81 (CocoaPods secondary distribution)
+
+**Trigger detallado**: BEE-81 entregado mismo día que BEE-80 — tercer cierre del día (record). Tres piezas:
+
+1. **`Beeping.podspec`** at root: `vendored_frameworks => "dist/Beeping.xcframework"` (mismo XCFramework que SPM, no duplicación), version leído desde `VERSION` para release-please lockstep, `s.source = { :git => '...', :tag => s.version.to_s }` para consumo via tag cuando BEE-82 publique. License Apache-2.0, Swift 6.0, iOS 15+. `pod lib lint --skip-import-validation --allow-warnings`: Beeping passed validation.
+
+2. **`Examples/PodConsumer/`**: iOS SwiftUI app mínima generada con xcodegen (project.yml committed, xcodeproj gitignored — mismo patrón que BeepingSampleApp). Podfile usa `pod 'Beeping', :path => '../..'` con `use_frameworks!`. `PodConsumerApp.swift` referencia el public surface (`BeepingClient.local().mode(.audible).logLevel(.info).build()`) para forzar al linker a resolver el vendored framework.
+
+3. **`scripts/test-pod-consumer.sh`** end-to-end (~17s): `./build.sh` → `xcodegen generate` → `pod install` → `xcodebuild build -workspace PodConsumer.xcworkspace`. Podfile.lock generado confirma `Beeping (0.0.0)` resuelto desde `:path: ../..` con SPEC CHECKSUMS válidos.
+
+README gana sección "Installing via CocoaPods" con instrucciones de dev local (`:path =>`) + nota de upgrade a trunk consumption cuando BEE-82 cierre.
+
+**Net delta**: 0 días. Estimación 5 SP, real ~1h (más simple de lo esperado al reutilizar patrón establecido en BEE-80). Velocidad acumulada: 9.6 SP/día. Buffer ~5-6 días vs fin proyectado 2026-05-18.
+
+**Milestones afectados**:
+- 🍎 Phase 9: 15/18 → 16/18 tasks (Done = BEE-67..BEE-75 + BEE-77 + BEE-78 + BEE-79 + BEE-80 + BEE-81 + BEE-2050 + BEE-2220; pendientes BEE-76 (deferred) + BEE-82). 81 → 86 SP closed.
+
+**Cambios de estado de riesgo**: ninguno. R7 (CocoaPods vs SPM XCFramework drift) sigue resuelto por single-source XCFramework via build.sh — podspec y Package.swift apuntan ambos a `dist/Beeping.xcframework`.
+
+---
 
 ### [2026-05-11] - Closed BEE-80 (SPM primary distribution + XCFramework + legacy class rename)
 
