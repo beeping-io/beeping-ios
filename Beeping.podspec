@@ -22,7 +22,10 @@
 
 Pod::Spec.new do |s|
   s.name             = "Beeping"
-  s.version          = File.read(File.join(__dir__, "VERSION")).strip
+  # VERSION may contain an `x-release-please-version` marker comment;
+  # split on whitespace and take the first token so release-please can
+  # bump the file without breaking podspec evaluation.
+  s.version          = File.read(File.join(__dir__, "VERSION")).strip.split.first
   s.summary          = "Swift SDK for data over sound (audible + ultrasonic) on iOS."
   s.description      = <<~DESC
     The iOS SDK for the Beeping Platform. Decode and emit short payloads

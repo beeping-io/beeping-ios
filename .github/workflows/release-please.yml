@@ -1,0 +1,37 @@
+name: Release please
+
+# Runs release-please on every push to `main`. It scans Conventional
+# Commits since the last release tag, opens (or updates) a PR that
+# bumps `.github/release-please-manifest.json` + `VERSION` + writes
+# the changelog. Merging that PR creates the tag (e.g. `v0.0.1`) and
+# the matching GitHub Release, which then triggers `release.yml`
+# downstream (build + sign + upload assets).
+#
+# 0.x rule (per ~/.claude/CLAUDE.md):
+#   No salto automático a 1.0.0. `bump-minor-pre-major` y
+#   `bump-patch-for-minor-pre-major` are set so:
+#     - feat:        → minor bump within 0.x (0.0.0 → 0.1.0)
+#     - fix:         → patch bump (0.0.0 → 0.0.1)
+#     - feat!: / BREAKING CHANGE → minor (NOT major) while in 0.x.
+#   Salto a 1.0.0 cuando llegue debe ser `Release-As: 1.0.0` explícito
+#   en un commit message — coordinado con el resto del ecosistema.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .github/release-please-config.json
+          manifest-file: .github/release-please-manifest.json
