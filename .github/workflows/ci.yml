@@ -166,8 +166,16 @@ jobs:
         # can fail to materialize that header before the test target
         # tries to import it. An explicit framework build in the same
         # configuration + destination primes DerivedData so the test
-        # step finds the header. Local workaround documented in
-        # `memory/project_session_resume_2026-05-11.md`.
+        # step finds the header.
+        #
+        # `BUILD_LIBRARIES_FOR_DISTRIBUTION=NO` because the swift
+        # textual-interface emitter in Xcode's Swift 6.0 toolchain
+        # rejects `@MainActor` in the Beeping target's interface (the
+        # legacy `BeepingLegacy` class), even though the same toolchain
+        # accepts the attribute everywhere else. Library evolution is
+        # only needed for the release XCFramework (set explicitly in
+        # `build.sh`); the test build doesn't ship as a binary, so we
+        # skip the swiftinterface emit entirely here.
         run: |
           set -o pipefail
           xcodebuild build \
@@ -177,6 +185,7 @@ jobs:
             -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
             -derivedDataPath build/DerivedData \
             -quiet \
+            BUILD_LIBRARIES_FOR_DISTRIBUTION=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -187,7 +196,8 @@ jobs:
         # parallel execution races on the responder slot. Documented in
         # `memory/project_session_resume_2026-05-11.md`.
         # `-derivedDataPath` shared with the prime step so the test
-        # target sees the already-built framework artifacts.
+        # target sees the already-built framework artifacts. Library
+        # evolution stays off for the same reason as the prime step.
         run: |
           set -o pipefail
           xcodebuild test \
@@ -200,6 +210,7 @@ jobs:
             -resultBundlePath TestResult.xcresult \
             -parallel-testing-enabled NO \
             -skip-testing:BeepingTests/CloudRoundTripIntegrationTests \
+            BUILD_LIBRARIES_FOR_DISTRIBUTION=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
