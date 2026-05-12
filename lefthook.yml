@@ -1,0 +1,266 @@
+# ============================================================================
+# Lefthook — modern Git hooks manager (https://github.com/evilmartians/lefthook)
+#
+# Why lefthook over pre-commit?
+#   - Single Go binary, no Python dependency
+#   - Parallel execution (much faster than pre-commit)
+#   - YAML config, easy to read and version-control
+#
+# Installation (one-time setup):
+#   brew install lefthook gitleaks markdownlint-cli
+#   npm install -g @commitlint/cli @commitlint/config-conventional
+#   cd /path/to/beeping-ios && lefthook install
+#
+# 🚧 NOTE: hooks are intentionally NOT installed during /worktree-init
+# bootstrap. Run `lefthook install` manually once the local toolchain is set up.
+#
+# Manual run:    lefthook run pre-commit
+# Skip hooks:    git commit --no-verify  (NEVER without explicit user authorization)
+# ============================================================================
+
+# Run hooks in parallel where safe.
+pre-commit:
+  parallel: true
+  commands:
+
+    # ─── Trailing whitespace cleanup ────────────────────────────────────────
+    trailing-whitespace:
+      tags: style
+      glob: "*.{yml,yaml,json,jsonc,swift,h,m,mm,c,cpp,hpp,plist,sh,toml,md}"
+      run: |
+        for f in {staged_files}; do
+          if [ -f "$f" ]; then
+            sed -i.bak 's/[[:space:]]*$//' "$f" && rm -f "$f.bak"
+            git add "$f"
+          fi
+        done
+
+    # ─── End-of-file newline ────────────────────────────────────────────────
+    eof-newline:
+      tags: style
+      glob: "*.{md,yml,yaml,json,jsonc,swift,h,m,mm,c,cpp,hpp,sh,toml}"
+      run: |
+        for f in {staged_files}; do
+          if [ -f "$f" ] && [ -n "$(tail -c1 "$f" 2>/dev/null)" ]; then
+            printf '\n' >> "$f"
+            git add "$f"
+          fi
+        done
+
+    # ─── Block large files ──────────────────────────────────────────────────
+    # NOTE: legacy libBeepingCoreUniversal.a (18 MB) is whitelisted as a
+    # pre-existing committed binary. Removed by BEE-79.
+    large-files:
+      tags: safety
+      run: |
+        max_size=1048576  # 1 MB
+        whitelist="libBeepingCoreUniversal.a"
+        for f in {staged_files}; do
+          if [ -f "$f" ]; then
+            if echo "$whitelist" | grep -q -F "$f"; then
+              continue
+            fi
+            size=$(wc -c < "$f")
+            if [ "$size" -gt "$max_size" ]; then
+              echo "❌ $f exceeds 1 MB ($size bytes). Use Git LFS or reconsider committing this file."
+              exit 1
+            fi
+          fi
+        done
+
+    # ─── Secret scanning (gitleaks) ─────────────────────────────────────────
+    gitleaks:
+      tags: security
+      run: |
+        if command -v gitleaks >/dev/null 2>&1; then
+          gitleaks protect --staged --redact --verbose
+        else
+          echo "⚠️  gitleaks not installed — skipping secret scan."
+          echo "   Install: brew install gitleaks"
+          exit 0
+        fi
+
+    # ─── Markdown lint ──────────────────────────────────────────────────────
+    markdownlint:
+      tags: docs
+      glob: "*.md"
+      run: |
+        if command -v markdownlint >/dev/null 2>&1; then
+          markdownlint --config .markdownlint.jsonc {staged_files} 2>/dev/null || \
+          markdownlint {staged_files}
+        else
+          echo "⚠️  markdownlint not installed — skipping markdown lint."
+          echo "   Install: brew install markdownlint-cli"
+          exit 0
+        fi
+
+    # ─── YAML syntax validation ─────────────────────────────────────────────
+    yaml-lint:
+      tags: config
+      glob: "*.{yml,yaml}"
+      run: |
+        for f in {staged_files}; do
+          if command -v yq >/dev/null 2>&1; then
+            yq eval . "$f" >/dev/null 2>&1 || { echo "❌ Invalid YAML: $f"; exit 1; }
+          elif command -v ruby >/dev/null 2>&1; then
+            ruby -ryaml -e "YAML.load_file('$f')" 2>&1 || { echo "❌ Invalid YAML: $f"; exit 1; }
+          elif command -v python3 >/dev/null 2>&1 && python3 -c "import yaml" 2>/dev/null; then
+            python3 -c "import yaml; yaml.safe_load(open('$f'))" || { echo "❌ Invalid YAML: $f"; exit 1; }
+          else
+            echo "⚠️  No YAML parser available. Skipping $f."
+          fi
+        done
+
+    # ─── JSON syntax validation ─────────────────────────────────────────────
+    json-lint:
+      tags: config
+      glob: "*.json"
+      run: |
+        for f in {staged_files}; do
+          python3 -m json.tool "$f" > /dev/null || {
+            echo "❌ Invalid JSON: $f"
+            exit 1
+          }
+        done
+
+# ─── Commit message validation ─────────────────────────────────────────────
+commit-msg:
+  commands:
+    commitlint:
+      tags: convention
+      run: |
+        if command -v commitlint >/dev/null 2>&1; then
+          commitlint --edit {1}
+        elif command -v npx >/dev/null 2>&1 && [ -f commitlint.config.mjs ]; then
+          npx --no-install commitlint --edit {1} 2>/dev/null || \
+          npx commitlint --edit {1}
+        else
+          echo "⚠️  commitlint not installed — skipping commit message lint."
+          echo "   Install: npm install -g @commitlint/cli @beeping.io/commitlint-config"
+          exit 0
+        fi
+
+# ─── Pre-push: CI parity gates ─────────────────────────────────────────────
+# Runs the same checks `.github/workflows/ci.yml` runs, so failures
+# surface locally instead of round-tripping through GitHub Actions.
+# Total wall time on a typical Mac: ~2 minutes. Use
+# `git push --no-verify` only with explicit founder authorization.
+pre-push:
+  commands:
+
+    # ─── Block direct pushes to main / develop ────────────────────────────
+    protect-base-branches:
+      tags: safety
+      run: |
+        protected="main develop"
+        current=$(git symbolic-ref --short HEAD 2>/dev/null || echo "DETACHED")
+        for branch in $protected; do
+          if [ "$current" = "$branch" ]; then
+            echo "❌ Direct push to '$branch' is blocked."
+            echo "   Open a pull request from a feature branch instead."
+            echo "   This rule protects against accidental commits to base branches."
+            exit 1
+          fi
+        done
+
+    # ─── SwiftLint --strict (mirrors CI smoke job step) ───────────────────
+    swiftlint:
+      tags: lint
+      run: |
+        if ! command -v swiftlint >/dev/null 2>&1; then
+          echo "⚠️  swiftlint not installed — skipping. Install: brew install swiftlint"
+          exit 0
+        fi
+        swiftlint --strict
+
+    # ─── swift-format lint --strict (mirrors CI smoke job step) ───────────
+    swift-format-lint:
+      tags: lint
+      run: |
+        xcrun swift-format lint --strict \
+          --configuration .swift-format \
+          $(find . -name "*.swift" \
+            -not -path "./node_modules/*" \
+            -not -path "./Beeping.xcodeproj/*" \
+            -not -path "./BeepingSampleApp/BeepingSampleApp.xcodeproj/*" \
+            -not -path "./Examples/PodConsumer/PodConsumer.xcodeproj/*" \
+            -not -path "./.build/*" \
+            -not -path "./build/*" \
+            -not -path "./dist/*" \
+            -not -path "./Vendor/*")
+
+    # ─── Smoke build (mirrors CI smoke build steps + warning gate) ────────
+    smoke-build:
+      tags: build
+      run: |
+        set -o pipefail
+        xcodebuild build \
+          -project Beeping.xcodeproj \
+          -scheme Beeping \
+          -destination 'generic/platform=iOS' \
+          -configuration Debug \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          2>&1 | tee /tmp/lefthook-build.log
+        # CI's "Fail on warnings or errors" gate. Same allowlist.
+        if grep -nE "warning:|error:" /tmp/lefthook-build.log \
+            | grep -v "shadows module 'Beeping'" \
+            | grep -v "AppIntents.framework dependency" \
+            | grep -v "'allowBluetooth' was deprecated" \
+            | grep -v "auto-linked framework 'CoreAudioTypes'" \
+            | grep -v "auto-linked framework 'UIUtilities'" \
+            | grep -v "SwiftUICore" \
+            | grep -q .; then
+          echo "❌ unexpected warnings or errors in build output"
+          grep -nE "warning:|error:" /tmp/lefthook-build.log \
+            | grep -v "shadows module 'Beeping'" \
+            | grep -v "AppIntents.framework dependency" \
+            | grep -v "'allowBluetooth' was deprecated" \
+            | grep -v "auto-linked framework 'CoreAudioTypes'" \
+            | grep -v "auto-linked framework 'UIUtilities'" \
+            | grep -v "SwiftUICore"
+          exit 1
+        fi
+
+    # ─── SDK test suite on the booted simulator (mirrors CI tests job) ────
+    # Picks the first booted iPhone simulator if any; falls back to the
+    # first available iPhone. Skips the cloud round-trip suite because
+    # it needs `BEEPBOX_API_KEY_DEV` set via launchctl on the simulator
+    # — local devs can run it manually with `xcodebuild test -only-...`.
+    tests:
+      tags: test
+      run: |
+        set -o pipefail
+        udid=$(xcrun simctl list devices booted 2>/dev/null | grep -E "^\s*iPhone " | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+        if [ -z "$udid" ]; then
+          udid=$(xcrun simctl list devices available --json | jq -r 'first(.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.isAvailable and (.name | startswith("iPhone"))) | .udid)')
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "⚠️  no iPhone simulator available — skipping tests"
+            exit 0
+          fi
+          xcrun simctl boot "$udid" >/dev/null 2>&1 || true
+        fi
+        xcodebuild build \
+          -project Beeping.xcodeproj \
+          -scheme Beeping \
+          -configuration Debug \
+          -destination "platform=iOS Simulator,id=$udid" \
+          -derivedDataPath build/DerivedData \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+        xcodebuild test \
+          -project Beeping.xcodeproj \
+          -scheme Beeping-Tests \
+          -configuration Debug \
+          -destination "platform=iOS Simulator,id=$udid" \
+          -derivedDataPath build/DerivedData \
+          -parallel-testing-enabled NO \
+          -skip-testing:BeepingTests/CloudRoundTripIntegrationTests \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO

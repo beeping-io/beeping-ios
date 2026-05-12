@@ -1,0 +1,4 @@
+# SPM build artifacts.
+.build/
+.swiftpm/
+Package.resolved
