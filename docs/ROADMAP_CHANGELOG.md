@@ -13,15 +13,43 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo (buffer ~5 días)
-- **Última actualización**: 2026-05-11 (trigger: Closed BEE-82; net delta 0 days)
+- **Última actualización**: 2026-05-12 (trigger: Closed BEE-76 → **Phase 9 = 18/18 tasks DONE**, ready for milestone-close PR)
 
-| # | Milestone | Story points | Inicio est. | Fin est. | Estado |
+| # | Milestone | Story points | Inicio est. | Fin actual | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 91 SP closed, 13 SP remaining; only BEE-76 left as milestone closer) | 2026-04-28 | 2026-05-18 | ✅ |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 104 SP closed = 100%; BEE-2050 + BEE-2220 scope additions, BEE-76 re-scoped 13 → 5 SP) | 2026-04-28 | **2026-05-12** (6 days early vs plan 2026-05-18) | ✅ **DONE** |
 
 ---
 
 ## 📜 History
+
+### [2026-05-12] - 🎉 Phase 9 milestone CLOSED — Closed BEE-76 (property tests + coverage; scope reduced)
+
+**Trigger detallado**: BEE-76 cerrada con scope reducido (5 SP de los 13 originales) → **Phase 9 = 18/18 tasks Done**.
+
+**Lo entregado en BEE-76**:
+- **Property tests via Swift Testing parameterized** (no SwiftCheck dep): `WAVParserPropertyTests` (8 properties, ~512 test cases — length, quantization Int16→Float32, malformed magic/channels/bits) + `ModeMappingPropertyTests` (4 properties, totalidad BeepingMode → EncodeRequest.Mode + audible/inaudible/all families — regression guard contra BEE-2050 server-defaults-to-inaudible bug).
+- **Coverage report en CI**: new `tests` job en `.github/workflows/ci.yml` con `xcodebuild test -enableCodeCoverage YES` + `xccov view --report` summary visible en GH Actions UI. Skip cloud round-trip tests (necesitan `BEEPBOX_API_KEY_DEV`).
+- **CloudEncoder.serverMode** lifted from `private static` to `internal static` para `@testable import`.
+
+**Decisión pragmática**: Swift Testing parameterized arguments en lugar de SwiftCheck SPM dep → mismo property-test intent sin .pbxproj surgery + iOS deployment target matching. 89 tests / 14 suites verdes, coverage 75.88% (WAVParser 100%, CloudEncoder 90%, LocalEncoder 93%).
+
+**Deferred to BEE-2229** (Phase 18 Beepster Foundation, priority High, 8 SP): swift-snapshot-testing (vale para UI real de Beepster, no para listener-only sample) + Codecov upload (token externo, founder action separate).
+
+**Phase 9 cierra 6 días antes del plan** (2026-05-12 vs 2026-05-18). Velocidad final acumulada: **10.4 SP/día across 10 working days**.
+
+**Pre-close gate (Paso 9.0)**: `docs/IDEAS.md` y `docs/PENDING.md` revisados, ambos vacíos → no hay promociones pendientes.
+
+**Próximo paso (Paso 9.1)**: PR `milestone/phase-9 → develop` con 18 closes references. Tras merge a develop + eventualmente a main, release-please.yml abre PR proponiendo v0.0.0, founder mergea, release.yml builds + signs + uploads → primera publicación end-to-end smoke.
+
+**Net delta global**: 0 días (6 días ahead of plan).
+
+**Milestones afectados**:
+- 🍎 Phase 9: 17/18 → **18/18 tasks** (COMPLETED). 91 → 104 SP closed (100%).
+
+**Cambios de estado de riesgo**: Phase 9 risk register cierra clean. R1 (`beeping-core` releases delay), R3 (Swift 6 strict concurrency), R5 (telemetry privacy) — todos resueltos. R2 (Apple notarization) y R8 (Xcode 16 min) sin cambios.
+
+---
 
 ### [2026-05-11] - Closed BEE-82 (release-please + cosign + GitHub Releases pipeline)
 
