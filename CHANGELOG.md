@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## 0.0.0 (2026-05-12)
+
+
+### Features
+
+* **milestone:** Phase 9 — beeping-ios (Swift 6) — 18 tasks, 104 SP ([d642ac5](https://github.com/beeping-io/beeping-ios/commit/d642ac5704993434f590e5abf4e186c0b299c839))
+
 ## [Unreleased]
 
 ### Added
