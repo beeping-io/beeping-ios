@@ -1,0 +1,41 @@
+name: Release please
+
+# Runs release-please on every push to `main`. It scans Conventional
+# Commits since the last release tag, opens (or updates) a PR that
+# bumps `.github/release-please-manifest.json` + `VERSION` + writes
+# the changelog. Merging that PR creates the tag (e.g. `v0.0.1`) and
+# the matching GitHub Release, which then triggers `release.yml`
+# downstream (build + sign + upload assets).
+#
+# 0.x rule (per ~/.claude/CLAUDE.md + per-project decision 2026-05-11):
+#   - First release-please run proposes v0.0.0 (initial-version in config).
+#   - Every subsequent 0.x release is a MINOR bump:
+#       0.0.0 → 0.1.0 → 0.2.0 → ...
+#     because `bump-patch-for-minor-pre-major: false` makes `feat:` go
+#     minor instead of patch, and `bump-minor-pre-major: true` makes
+#     BREAKING go minor instead of major.
+#   - `fix:` would naturally go patch (0.x.0 → 0.x.1); in practice we
+#     only ship feat-containing releases during 0.x, so all releases
+#     end up 0.X.0.
+#   - Salto a 1.0.0 = manual `Release-As: 1.0.0` footer in a commit,
+#     coordinated with the rest of the ecosystem, AFTER device QA.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: .github/release-please-config.json
+          manifest-file: .github/release-please-manifest.json

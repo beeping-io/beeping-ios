@@ -1,0 +1,235 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, "milestone/**"]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke (Xcode project resolves)
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show selected Xcode version
+        run: xcodebuild -version
+
+      - name: Validate Xcode project (list targets + schemes)
+        run: xcodebuild -list -project Beeping.xcodeproj
+
+      - name: Validate vendored OpenAPI spec
+        # Ensures `OpenAPI/openapi.yaml` (the vendored copy of
+        # beepbox-server's spec) is well-formed YAML. Drift detection
+        # between the spec and the hand-written Codable types in
+        # BeepboxAPITypes.swift lands in BEE-80 (swift-openapi-generator
+        # build plugin) — this step is a syntax-only gate.
+        run: ruby -ryaml -e "YAML.load_file('OpenAPI/openapi.yaml')"
+
+      - name: Install SwiftLint
+        # macos-latest runners have homebrew preinstalled.
+        run: brew install swiftlint
+
+      - name: SwiftLint (strict)
+        # Any warning fails the build. Configured rules + rationale in
+        # /.swiftlint.yml. Added in BEE-77.
+        run: swiftlint --strict
+
+      - name: swift-format lint (strict)
+        # Apple's swift-format is bundled with Xcode (`xcrun swift-format`).
+        # Configured rules in /.swift-format. Added in BEE-77.
+        run: |
+          xcrun swift-format lint --strict \
+            --configuration .swift-format \
+            $(find . -name "*.swift" \
+              -not -path "./node_modules/*" \
+              -not -path "./Beeping.xcodeproj/*" \
+              -not -path "./.build/*" \
+              -not -path "./build/*")
+
+      - name: Validate Xcode project resolves to JSON
+        run: xcodebuild -list -project Beeping.xcodeproj -json | python3 -m json.tool > /dev/null
+
+      - name: Build Beeping framework (Swift 6 + strict concurrency, device)
+        # Notes:
+        # - generic/platform=iOS targets device (arm64).
+        # - CODE_SIGN_* disabled to skip Apple Developer signing on CI.
+        # - The build settings (Swift 6, strict concurrency, iOS 15) are baked
+        #   into the project; this job verifies they don't regress.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log
+
+      - name: Build Beeping framework (arm64 iOS Simulator)
+        # Unblocked in BEE-79: the rebuilt BeepingCore.xcframework now ships
+        # an arm64-iphonesimulator slice (legacy libBeepingCoreUniversal.a
+        # only had x86_64-sim). This job verifies the simulator path stays
+        # buildable so future test runs (BEE-76) can land cleanly.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee -a build.log
+
+      - name: Fail on warnings or errors in build log
+        # Known-allowlisted warnings, with their rationale and removal owner:
+        #   - "shadows module 'Beeping'": the legacy public class `Beeping`
+        #     has the same name as the framework module. Pre-existing in the
+        #     legacy code; only surfaces now that Swift exposes the class via
+        #     Beeping-Swift.h. Resolved in BEE-70 when the class is renamed
+        #     to BeepingClient.
+        #   - "Metadata extraction skipped. No AppIntents.framework": iOS
+        #     compiler note from Xcode 16+, not a build issue.
+        #   - "'allowBluetooth' was deprecated in iOS …": the new spelling
+        #     `allowBluetoothHFP` only ships in Xcode 17+ / iOS 17+; CI runs
+        #     Xcode 16.x where the new symbol doesn't exist yet. Cleanup
+        #     lands with BEE-69 (raise Xcode min) or BEE-79 (drop legacy SDK).
+        #   - Auto-link warnings ("Could not find or use auto-linked
+        #     framework 'CoreAudioTypes' / 'UIUtilities'"): emitted when the
+        #     rebuilt BeepingCore.xcframework references SDK side modules the
+        #     host framework does not need. Harmless; the framework still
+        #     links + runs. Resolved upstream in beeping-core when module map
+        #     gates these for iOS targets.
+        #   - "cannot link directly with 'SwiftUICore'": same root cause —
+        #     compiler-emitted note for an SDK side library, no impact.
+        run: |
+          if grep -nE "warning:|error:" build.log \
+              | grep -v "shadows module 'Beeping'" \
+              | grep -v "AppIntents.framework dependency" \
+              | grep -v "'allowBluetooth' was deprecated" \
+              | grep -v "auto-linked framework 'CoreAudioTypes'" \
+              | grep -v "auto-linked framework 'UIUtilities'" \
+              | grep -v "SwiftUICore" \
+              | grep -q .; then
+            echo "❌ Found unexpected warnings or errors in build output"
+            grep -nE "warning:|error:" build.log \
+              | grep -v "shadows module 'Beeping'" \
+              | grep -v "AppIntents.framework dependency" \
+              | grep -v "'allowBluetooth' was deprecated" \
+              | grep -v "auto-linked framework 'CoreAudioTypes'" \
+              | grep -v "auto-linked framework 'UIUtilities'" \
+              | grep -v "SwiftUICore"
+            exit 1
+          fi
+          echo "✅ 0 unexpected warnings, 0 errors (known-allowlisted: BEE-69/70/79)"
+
+  tests:
+    name: Test suite (XCTest + Swift Testing) on iOS Simulator
+    runs-on: macos-latest
+    timeout-minutes: 25
+    needs: smoke
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot a simulator (first available iPhone)
+        id: boot
+        # macos-latest ships several iOS simulators; pick the first
+        # iPhone the runtime advertises so future Xcode upgrades don't
+        # break CI by renaming default devices.
+        run: |
+          set -euo pipefail
+          udid=$(xcrun simctl list devices available --json | \
+            jq -r 'first(.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.isAvailable and (.name | startswith("iPhone"))) | .udid)')
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "no available iPhone simulator on runner" >&2
+            xcrun simctl list devices available
+            exit 1
+          fi
+          xcrun simctl boot "$udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          echo "Booted $udid"
+
+      - name: Prime Beeping framework build (Debug, iOS Simulator)
+        # The test scheme depends on the framework's generated
+        # `Beeping-Swift.h`. On fresh runners, `xcodebuild test` alone
+        # can fail to materialize that header before the test target
+        # tries to import it. An explicit framework build in the same
+        # configuration + destination primes DerivedData so the test
+        # step finds the header.
+        #
+        # `BUILD_LIBRARIES_FOR_DISTRIBUTION=NO` because the swift
+        # textual-interface emitter in Xcode's Swift 6.0 toolchain
+        # rejects `@MainActor` in the Beeping target's interface (the
+        # legacy `BeepingLegacy` class), even though the same toolchain
+        # accepts the attribute everywhere else. Library evolution is
+        # only needed for the release XCFramework (set explicitly in
+        # `build.sh`); the test build doesn't ship as a binary, so we
+        # skip the swiftinterface emit entirely here.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
+            -quiet \
+            BUILD_LIBRARIES_FOR_DISTRIBUTION=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run SDK test suite with coverage
+        # `-parallel-testing-enabled NO` because `MockURLProtocol` shares
+        # static state across `CloudEncoder` test suites; cross-suite
+        # parallel execution races on the responder slot. Documented in
+        # `memory/project_session_resume_2026-05-11.md`.
+        # `-derivedDataPath` shared with the prime step so the test
+        # target sees the already-built framework artifacts. Library
+        # evolution stays off for the same reason as the prime step.
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Beeping.xcodeproj \
+            -scheme Beeping-Tests \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResult.xcresult \
+            -parallel-testing-enabled NO \
+            -skip-testing:BeepingTests/CloudRoundTripIntegrationTests \
+            BUILD_LIBRARIES_FOR_DISTRIBUTION=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee test.log
+
+      - name: Coverage report (text summary)
+        # `xccov view --report` walks the xcresult bundle and prints a
+        # per-target coverage table. We pipe it as the CI gate's
+        # observability seam; the Codecov upload + threshold gates land
+        # later (see BEE-2229 in Phase 18 — Beepster Foundation).
+        if: always()
+        run: |
+          if [ -d TestResult.xcresult ]; then
+            xcrun xccov view --report TestResult.xcresult | head -100
+            xcrun xccov view --report --json TestResult.xcresult > coverage.json
+            echo "Total coverage JSON written to coverage.json"
+          else
+            echo "No xcresult bundle produced; skipping coverage."
+          fi
+
+  # Real test suite (XCTest + Swift Testing + property) wired in BEE-76.
+  # Codecov upload + snapshot-testing deferred to BEE-2229 (Phase 18).

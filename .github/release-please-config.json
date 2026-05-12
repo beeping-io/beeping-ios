@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "$comment": "Versioning rule (per ~/.claude/CLAUDE.md 0.x rule + per-project decision 2026-05-11): first release = v0.0.0; every subsequent 0.x release is a MINOR bump (0.1.0, 0.2.0, ...). Salto a 1.0.0 = manual Release-As: 1.0.0 coordinated with the ecosystem, AFTER device testing.",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "draft": false,
+  "prerelease": false,
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "beeping-ios",
+      "initial-version": "0.0.0",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "VERSION"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,119 @@
+name: Release artifacts
+
+# Triggered when a GitHub Release is published (typically by the
+# release-please workflow merging its PR + creating the tag). Builds
+# the XCFramework, signs it with cosign keyless (sigstore.dev OIDC
+# via GitHub Actions identity), generates a CycloneDX SBOM, and
+# attaches all assets to the release.
+#
+# Consumers verify the supply chain via `scripts/verify-release.sh`
+# (cosign verify-blob + sha256 check + SBOM inspection).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to re-package (e.g. v0.0.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: write       # to upload release assets
+  id-token: write       # for cosign keyless OIDC
+
+jobs:
+  build-and-sign:
+    name: Build, sign, and attach release assets
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: Show selected Xcode version
+        run: xcodebuild -version
+
+      - name: Read VERSION
+        id: ver
+        run: |
+          v=$(awk '{print $1; exit}' VERSION)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+          echo "Building Beeping v$v"
+
+      - name: Build Beeping.xcframework
+        run: ./build.sh
+
+      - name: Zip the XCFramework
+        id: zip
+        run: |
+          set -euo pipefail
+          cd dist
+          zip -rq Beeping.xcframework.zip Beeping.xcframework
+          sha=$(shasum -a 256 Beeping.xcframework.zip | awk '{print $1}')
+          echo "checksum=$sha" >> "$GITHUB_OUTPUT"
+          printf "%s  Beeping.xcframework.zip\n" "$sha" > Beeping.xcframework.zip.sha256
+          echo "SHA256: $sha"
+          ls -la Beeping.xcframework.zip Beeping.xcframework.zip.sha256
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Cosign keyless sign (XCFramework zip)
+        # Keyless signing uses the GitHub Actions OIDC identity to
+        # request a short-lived signing certificate from Fulcio
+        # (sigstore.dev). Signature + cert are uploaded to the
+        # transparency log (rekor) — verifiable by anyone without
+        # any pre-shared key.
+        run: |
+          cd dist
+          cosign sign-blob --yes \
+            --bundle Beeping.xcframework.zip.cosign.bundle \
+            Beeping.xcframework.zip
+
+      - name: Install syft (for SBOM)
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          cd dist
+          syft Beeping.xcframework \
+            --output cyclonedx-json=Beeping.sbom.cdx.json
+          echo "---SBOM head---"
+          head -c 2000 Beeping.sbom.cdx.json || true
+          echo
+
+      - name: Upload assets to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd dist
+          gh release upload \
+            "${{ steps.ver.outputs.tag }}" \
+            Beeping.xcframework.zip \
+            Beeping.xcframework.zip.sha256 \
+            Beeping.xcframework.zip.cosign.bundle \
+            Beeping.sbom.cdx.json \
+            --clobber
+
+      - name: Summary
+        run: |
+          {
+            echo "## Beeping ${{ steps.ver.outputs.tag }} — published"
+            echo
+            echo "**SHA256**: \`${{ steps.zip.outputs.checksum }}\`"
+            echo
+            echo "### Assets"
+            echo "- \`Beeping.xcframework.zip\` — the XCFramework, statically embedding BeepingCore"
+            echo "- \`Beeping.xcframework.zip.sha256\` — checksum line"
+            echo "- \`Beeping.xcframework.zip.cosign.bundle\` — sigstore keyless bundle (signature + cert + rekor entry)"
+            echo "- \`Beeping.sbom.cdx.json\` — CycloneDX SBOM"
+            echo
+            echo "Verify with \`scripts/verify-release.sh ${{ steps.ver.outputs.tag }}\`."
+          } >> "$GITHUB_STEP_SUMMARY"

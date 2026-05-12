@@ -1,0 +1,65 @@
+# SwiftLint configuration for beeping-ios.
+# Strict mode lands as a CI gate (see .github/workflows/ci.yml in BEE-77).
+# Local: `swiftlint`. CI: `swiftlint --strict` (any warning fails the build).
+
+excluded:
+  - Beeping.xcodeproj
+  - OpenAPI                  # vendored upstream spec
+  - node_modules             # commitlint deps
+  - dist                     # XCFramework outputs
+  - build
+  - DerivedData
+  - .build                   # SPM build dir (when BEE-80 lands)
+  - Pods                     # CocoaPods (when BEE-81 lands)
+
+# Output Xcode-friendly format for `xcodebuild` log readers.
+reporter: "xcode"
+
+# ── Default rule tweaks ────────────────────────────────────────────────────
+disabled_rules:
+  - todo                       # `// TODO:` is fine during phase 9 active work
+  - identifier_name            # `_handle`, `_lock`, `mBeepingCore` allowed
+  - type_body_length           # large internal classes (BeepingCoreWrapper, BeepingClient)
+  - file_length                # umbrella + actor files exceed default 400
+  - cyclomatic_complexity      # `convert(legacy:)` switch is intentionally explicit
+  - function_body_length       # configure(...) + AudioEngine setup are intentionally linear
+  - explicit_top_level_acl     # `internal` is Swift's default; being explicit everywhere is noise
+  - static_over_final_class    # false positives on @objc class func + URLProtocol overrides
+  - opening_brace              # cosmetic; trust formatter (swift-format)
+  - non_optional_string_data_conversion  # `data(using: .utf8)!` in tests is fine
+  - redundant_discardable_let  # `let _ = …` in some paths reads more clearly than `_ = …`
+  - function_parameter_count   # `buildEvent(...)` legacy-event factory is intentionally explicit
+
+# ── Opt-in rules we DO want enabled ───────────────────────────────────────
+opt_in_rules:
+  - empty_count                # `count == 0` → `isEmpty`
+  - explicit_init              # `Type.init(x)` → `Type(x)`
+  - first_where                # `.filter { ... }.first` → `.first(where:)`
+  - last_where
+  - sorted_first_last
+  - contains_over_filter_count
+  - empty_string
+  - prefer_self_in_static_references
+  - redundant_nil_coalescing
+  - redundant_self             # avoid `self.x` when not needed (renamed in SwiftLint 0.63)
+  - prefer_zero_over_explicit_init  # `CGFloat()` → `.zero`
+
+# NOTE: `file_header` and `force_unwrapping` are intentionally NOT opt-in.
+# - file_header: would require N test files to gain a framework-Beeping
+#   prefix that doesn't match their reality (BeepingTests).
+# - force_unwrapping: `URL(string: "...")!` in test fixtures is the
+#   pragmatic norm; failing loudly at the test boundary is correct.
+
+# ── Custom configuration ──────────────────────────────────────────────────
+line_length:
+  warning: 140
+  error: 200
+  ignores_urls: true
+  ignores_comments: true
+  ignores_function_declarations: true
+
+trailing_whitespace:
+  ignores_empty_lines: false   # always strip trailing whitespace
+
+force_cast: error              # never silently force-cast
+force_try: warning
