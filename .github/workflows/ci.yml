@@ -160,6 +160,23 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
           echo "Booted $udid"
 
+      - name: Build Beeping framework first
+        # The Beeping-Tests scheme depends on the Beeping framework's
+        # generated `Beeping-Swift.h`. `xcodebuild test` alone doesn't
+        # always materialize that header in DerivedData; an explicit
+        # build of the Beeping scheme primes it. Same workaround we use
+        # locally per `memory/project_session_resume_2026-05-11.md`.
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Beeping.xcodeproj \
+            -scheme Beeping \
+            -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -quiet \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
       - name: Run SDK test suite with coverage
         # `-parallel-testing-enabled NO` because `MockURLProtocol` shares
         # static state across `CloudEncoder` test suites; cross-suite
