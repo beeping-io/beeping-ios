@@ -212,7 +212,14 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
                 guard let base = ptr.baseAddress else { return 0 }
                 return handle.__getDecodedData(into: base)
             }
-            let decoded: String? = status > 0 ? String(cString: raw) : nil
+            // `String(cString:)` is deprecated in newer SDKs; build a
+            // String from the slice up to (but not including) the
+            // terminating NUL written by the C engine.
+            let decoded: String? = {
+                guard status > 0 else { return nil }
+                let bytes = raw.prefix(while: { $0 != 0 }).map { UInt8(bitPattern: $0) }
+                return String(decoding: bytes, as: UTF8.self)
+            }()
             return Self.buildEvent(
                 token: -3,
                 decoded: decoded,
