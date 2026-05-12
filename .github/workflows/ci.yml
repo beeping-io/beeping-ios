@@ -160,18 +160,22 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
           echo "Booted $udid"
 
-      - name: Build Beeping framework first
-        # The Beeping-Tests scheme depends on the Beeping framework's
-        # generated `Beeping-Swift.h`. `xcodebuild test` alone doesn't
-        # always materialize that header in DerivedData; an explicit
-        # build of the Beeping scheme primes it. Same workaround we use
-        # locally per `memory/project_session_resume_2026-05-11.md`.
+      - name: Prime Beeping framework build (Debug, iOS Simulator)
+        # The test scheme depends on the framework's generated
+        # `Beeping-Swift.h`. On fresh runners, `xcodebuild test` alone
+        # can fail to materialize that header before the test target
+        # tries to import it. An explicit framework build in the same
+        # configuration + destination primes DerivedData so the test
+        # step finds the header. Local workaround documented in
+        # `memory/project_session_resume_2026-05-11.md`.
         run: |
           set -o pipefail
           xcodebuild build \
             -project Beeping.xcodeproj \
             -scheme Beeping \
+            -configuration Debug \
             -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
             -quiet \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -182,12 +186,16 @@ jobs:
         # static state across `CloudEncoder` test suites; cross-suite
         # parallel execution races on the responder slot. Documented in
         # `memory/project_session_resume_2026-05-11.md`.
+        # `-derivedDataPath` shared with the prime step so the test
+        # target sees the already-built framework artifacts.
         run: |
           set -o pipefail
           xcodebuild test \
             -project Beeping.xcodeproj \
             -scheme Beeping-Tests \
+            -configuration Debug \
             -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
             -enableCodeCoverage YES \
             -resultBundlePath TestResult.xcresult \
             -parallel-testing-enabled NO \
