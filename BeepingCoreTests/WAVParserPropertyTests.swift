@@ -43,8 +43,8 @@ struct WAVParserPropertyTests {
         data.append(uint32LE(riffSize))
         data.append(Data("WAVE".utf8))
         data.append(Data("fmt ".utf8))
-        data.append(uint32LE(16))             // fmt chunk size
-        data.append(uint16LE(1))              // PCM
+        data.append(uint32LE(16))  // fmt chunk size
+        data.append(uint16LE(1))  // PCM
         data.append(uint16LE(channels))
         data.append(uint32LE(sampleRate))
         data.append(uint32LE(byteRate))

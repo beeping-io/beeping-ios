@@ -118,9 +118,9 @@ internal actor CloudEncoder: BeepingEncoder {
     // the mapping is a total function over `BeepingMode`.
     internal static func serverMode(from mode: BeepingMode) -> EncodeRequest.Mode {
         switch mode {
-        case .audible, .audibleOld:    return .audible
+        case .audible, .audibleOld: return .audible
         case .nonAudible, .nonAudibleOld, .hidden: return .inaudible
-        case .all, .custom:            return .all
+        case .all, .custom: return .all
         }
     }
 

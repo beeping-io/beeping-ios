@@ -37,7 +37,8 @@ struct PodConsumerApp: App {
     /// resolve the vendored framework — otherwise dead-code elimination
     /// could let a broken pod still build.
     private static func runSmokeCheck() {
-        let client = BeepingClient
+        let client =
+            BeepingClient
             .local()
             .mode(.audible)
             .logLevel(.info)

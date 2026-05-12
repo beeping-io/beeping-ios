@@ -95,10 +95,10 @@ struct RootView: View {
 
     private var pipelineLabel: String {
         switch model.lastDecodeStatus {
-        case .idle:        return "idle"
-        case .listening:   return "waiting for valid beep…"
-        case .decoded:     return "decoded ✓"
-        case .noSignal:    return "no valid signal"
+        case .idle: return "idle"
+        case .listening: return "waiting for valid beep…"
+        case .decoded: return "decoded ✓"
+        case .noSignal: return "no valid signal"
         }
     }
 
