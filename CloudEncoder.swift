@@ -114,7 +114,9 @@ internal actor CloudEncoder: BeepingEncoder {
         return try jsonEncoder.encode(body)
     }
 
-    private static func serverMode(from mode: BeepingMode) -> EncodeRequest.Mode {
+    // Exposed (internal) for property-based tests in BEE-76 that verify
+    // the mapping is a total function over `BeepingMode`.
+    internal static func serverMode(from mode: BeepingMode) -> EncodeRequest.Mode {
         switch mode {
         case .audible, .audibleOld:    return .audible
         case .nonAudible, .nonAudibleOld, .hidden: return .inaudible

@@ -133,5 +133,67 @@ jobs:
           fi
           echo "✅ 0 unexpected warnings, 0 errors (known-allowlisted: BEE-69/70/79)"
 
-  # NOTE: real lint (SwiftLint + swift-format) lands in BEE-77.
-  # Real test suite (XCTest + Swift Testing + snapshot + property) lands in BEE-76.
+  tests:
+    name: Test suite (XCTest + Swift Testing) on iOS Simulator
+    runs-on: macos-latest
+    timeout-minutes: 25
+    needs: smoke
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot a simulator (first available iPhone)
+        id: boot
+        # macos-latest ships several iOS simulators; pick the first
+        # iPhone the runtime advertises so future Xcode upgrades don't
+        # break CI by renaming default devices.
+        run: |
+          set -euo pipefail
+          udid=$(xcrun simctl list devices available --json | \
+            jq -r 'first(.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.isAvailable and (.name | startswith("iPhone"))) | .udid)')
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "no available iPhone simulator on runner" >&2
+            xcrun simctl list devices available
+            exit 1
+          fi
+          xcrun simctl boot "$udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          echo "Booted $udid"
+
+      - name: Run SDK test suite with coverage
+        # `-parallel-testing-enabled NO` because `MockURLProtocol` shares
+        # static state across `CloudEncoder` test suites; cross-suite
+        # parallel execution races on the responder slot. Documented in
+        # `memory/project_session_resume_2026-05-11.md`.
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Beeping.xcodeproj \
+            -scheme Beeping-Tests \
+            -destination "platform=iOS Simulator,id=${{ steps.boot.outputs.udid }}" \
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResult.xcresult \
+            -parallel-testing-enabled NO \
+            -skip-testing:BeepingTests/CloudRoundTripIntegrationTests \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee test.log
+
+      - name: Coverage report (text summary)
+        # `xccov view --report` walks the xcresult bundle and prints a
+        # per-target coverage table. We pipe it as the CI gate's
+        # observability seam; the Codecov upload + threshold gates land
+        # later (see BEE-2229 in Phase 18 — Beepster Foundation).
+        if: always()
+        run: |
+          if [ -d TestResult.xcresult ]; then
+            xcrun xccov view --report TestResult.xcresult | head -100
+            xcrun xccov view --report --json TestResult.xcresult > coverage.json
+            echo "Total coverage JSON written to coverage.json"
+          else
+            echo "No xcresult bundle produced; skipping coverage."
+          fi
+
+  # Real test suite (XCTest + Swift Testing + property) wired in BEE-76.
+  # Codecov upload + snapshot-testing deferred to BEE-2229 (Phase 18).
