@@ -64,7 +64,7 @@ struct ModeMappingPropertyTests {
 // conform to `CaseIterable` in the public surface. Synthesizing it
 // internally for property iteration via `@testable import` avoids
 // adding a new conformance to the SDK's external API.
-extension BeepingMode: CaseIterable {
+extension BeepingMode: @retroactive CaseIterable {
     public static var allCases: [BeepingMode] {
         [.audibleOld, .nonAudibleOld, .audible, .nonAudible, .hidden, .all, .custom]
     }

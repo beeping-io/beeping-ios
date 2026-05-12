@@ -140,9 +140,15 @@ commit-msg:
           exit 0
         fi
 
-# ─── Protect base branches from direct pushes ──────────────────────────────
+# ─── Pre-push: CI parity gates ─────────────────────────────────────────────
+# Runs the same checks `.github/workflows/ci.yml` runs, so failures
+# surface locally instead of round-tripping through GitHub Actions.
+# Total wall time on a typical Mac: ~2 minutes. Use
+# `git push --no-verify` only with explicit founder authorization.
 pre-push:
   commands:
+
+    # ─── Block direct pushes to main / develop ────────────────────────────
     protect-base-branches:
       tags: safety
       run: |
@@ -156,3 +162,105 @@ pre-push:
             exit 1
           fi
         done
+
+    # ─── SwiftLint --strict (mirrors CI smoke job step) ───────────────────
+    swiftlint:
+      tags: lint
+      run: |
+        if ! command -v swiftlint >/dev/null 2>&1; then
+          echo "⚠️  swiftlint not installed — skipping. Install: brew install swiftlint"
+          exit 0
+        fi
+        swiftlint --strict
+
+    # ─── swift-format lint --strict (mirrors CI smoke job step) ───────────
+    swift-format-lint:
+      tags: lint
+      run: |
+        xcrun swift-format lint --strict \
+          --configuration .swift-format \
+          $(find . -name "*.swift" \
+            -not -path "./node_modules/*" \
+            -not -path "./Beeping.xcodeproj/*" \
+            -not -path "./BeepingSampleApp/BeepingSampleApp.xcodeproj/*" \
+            -not -path "./Examples/PodConsumer/PodConsumer.xcodeproj/*" \
+            -not -path "./.build/*" \
+            -not -path "./build/*" \
+            -not -path "./dist/*" \
+            -not -path "./Vendor/*")
+
+    # ─── Smoke build (mirrors CI smoke build steps + warning gate) ────────
+    smoke-build:
+      tags: build
+      run: |
+        set -o pipefail
+        xcodebuild build \
+          -project Beeping.xcodeproj \
+          -scheme Beeping \
+          -destination 'generic/platform=iOS' \
+          -configuration Debug \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          2>&1 | tee /tmp/lefthook-build.log
+        # CI's "Fail on warnings or errors" gate. Same allowlist.
+        if grep -nE "warning:|error:" /tmp/lefthook-build.log \
+            | grep -v "shadows module 'Beeping'" \
+            | grep -v "AppIntents.framework dependency" \
+            | grep -v "'allowBluetooth' was deprecated" \
+            | grep -v "auto-linked framework 'CoreAudioTypes'" \
+            | grep -v "auto-linked framework 'UIUtilities'" \
+            | grep -v "SwiftUICore" \
+            | grep -q .; then
+          echo "❌ unexpected warnings or errors in build output"
+          grep -nE "warning:|error:" /tmp/lefthook-build.log \
+            | grep -v "shadows module 'Beeping'" \
+            | grep -v "AppIntents.framework dependency" \
+            | grep -v "'allowBluetooth' was deprecated" \
+            | grep -v "auto-linked framework 'CoreAudioTypes'" \
+            | grep -v "auto-linked framework 'UIUtilities'" \
+            | grep -v "SwiftUICore"
+          exit 1
+        fi
+
+    # ─── SDK test suite on the booted simulator (mirrors CI tests job) ────
+    # Picks the first booted iPhone simulator if any; falls back to the
+    # first available iPhone. Skips the cloud round-trip suite because
+    # it needs `BEEPBOX_API_KEY_DEV` set via launchctl on the simulator
+    # — local devs can run it manually with `xcodebuild test -only-...`.
+    tests:
+      tags: test
+      run: |
+        set -o pipefail
+        udid=$(xcrun simctl list devices booted 2>/dev/null | grep -E "^\s*iPhone " | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+        if [ -z "$udid" ]; then
+          udid=$(xcrun simctl list devices available --json | jq -r 'first(.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.isAvailable and (.name | startswith("iPhone"))) | .udid)')
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "⚠️  no iPhone simulator available — skipping tests"
+            exit 0
+          fi
+          xcrun simctl boot "$udid" >/dev/null 2>&1 || true
+        fi
+        xcodebuild build \
+          -project Beeping.xcodeproj \
+          -scheme Beeping \
+          -configuration Debug \
+          -destination "platform=iOS Simulator,id=$udid" \
+          -derivedDataPath build/DerivedData \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+        xcodebuild test \
+          -project Beeping.xcodeproj \
+          -scheme Beeping-Tests \
+          -configuration Debug \
+          -destination "platform=iOS Simulator,id=$udid" \
+          -derivedDataPath build/DerivedData \
+          -parallel-testing-enabled NO \
+          -skip-testing:BeepingTests/CloudRoundTripIntegrationTests \
+          -quiet \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
