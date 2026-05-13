@@ -10,8 +10,12 @@ name: Release artifacts
 # (cosign verify-blob + sha256 check + SBOM inspection).
 
 on:
-  release:
-    types: [published]
+  # GITHUB_TOKEN-driven release events don't propagate workflows (GH
+  # security feature against runaway loops). Listening to `push: tags`
+  # instead picks up release-please's tag write directly. The release
+  # itself still exists — we just attach assets to it from this run.
+  push:
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
@@ -33,7 +37,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          # `inputs.tag` wins when dispatched manually so the operator
+          # can re-package an existing tag; otherwise checkout the tag
+          # that triggered the push event.
+          ref: ${{ inputs.tag || github.ref_name }}
 
       - name: Show selected Xcode version
         run: xcodebuild -version
