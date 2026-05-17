@@ -14,6 +14,7 @@
 #import "BeepingCoreLib_api.h"
 
 #include <atomic>
+#include <vector>
 
 #pragma mark - C bridging helpers
 
@@ -109,6 +110,90 @@ void bcCheckStatus(OSStatus status, const char *step) {
 - (float)  confidenceError     { return BEEPING_GetConfidenceError(_cHandle); }
 - (float)  confidenceNoise     { return BEEPING_GetConfidenceNoise(_cHandle); }
 - (float)  receivedBeepsVolume { return BEEPING_GetReceivedBeepsVolume(_cHandle); }
+
++ (NSArray<NSNumber *> *)computeBeepScheduleWithDuration:(float)duration
+                                                startTime:(float)startTime
+                                                 interval:(float)interval
+                                                    error:(int32_t *)errorOut {
+    // Size-query mode: pass maxTimestamps=0 to learn the count first.
+    int32_t count = 0;
+    int32_t rc = BEEPING_ComputeBeepSchedule(duration, startTime, interval,
+                                             nullptr, 0, &count);
+    if (rc != 0) {
+        if (errorOut != nullptr) { *errorOut = rc; }
+        return nil;
+    }
+    if (count <= 0) {
+        return @[];
+    }
+    // Allocate the timestamps buffer and call again.
+    std::vector<double> timestamps(static_cast<size_t>(count));
+    int32_t writtenCount = 0;
+    rc = BEEPING_ComputeBeepSchedule(duration, startTime, interval,
+                                     timestamps.data(), count, &writtenCount);
+    if (rc != 0) {
+        if (errorOut != nullptr) { *errorOut = rc; }
+        return nil;
+    }
+    NSMutableArray<NSNumber *> *result =
+        [NSMutableArray arrayWithCapacity:static_cast<NSUInteger>(writtenCount)];
+    for (int32_t i = 0; i < writtenCount; i++) {
+        [result addObject:@(timestamps[static_cast<size_t>(i)])];
+    }
+    return result;
+}
+
+- (NSData *)encodeWithScheduleCode:(NSString *)code
+                          duration:(float)duration
+                         startTime:(float)startTime
+                          interval:(float)interval
+                        beepGainDb:(float)beepGainDb
+                             error:(int32_t *)errorOut {
+    const char *codeBytes = [code UTF8String];
+    if (codeBytes == nullptr) {
+        if (errorOut != nullptr) { *errorOut = -2; }
+        return nil;
+    }
+    int32_t codeSize = static_cast<int32_t>(strlen(codeBytes));
+
+    // Ask the engine how many samples the output buffer needs.
+    int32_t maxSamples = BEEPING_GetScheduleBufferSize(duration, _cHandle);
+    if (maxSamples <= 0) {
+        if (errorOut != nullptr) { *errorOut = maxSamples; }
+        return nil;
+    }
+
+    // Allocate as NSMutableData so we can hand back ownership without copying.
+    NSMutableData *outData =
+        [NSMutableData dataWithLength:static_cast<NSUInteger>(maxSamples) * sizeof(float)];
+    if (outData == nil) {
+        if (errorOut != nullptr) { *errorOut = -2; }
+        return nil;
+    }
+    int32_t written = 0;
+    int32_t rc = BEEPING_EncodeWithSchedule(codeBytes, codeSize,
+                                            /*type=*/0,
+                                            /*melody=*/nullptr,
+                                            /*melodySize=*/0,
+                                            duration, startTime, interval,
+                                            beepGainDb,
+                                            static_cast<float *>([outData mutableBytes]),
+                                            maxSamples,
+                                            &written,
+                                            _cHandle);
+    if (rc != 0) {
+        if (errorOut != nullptr) { *errorOut = rc; }
+        return nil;
+    }
+    // Trim defensively: the C API guarantees `written ==
+    // floor(duration * sampleRate)`, which should equal `maxSamples`, but
+    // we honor the explicit count returned to stay correct if the engine
+    // ever returns a shorter buffer.
+    if (written > 0 && written < maxSamples) {
+        [outData setLength:static_cast<NSUInteger>(written) * sizeof(float)];
+    }
+    return outData;
+}
 
 @end
 

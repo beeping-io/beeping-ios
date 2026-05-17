@@ -273,6 +273,70 @@ public actor BeepingClient {
         await telemetryClient.record(.beepEmitted)
     }
 
+    /// Compute the wall-clock timestamps (in seconds) at which beeps fire
+    /// when emitting `code` repeatedly across a fixed-duration schedule.
+    ///
+    /// Pure math — does not touch the audio engine. Use this to drive a
+    /// UI preview of the schedule, or to feed a custom mixer that wants
+    /// to start each beep at the canonical timestamps without calling
+    /// `encodeWithSchedule(...)`.
+    ///
+    /// - Parameters:
+    ///   - duration: Total schedule duration in seconds. Must be `>= 2.3`.
+    ///   - startTime: Offset of the first beep in seconds. Must be `>= 0`
+    ///     and `startTime + 2.3 <= duration`.
+    ///   - interval: Seconds between successive beeps. Must be `> 0`.
+    /// - Returns: Sorted ascending timestamps in seconds, one per beep.
+    /// - Throws: `BeepingError.schedulerError` with the underlying C
+    ///   return code if any parameter is out of range.
+    public nonisolated static func computeBeepSchedule(
+        duration: TimeInterval,
+        startTime: TimeInterval,
+        interval: TimeInterval
+    ) throws -> [TimeInterval] {
+        try BeepingCoreWrapper.computeBeepSchedule(
+            duration: Float(duration),
+            startTime: Float(startTime),
+            interval: Float(interval))
+    }
+
+    /// Encode `code` as multiple beeps scheduled across `duration` seconds
+    /// and return the resulting float32 mono PCM samples at 44100 Hz.
+    ///
+    /// Each beep's payload is `code` concatenated with the rounded
+    /// timestamp of the beep (4-char zero-padded base-32) — the decoder
+    /// can recover the beep's position via `BeepingPayload.timestamp`.
+    /// Silence between beeps is written as zeros, so the returned buffer
+    /// is exactly `floor(duration * 44100)` samples long.
+    ///
+    /// Runs the C engine on the actor's executor — fast for short
+    /// durations (<30 s) but still async since the buffer may be tens of
+    /// MB for long schedules.
+    ///
+    /// - Parameters:
+    ///   - code: Payload to repeat (typically a 5-char base-32 key).
+    ///   - duration: Total duration in seconds. Must be `>= 2.3`.
+    ///   - startTime: Offset of the first beep in seconds. Must be `>= 0`.
+    ///   - interval: Seconds between beeps. Must be `> 0`.
+    ///   - beepGainDb: Beep volume in dB. Clamped internally to `[-60, +12]`.
+    /// - Returns: float32 mono PCM samples at 44100 Hz.
+    /// - Throws: `BeepingError.schedulerError` if the C engine rejects
+    ///   the input or runs out of buffer space.
+    public func encodeWithSchedule(
+        code: String,
+        duration: TimeInterval,
+        startTime: TimeInterval,
+        interval: TimeInterval,
+        beepGainDb: Float = 0
+    ) async throws -> Data {
+        try wrapper.encodeWithSchedule(
+            code: code,
+            duration: Float(duration),
+            startTime: Float(startTime),
+            interval: Float(interval),
+            beepGainDb: beepGainDb)
+    }
+
     /// Stops listening, terminates all `listen()` streams, and tears
     /// down the audio session.
     ///

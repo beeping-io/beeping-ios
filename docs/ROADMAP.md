@@ -13,12 +13,12 @@
 | **Project start** | 2026-04-28 (Tue) |
 | **Velocity assumed** | 8 story points / working day |
 | **Risk margin** | 20% (i.e. 10 SP·days planned as 12 calendar days) |
-| **Total SP committed** | 104 SP across 18 tasks (BEE-2050 + BEE-2220 scope additions) |
-| **Raw effort** | 104 SP / 8 SP·day = ~13.0 working days |
-| **Effort with margin** | ~15.6 working days → **16 working days rounded** |
-| **Estimated end date** | **2026-05-18 (Mon)** |
-| **Global status** | ✅ En tiempo (buffer ~5 días) |
-| **Last update** | 2026-05-12 (Closed BEE-76 — property tests + coverage report; **Phase 9 100% Done (18/18 tasks)**, ready for milestone-close PR) |
+| **Total SP committed** | 117 SP across 23 tasks (BEE-2050 + BEE-2220 + BEE-2236 + BEE-2237 + BEE-2241 + BEE-2255 + BEE-2256 scope additions) |
+| **Raw effort** | 117 SP / 8 SP·day = ~14.6 working days |
+| **Effort with margin** | ~17.5 working days → **18 working days rounded** |
+| **Actual end date** | **2026-05-16 (Sat)** — Phase 9 closes 4 days early vs revised plan 2026-05-20 |
+| **Global status** | ✅ **23/23 tasks Done** — milestone ready for close PR |
+| **Last update** | 2026-05-16 (Closed BEE-2241 — scheduler API exposed in SDK; Phase 9 completes 23/23) |
 
 ---
 

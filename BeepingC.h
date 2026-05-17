@@ -65,6 +65,47 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - `< 0` decoded data is wrong; magnitude is byte count
 - (int32_t)getDecodedDataInto:(char *)out NS_REFINED_FOR_SWIFT;
 
+/// Wraps `BEEPING_ComputeBeepSchedule`. Pure math — does not touch the
+/// engine handle, so exposed as a class method. Returns the array of
+/// beep timestamps (seconds) that fit in `duration`, or `nil` if the
+/// C call returns a negative error code.
+///
+/// - Parameters:
+///   - duration: Total schedule duration in seconds (must be >= 2.3).
+///   - startTime: Offset of the first beep in seconds (must be >= 0
+///     and `startTime + 2.3 <= duration`).
+///   - interval: Seconds between successive beeps (must be > 0).
+///   - errorOut: If non-NULL, receives the C error code on failure.
++ (nullable NSArray<NSNumber *> *)computeBeepScheduleWithDuration:(float)duration
+                                                        startTime:(float)startTime
+                                                         interval:(float)interval
+                                                            error:(nullable int32_t *)errorOut;
+
+/// Wraps `BEEPING_EncodeWithSchedule`. Encodes `code` repeated as multiple
+/// beeps scheduled across `duration` seconds and returns the resulting
+/// float32 mono PCM samples at the engine's configured sample rate (call
+/// `configureWithMode:sampleRate:bufferSize:` before this).
+///
+/// Type/melody params from the C API are not exposed here — they default
+/// to pure-tone mode (`type = 0`, `melody = NULL`). Add overloads if
+/// melody mode is ever needed by the SDK consumer.
+///
+/// - Parameters:
+///   - code: Payload bytes (typically a 5-char base-32 [0-9a-v] key).
+///   - duration: Total duration in seconds (>= 2.3).
+///   - startTime: Offset of first beep in seconds (>= 0).
+///   - interval: Seconds between beeps (> 0).
+///   - beepGainDb: Beep volume in dB; clamped internally to [-60, +12].
+///   - errorOut: If non-NULL, receives the C error code on failure
+///     (see `BeepingCoreLib_api.h` for return-code semantics).
+/// - Returns: PCM samples as `NSData` of float32s, or `nil` on failure.
+- (nullable NSData *)encodeWithScheduleCode:(NSString *)code
+                                    duration:(float)duration
+                                   startTime:(float)startTime
+                                    interval:(float)interval
+                                  beepGainDb:(float)beepGainDb
+                                       error:(nullable int32_t *)errorOut;
+
 /// Wraps `BEEPING_GetDecodedMode`.
 @property (readonly) int32_t decodedMode;
 

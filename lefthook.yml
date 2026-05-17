@@ -50,11 +50,18 @@ pre-commit:
     # ─── Block large files ──────────────────────────────────────────────────
     # NOTE: legacy libBeepingCoreUniversal.a (18 MB) is whitelisted as a
     # pre-existing committed binary. Removed by BEE-79.
+    # Also whitelisted: Vendor/BeepingCore.xcframework/**/libBeepingCore.a —
+    # the vendored xcframework slices pulled verbatim from beeping-core's
+    # signed GH releases (sha256 verified). Tracked in the repo because
+    # Package.swift's binaryTarget builds its zip from this xcframework
+    # and SDK consumers expect a self-contained checkout.
     large-files:
       tags: safety
       run: |
         max_size=1048576  # 1 MB
-        whitelist="libBeepingCoreUniversal.a"
+        whitelist="libBeepingCoreUniversal.a
+        Vendor/BeepingCore.xcframework/ios-arm64/libBeepingCore.a
+        Vendor/BeepingCore.xcframework/ios-arm64_x86_64-simulator/libBeepingCore.a"
         for f in {staged_files}; do
           if [ -f "$f" ]; then
             if echo "$whitelist" | grep -q -F "$f"; then
@@ -197,7 +204,7 @@ pre-push:
         xcodebuild build \
           -project Beeping.xcodeproj \
           -scheme Beeping \
-          -destination 'generic/platform=iOS' \
+          -destination 'generic/platform=iOS Simulator' \
           -configuration Debug \
           -quiet \
           CODE_SIGN_IDENTITY="" \

@@ -160,6 +160,40 @@ try await client.play(pcm)
 await client.stop()
 ```
 
+### 🎼 Time-scheduled emission (BEE-2241)
+
+Emit a code as multiple beeps spaced across a fixed duration. The wire
+protocol matches what `beepbox-server` produces for `/v1/encode` with a
+`duration` parameter, so the SDK and the HTTP server are interchangeable
+emitters of the same schedule.
+
+```swift
+import Beeping
+
+// Pure math — no engine needed, useful for UI previews.
+let schedule = try BeepingClient.computeBeepSchedule(
+    duration: 10, startTime: 0, interval: 2.3)
+// schedule == [0.0, 2.3, 4.6, 6.9]  // 4 beeps fit; t_max = duration - 2.3
+
+// Buffer is float32 mono PCM at 44_100 Hz.
+let client = BeepingClient()
+let pcm = try await client.encodeWithSchedule(
+    code: "abcde",
+    duration: 10, startTime: 0, interval: 2.3,
+    beepGainDb: 0)
+// pcm.count == 10 * 44_100 * 4  // duration × sampleRate × bytesPerSample
+```
+
+Each beep's wire payload is `code` concatenated with the rounded
+timestamp of the beep (4-char zero-padded base-32), so the decoder can
+recover the beep's position via `BeepingPayload.timestamp`. Silence
+between beeps is written as zeros — the returned buffer is exactly
+`floor(duration * 44_100)` samples long.
+
+See `BeepingSampleApp/Sources/Views/RootView.swift` → **Scheduler
+(BEE-2241)** section for an end-to-end demo that encodes + plays through
+the speaker and lets the listener decode the beeps back in-process.
+
 See [`docs/PRODUCTO.md`](docs/PRODUCTO.md) section 10 for the full flow and
 section 11 for state/error semantics.
 
