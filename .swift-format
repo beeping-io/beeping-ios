@@ -13,6 +13,7 @@
   "prioritizeKeepingFunctionOutputTogether": true,
   "indentConditionalCompilationBlocks": false,
   "lineBreakAroundMultilineExpressionChainComponents": false,
+  "multiElementCollectionTrailingCommas": false,
   "fileScopedDeclarationPrivacy": {
     "accessLevel": "private"
   },
