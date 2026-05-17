@@ -46,6 +46,11 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
     // response on a Swift caller's thread without disturbing the listener.
     private var _loopbackHandle: BCNativeCore?
 
+    // BEE-2241: dedicated handle for scheduler-mode encoding. Reuses the
+    // same isolation rationale as `_loopbackHandle` — keeps the listener's
+    // RemoteIO-driven `_handle` untouched.
+    private var _schedulerHandle: BCNativeCore?
+
     private var _decodedString: String?
     private var _isListening: Bool = false
     private var _isEmitting: Bool = false
@@ -257,6 +262,86 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
     internal var receivedBeepsVolume: Float { _handle.receivedBeepsVolume }
     internal var decodingBeginFreq: Float { _handle.decodingBeginFreq }
     internal var decodingEndFreq: Float { _handle.decodingEndFreq }
+
+    // MARK: - Scheduler (BEE-2241)
+
+    /// Pure-math wrapper around `BEEPING_ComputeBeepSchedule`. Returns
+    /// timestamps (in seconds) at which beeps fire across `duration`.
+    /// Static / class-method on the C side — does not touch the engine
+    /// handle, so safe to call without prior `configure(...)`.
+    internal static func computeBeepSchedule(
+        duration: Float,
+        startTime: Float,
+        interval: Float
+    ) throws -> [TimeInterval] {
+        var errorCode: Int32 = 0
+        let result = BCNativeCore.computeBeepSchedule(
+            withDuration: duration,
+            startTime: startTime,
+            interval: interval,
+            error: &errorCode)
+        guard let result else {
+            throw BeepingError.schedulerError(
+                code: errorCode,
+                reason: Self.schedulerReason(forCode: errorCode))
+        }
+        return result.map { TimeInterval(truncating: $0) }
+    }
+
+    /// Wrapper around `BEEPING_EncodeWithSchedule`. Lazily creates a
+    /// dedicated `BCNativeCore` for scheduler use so we don't disturb
+    /// the listener handle that owns the RemoteIO audio unit.
+    ///
+    /// Returned `Data` is float32 mono PCM at 44100 Hz (the schedule
+    /// engine's configured rate).
+    internal func encodeWithSchedule(
+        code: String,
+        duration: Float,
+        startTime: Float,
+        interval: Float,
+        beepGainDb: Float = 0
+    ) throws -> Data {
+        let handle = schedulerHandleConfigured()
+        var errorCode: Int32 = 0
+        let data = handle.encode(
+            withScheduleCode: code,
+            duration: duration,
+            startTime: startTime,
+            interval: interval,
+            beepGainDb: beepGainDb,
+            error: &errorCode)
+        guard let data else {
+            throw BeepingError.schedulerError(
+                code: errorCode,
+                reason: Self.schedulerReason(forCode: errorCode))
+        }
+        return data
+    }
+
+    private func schedulerHandleConfigured() -> BCNativeCore {
+        if let existing = _schedulerHandle { return existing }
+        let h = BCNativeCore()
+        // Mode is irrelevant for encoding (the scheduler uses the engine's
+        // sample rate, not its decode mode). Configure with `.audible` so
+        // the handle is in a valid state.
+        _ = h.configure(
+            withMode: BeepingMode.audible.rawValue,
+            sampleRate: 44100,
+            bufferSize: 1024)
+        _schedulerHandle = h
+        return h
+    }
+
+    /// Human-readable mapping for the scheduler C return codes documented
+    /// in `BeepingCoreLib_api.h`.
+    private static func schedulerReason(forCode code: Int32) -> String {
+        switch code {
+        case -1: return "buffer too small (caller's outBuffer < required size)"
+        case -2: return "invalid parameters (duration < 2.3, startTime+2.3 > duration, or interval <= 0)"
+        case -3: return "engine not configured — call configure(...) first"
+        default: return "unknown scheduler error code \(code)"
+        }
+    }
 
     internal static var libraryVersion: String { BCNativeCore.version() }
     internal static var frameworkVersion: String {

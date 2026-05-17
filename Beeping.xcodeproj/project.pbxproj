@@ -47,6 +47,7 @@
 		BC0001000000000000000231 /* CloudRoundTripIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000230 /* CloudRoundTripIntegrationTests.swift */; };
 		BC0001000000000000000241 /* WAVParserPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000240 /* WAVParserPropertyTests.swift */; };
 		BC0001000000000000000251 /* ModeMappingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000250 /* ModeMappingPropertyTests.swift */; };
+		BC0001000000000000000261 /* SchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000260 /* SchedulerTests.swift */; };
 		A18148391C68EC0C00BD86D0 /* BeepingCoreLib_api.h in Headers */ = {isa = PBXBuildFile; fileRef = 41F48AC51BA34EC8005727DC /* BeepingCoreLib_api.h */; };
 		BC0001000000000000000003 /* BeepingC.h in Headers */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000001 /* BeepingC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC0001000000000000000004 /* BeepingC.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000002 /* BeepingC.mm */; };
@@ -112,6 +113,7 @@
 		BC0001000000000000000230 /* CloudRoundTripIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudRoundTripIntegrationTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000240 /* WAVParserPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WAVParserPropertyTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000250 /* ModeMappingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeMappingPropertyTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000260 /* SchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulerTests.swift; sourceTree = "<group>"; };
 		41E1E2E11AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		41E1E2E81AFA5EFE00987410 /* BeepingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeepingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E1E2EE1AFA5EFE00987410 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				BC0001000000000000000230 /* CloudRoundTripIntegrationTests.swift */,
 				BC0001000000000000000240 /* WAVParserPropertyTests.swift */,
 				BC0001000000000000000250 /* ModeMappingPropertyTests.swift */,
+				BC0001000000000000000260 /* SchedulerTests.swift */,
 				BC0001000000000000000084 /* BuilderDSLTests.swift */,
 				BC0001000000000000000102 /* BeepingLogTests.swift */,
 				BC0001000000000000000116 /* TelemetryTests.swift */,
@@ -399,6 +402,7 @@
 				BC0001000000000000000231 /* CloudRoundTripIntegrationTests.swift in Sources */,
 				BC0001000000000000000241 /* WAVParserPropertyTests.swift in Sources */,
 				BC0001000000000000000251 /* ModeMappingPropertyTests.swift in Sources */,
+				BC0001000000000000000261 /* SchedulerTests.swift in Sources */,
 				BC0001000000000000000085 /* BuilderDSLTests.swift in Sources */,
 				BC0001000000000000000103 /* BeepingLogTests.swift in Sources */,
 				BC0001000000000000000117 /* TelemetryTests.swift in Sources */,

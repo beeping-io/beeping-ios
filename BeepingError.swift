@@ -35,4 +35,9 @@ public enum BeepingError: Error, Sendable, Equatable {
     /// human-readable reason for diagnostics; not part of any public
     /// contract.
     case decoderInternal(reason: String)
+
+    /// The scheduler (`computeBeepSchedule` / `encodeWithSchedule`) rejected
+    /// the input or could not produce a buffer. Carries the raw C return
+    /// code plus a human-readable reason for diagnostics.
+    case schedulerError(code: Int32, reason: String)
 }

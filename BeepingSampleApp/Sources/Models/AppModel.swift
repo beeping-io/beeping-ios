@@ -19,9 +19,39 @@ final class AppModel: ObservableObject {
     @Published private(set) var logs: [LogEntry] = []
 
     private var listenTask: Task<Void, Never>?
+    private let schedulerPlayer = SchedulerDemoPlayer()
 
     init() {
         rebuildClient()
+    }
+
+    /// BEE-2241 demo: computes the canonical 4-beep schedule + encodes
+    /// the buffer + plays it through the host speakers. The active
+    /// listener (`client`) on this same simulator should pick up the
+    /// beeps via the mic and surface them as `event: decoded` entries.
+    func runSchedulerDemo() {
+        Task {
+            do {
+                let timestamps = try BeepingClient.computeBeepSchedule(
+                    duration: 10, startTime: 0, interval: 2.3)
+                let formatted =
+                    timestamps
+                    .map { String(format: "%.1fs", $0) }
+                    .joined(separator: ", ")
+                append(.info, "scheduler demo: \(timestamps.count) beeps at \(formatted)")
+                guard let client else {
+                    append(.error, "scheduler demo: no client")
+                    return
+                }
+                let pcm = try await client.encodeWithSchedule(
+                    code: "abcde", duration: 10, startTime: 0, interval: 2.3)
+                append(.info, "scheduler demo: encoded \(pcm.count) bytes (\(pcm.count / 4) float samples)")
+                try schedulerPlayer.play(pcmFloat32: pcm)
+                append(.info, "scheduler demo: playback started — listen for 4 beeps")
+            } catch {
+                append(.error, "scheduler demo failed: \(error)")
+            }
+        }
     }
 
     func rebuildClient() {

@@ -13,15 +13,85 @@
 - **Fecha de fin estimada (con 20% margen)**: 2026-05-18
 - **Velocidad asumida**: 8 story points / día
 - **Estado global**: ✅ En tiempo (buffer ~5 días)
-- **Última actualización**: 2026-05-12 (trigger: Closed BEE-76 → **Phase 9 = 18/18 tasks DONE**, ready for milestone-close PR)
+- **Última actualización**: 2026-05-16 (trigger: Closed BEE-2241 — scheduler API exposed in SDK; Phase 9 = 23/23 tasks DONE, ready for milestone-close PR + first release)
 
 | # | Milestone | Story points | Inicio est. | Fin actual | Estado |
 |---|---|---|---|---|---|
-| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 104 (18 tasks; 104 SP closed = 100%; BEE-2050 + BEE-2220 scope additions, BEE-76 re-scoped 13 → 5 SP) | 2026-04-28 | **2026-05-12** (6 days early vs plan 2026-05-18) | ✅ **DONE** |
+| 1 | 🍎 Phase 9 — beeping-ios (Swift 6) | 117 (23/23 tasks; 100% closed; +13 SP scope additions during Phase 9 + 4 cross-repo discoveries) | 2026-04-28 | **2026-05-16** (4 days early vs revised 2026-05-20, 2 days early vs original 2026-05-18) | ✅ **DONE** |
 
 ---
 
 ## 📜 History
+
+### [2026-05-16] - 🎉 Phase 9 milestone CLOSED (23/23 tasks) — Closed BEE-2241 (scheduler API exposed in SDK)
+
+**Trigger detallado**: BEE-2241 cerrada — scheduler API `computeBeepSchedule` + `encodeWithSchedule` expuestos en el SDK Swift consumiendo el nuevo C API de beeping-core v0.8.1 (BEE-2238 upstream Done en Phase 1). **Phase 9 cierra 23/23 tasks**.
+
+**Lo entregado en BEE-2241**:
+- **XCFramework swap**: `Vendor/BeepingCore.xcframework` reemplazado con v0.8.1 release (sha256 verified). Lib `nm` confirma `_BEEPING_ComputeBeepSchedule`, `_BEEPING_EncodeWithSchedule`, `_BEEPING_GetScheduleBufferSize` presentes. Header `BeepingCoreLib_api.h` actualizado de 254 → 429 líneas.
+- **ObjC++ bridge**: 2 nuevos métodos en `BCNativeCore` (`+ computeBeepSchedule…` class method, `- encodeWithSchedule…` instance method). Patrón size-query-then-fill para los buffers de output.
+- **Swift API**: `BeepingClient.computeBeepSchedule(...)` (`nonisolated static`, pura math) + `BeepingClient.encodeWithSchedule(...)` (`async throws -> Data`). Nueva case `BeepingError.schedulerError(code:reason:)`.
+- **Tests**: `BeepingCoreTests/SchedulerTests.swift` con 7 Swift Testing cases — canonical 4-beep schedule, monotonicity, startTime offset, 4 invalid-param parameterized cases, buffer-length contract, non-silent audio probe, schedule-count vs encode-count cross-check. All 7 pass.
+- **Sample app**: `SchedulerDemoPlayer.swift` (float32→Int16 WAV wrapper + AVAudioPlayer) + `runSchedulerDemo()` en `AppModel` + sección "Scheduler (BEE-2241)" en `RootView` con botón "Run scheduler demo".
+- **Docs**: `README.md` extendido con subsección "🎼 Time-scheduled emission" + Swift code samples.
+
+**Human QA E2E**: Demo ejecutado en iOS Simulator iPhone 17 (iOS 26.5) con OCR loop watcher (Apple Vision + screenshot polling). Captured decodes:
+
+| Time | Decoded | Conf | Mapping |
+|---|---|---|---|
+| 14:12:07 | `abcde0000` | 0.39 | rep 1 — t=0s |
+| 14:12:11 | `abcde0005` | 0.81 | rep 3 — t≈4.6→5s |
+| 14:12:14 | `abcde0007` | **1.00** | rep 4 — t≈6.9→7s |
+
+Decoder recupera code + per-beep timestamp tag (BEE-2241 design intent cumplido). Founder confirmó cierre.
+
+**Decisión técnica**: `computeBeepSchedule(10, 0, 2.3)` retorna **4 timestamps** (no 5 como decía la task spec original) — el C engine en beeping-core requiere que cada beep complete dentro de `duration` (`t_max = duration - 2.3 = 7.7`). El test fija esa semántica como source of truth.
+
+**Phase 9 cierra 23/23 tasks** (104 → 117 SP closed; +13 SP scope additions durante la phase). Velocidad acumulada: ~10 SP/día across 11 working days (2026-04-28 → 2026-05-16, considerando weekends).
+
+**Pre-close gate (Paso 9.0)**: `docs/IDEAS.md` y `docs/PENDING.md` revisados antes del PR de cierre. Capture pending follow-ups: (a) re-test BEE-2236 path desde phone físico post BEE-2255 fix, (b) fix pre-existing failures `EncoderStrategyTests.cloudEncoderRequestShape` + `CloudEncoderPlaybackTests.http200InvokesSink` (5-char base32 validation rechaza fixtures con 9 chars).
+
+**Próximo paso (Paso 9.1)**: PR `milestone/phase-9 → develop` con 23 closes references. Tras merge a develop + cherry-pick a main (o merge directo), release-please dispara PR con bump v0.0.0 → v0.0.1. Merge release PR → release.yml builds + signs + publishes XCFramework con cosign + SBOM.
+
+**Net delta global**: +5 SP scope addition durante esta task. Phase 9 cierra 4 días antes del plan revisado (2026-05-20 → 2026-05-16).
+
+**Milestones afectados**:
+- 🍎 Phase 9: 22 → **23 tasks Done** (COMPLETED). 112 → 117 SP closed (100%).
+
+**Cambios de estado de riesgo**: Phase 9 risk register completamente cerrado. R1 (`beeping-core` releases delay) resuelto por v0.8.1 release. R3 (Swift 6 strict concurrency), R5 (telemetry privacy) ya estaban resueltos. R2 (Apple notarization), R8 (Xcode 16 min) sin cambios.
+
+---
+
+### [2026-05-15] - Closed BEE-2236 + BEE-2237 (Phase 9 SDK QA) + 2 cross-repo bugfixes in beeping-www (BEE-2255 + BEE-2256)
+
+**Trigger detallado**: BEE-2236 completada — matriz QA 4 combos (dev/prod × audible/inaudible) ejecutada con setup Mac browser → Mac mic → iOS Simulator iPhone 17 (iOS 26.5). BEE-2237 cerrada por aceptación del founder ("Va bien") — cobertura efectiva vía BEE-2220 setup + BEE-2236 path completo, sin código nuevo.
+
+**Resultados QA matrix**:
+- Combo 1 (dev × audible × `abcde`): ✅ PASS — 4+ decodes `abcde0000` conf max 0.84/0.88
+- Combo 2 (dev × inaudible × `bcdej`): ⚪ N/A hardware — speaker rolloff + Mac mic LPF en 18-20 kHz (signal sí llega, payload con bit errors, conf 0.04-0.13)
+- Combo 3 (prod × audible × `asdfg` via beeping.io/test post BEE-2256): ✅ PASS — **21 decodes** `asdfg0000` capturados via Apple Vision OCR loop sobre screenshots del sim
+- Combo 4 (prod × inaudible): ⚪ N/A — mismo motivo combo 2
+
+**Cross-repo bugs descubiertos durante QA y arreglados in-session (en `beeping-www`):**
+
+1. **BEE-2255** — `TestEmitter.tsx` creaba `new AudioContext()` por cada rep (9 contexts por emit). iOS Safari hard-limit + Android Chrome suspend → reps 2-9 silencio o page hangs en mobile. Fix: hoist fetch + `playWavSequence` fuera del loop, single context para los 9 reps. Net diff: −74 / +59 LOC. 28 tests verdes. PR #9 merged + deploy:dev verified.
+
+2. **BEE-2256** — UX rework /test page: env derivado del `window.location.hostname` en lugar de selector manual (CORS pinning lo determina implícitamente). Single API key por origin. Badge env-aware en H1. Title metadata generic. Solved CORS friction (prod beepbox solo permite `https://beeping.io`; dev beepbox solo `https://dev.beeping.io`). 34 tests verdes (+6 nuevos para `currentEnv()`). PR #10 merged + deploy:dev + deploy:prod verified.
+
+**Tooling temporal**: Apple Vision OCR-based screenshot watcher (`swift /tmp/ocr.swift`) que muestreaba el sim cada 2s y grep-eaba decoded events matcheando la key emitida. Permitió monitoreo in-vivo del DebugConsole sin polling manual. Aproximación reutilizable.
+
+**Deviation vs spec**: emisor desde Mac browser en lugar de smartphone físico separado. Path audio equivalente; phone físico requiere re-test con setup mic-distance recomendable — capturable como follow-up.
+
+**Chore añadido en `milestone/phase-9`**: `lefthook.yml` pre-push build check usa `generic/platform=iOS Simulator` en lugar de `generic/platform=iOS` para evitar requirement de code signing en push local.
+
+**Net delta global**: +8 SP scope addition durante QA, 0 días de retraso (cerrado mismo día).
+
+**Milestones afectados**:
+- 🍎 Phase 9: 18 → **22 tasks Done** de 23 totales. SP closed 104 → 112. Pending: BEE-2241 (5 SP, expose beep scheduler) — única task que falta para cierre del milestone.
+
+**Cambios de estado de riesgo**: ninguno nuevo. R1, R3, R5 siguen resueltos. Discoveries cross-repo (BEE-2255 + BEE-2256) son inherentes al pivot QA via /test page (BEE-2235 era Android-led, scope cross-platform).
+
+---
 
 ### [2026-05-12] - 🎉 Phase 9 milestone CLOSED — Closed BEE-76 (property tests + coverage; scope reduced)
 
