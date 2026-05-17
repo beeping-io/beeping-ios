@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1](https://github.com/beeping-io/beeping-ios/compare/v0.1.0...v0.1.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **release:** Package.swift binaryTarget points at v0.1.0 artifact ([#11](https://github.com/beeping-io/beeping-ios/issues/11)) ([cae6353](https://github.com/beeping-io/beeping-ios/commit/cae63538d1c0f7c90bf082162dae576613a65076))
+
 ## [0.1.0](https://github.com/beeping-io/beeping-ios/compare/v0.0.0...v0.1.0) (2026-05-17)
 
 
