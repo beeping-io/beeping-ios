@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.0](https://github.com/beeping-io/beeping-ios/compare/v0.0.0...v0.1.0) (2026-05-17)
+
+
+### Features
+
+* **scheduler:** BEE-2241 expose computeBeepSchedule + encodeWithSchedule ([#8](https://github.com/beeping-io/beeping-ios/issues/8)) ([52ed4db](https://github.com/beeping-io/beeping-ios/commit/52ed4db55a2ee6487f1cb4dc795d113e6de83532))
+
+
+### Bug Fixes
+
+* **ci:** release.yml trigger on push:tags + Package.swift url:checksum: v0.0.0 ([#6](https://github.com/beeping-io/beeping-ios/issues/6)) ([6bf312c](https://github.com/beeping-io/beeping-ios/commit/6bf312cc1486ea6eefd1d9cf9078da3cd18edde8))
+
 ## 0.0.0 (2026-05-12)
 
 
