@@ -15,6 +15,7 @@ struct RootView: View {
             header
             Form {
                 listenerSection
+                schedulerSection
                 activitySection
             }
             .scrollContentBackground(.hidden)
@@ -22,6 +23,29 @@ struct RootView: View {
         }
         .background(Color(.systemGroupedBackground))
         .sheet(isPresented: $showingDebug) { DebugConsole() }
+    }
+
+    private var schedulerSection: some View {
+        Section {
+            Button {
+                model.runSchedulerDemo()
+            } label: {
+                Label("Run scheduler demo", systemImage: "metronome")
+                    .foregroundStyle(BeepingBrand.red)
+            }
+            .accessibilityIdentifier("scheduler_demo_button")
+            Text(
+                """
+                Computes a 4-beep schedule for `abcde` over 10 s every \
+                2.3 s and plays it through the speaker. The listener above \
+                picks the beeps back up via mic.
+                """
+            )
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        } header: {
+            sectionHeader(symbol: "metronome", title: "Scheduler (BEE-2241)")
+        }
     }
 
     // MARK: - Header

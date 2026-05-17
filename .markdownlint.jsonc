@@ -1,0 +1,13 @@
+// markdownlint rules tuned for this repo. Defaults are too strict for our
+// CHANGELOG (long lines, dense tables, repeated section headings across
+// many entries) and our README (Swift code blocks with long lines, inline
+// HTML for badges). Each disabled rule below is one we've explicitly
+// chosen to allow.
+{
+  "MD013": false, // line-length — CHANGELOG tables + Swift snippets > 80
+  "MD022": false, // blanks-around-headings — table-heavy entries collide
+  "MD024": false, // no-duplicate-heading — CHANGELOG repeats per-entry headings
+  "MD032": false, // blanks-around-lists — bullet lists inside tables/sections
+  "MD033": false, // no-inline-html — README uses <details>, <img>, etc.
+  "MD060": false  // table-column-style — aesthetic, not correctness
+}
