@@ -4,6 +4,8 @@
 // HTML for badges). Each disabled rule below is one we've explicitly
 // chosen to allow.
 {
+  "MD004": false, // ul-style — release-please CHANGELOG uses dashes, others use asterisks
+  "MD012": false, // no-multiple-blanks — release-please CHANGELOG has multiple blank lines between entries
   "MD013": false, // line-length — CHANGELOG tables + Swift snippets > 80
   "MD022": false, // blanks-around-headings — table-heavy entries collide
   "MD024": false, // no-duplicate-heading — CHANGELOG repeats per-entry headings

@@ -39,3 +39,8 @@ jobs:
         with:
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
+          # The repo's default branch is `develop` (integration); the
+          # action otherwise infers it as the target. We want release
+          # PRs to land on `main`, which is the explicit release branch
+          # this workflow already fires on.
+          target-branch: main
