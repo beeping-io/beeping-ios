@@ -11,7 +11,19 @@ import Testing
 import Foundation
 @testable import Beeping
 
-@Suite("Encoder strategies (BEE-71 + BEE-73 contract update)")
+// MARK: - Serialization
+//
+// MockURLProtocol's responder is `nonisolated(unsafe) static var`
+// (intentional — `URLProtocol` doesn't expose configuration to its
+// instances, so per-test responders need shared state). With Swift
+// Testing's default parallel execution, two suites sharing the responder
+// race on it; one suite's `defer reset` can clear another suite's setup
+// mid-flight, surfacing as "HTTP 400: key must be exactly 5..." in tests
+// that never set a 400 responder. `.serialized` keeps tests within this
+// suite running one at a time, and CI runs with
+// `-parallel-testing-enabled NO` to also serialize across suites
+// (documented in ci.yml). Together: stable test execution.
+@Suite("Encoder strategies (BEE-71 + BEE-73 contract update)", .serialized)
 struct EncoderStrategyTests {
 
     // MARK: - Helpers
