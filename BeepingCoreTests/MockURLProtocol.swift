@@ -23,6 +23,26 @@
 //      // ... exercise code that uses `session`
 //      let captured = MockURLProtocol.lastRequest
 //
+//  ⚠️  PARALLEL TEST EXECUTION CAVEAT (BEE-2257):
+//
+//  `responder` and `lastRequest` are shared static state because
+//  `URLProtocol` instances are spawned per-request by the URL loading
+//  system and have no clean way to receive per-test configuration. With
+//  Swift Testing's default parallel suite execution, two suites that
+//  both set `responder` race against each other, and one suite's
+//  `defer reset` can fire before the other's request has been served —
+//  surfacing as cross-test contamination ("HTTP 400: key must be ..." in
+//  a test that never set a 400 responder).
+//
+//  Required to keep tests stable:
+//    1. Every suite using this protocol annotates with `.serialized`
+//       (in-suite test ordering).
+//    2. CI runs `xcodebuild test -parallel-testing-enabled NO` to
+//       serialize across suites (configured in `.github/workflows/ci.yml`).
+//
+//  A future refactor could move the responder into per-session userInfo,
+//  but the static + serialization combo is the pragmatic minimum.
+//
 
 import Foundation
 
