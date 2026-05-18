@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2](https://github.com/beeping-io/beeping-ios/compare/v0.1.1...v0.1.2) (2026-05-18)
+
+
+### Features
+
+* **release:** BEE-2259/2258/2257 Phase 9 stabilization batch ([#14](https://github.com/beeping-io/beeping-ios/issues/14)) ([82c3eba](https://github.com/beeping-io/beeping-ios/commit/82c3ebaaea6f78c15ea2aa8b3f9a9d61c0841e4e))
+
 ## [0.1.1](https://github.com/beeping-io/beeping-ios/compare/v0.1.0...v0.1.1) (2026-05-17)
 
 
