@@ -35,8 +35,8 @@ let package = Package(
         .binaryTarget(
             name: "Beeping",
             url:
-                "https://github.com/beeping-io/beeping-ios/releases/download/v0.1.0/Beeping.xcframework.zip",
-            checksum: "61b3ccdb2cb7242449d5e7f99e4bf74bf262b594b5d16c3748085b96ffa492ce"
+                "https://github.com/beeping-io/beeping-ios/releases/download/v0.1.2/Beeping.xcframework.zip",
+            checksum: "110988ad921a6a6d3a0dd7335cb894ba89d24fb2df0595344aed3e0efcf9f917"
         )
     ]
 )
