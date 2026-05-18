@@ -109,6 +109,98 @@ jobs:
             Beeping.sbom.cdx.json \
             --clobber
 
+      - name: Rewrite Package.swift binaryTarget to this tag's artifact (BEE-2259)
+        # SPM consumers pin to a tag and read Package.swift AT THAT TAG. If
+        # the tag points to a commit where Package.swift still references
+        # the previous release's artifact, consumers pulling `from: "X.Y.Z"`
+        # silently fetch the WRONG binary. This step rewrites Package.swift
+        # with the just-built artifact URL + sha256, commits, then moves
+        # the tag to the new commit so consumers always resolve coherent
+        # artifacts.
+        #
+        # Push targets:
+        #   1. Primary: push to main directly (requires GITHUB_TOKEN to
+        #      bypass main branch protection, configured per-repo).
+        #   2. Fallback: push to `release-state/${TAG}` so the new commit
+        #      stays git-reachable even if main is protected; tag still
+        #      gets force-recreated to point at it.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+          NEW_URL="https://github.com/beeping-io/beeping-ios/releases/download/${TAG}/Beeping.xcframework.zip"
+          NEW_SHA=$(awk '{print $1}' dist/Beeping.xcframework.zip.sha256)
+
+          git config user.name 'beeping-release-bot'
+          git config user.email 'release-bot@beeping.io'
+
+          # Rewrite Package.swift binaryTarget url + checksum AND
+          # Beeping.podspec source sha256 (the URL is derived from
+          # `s.version` so it auto-bumps; only the sha256 needs sync).
+          # Python for safe in-place substitution — sed escaping is fragile.
+          python3 - "$NEW_URL" "$NEW_SHA" <<'PY'
+          import re, sys
+          new_url, new_sha = sys.argv[1], sys.argv[2]
+
+          # --- Package.swift ---
+          with open('Package.swift') as f:
+              s = f.read()
+          s = re.sub(
+              r'"https://github\.com/beeping-io/beeping-ios/releases/download/v[^/]+/Beeping\.xcframework\.zip"',
+              f'"{new_url}"',
+              s,
+          )
+          s = re.sub(
+              r'(checksum: ")[a-f0-9]+(")',
+              rf'\g<1>{new_sha}\g<2>',
+              s,
+          )
+          with open('Package.swift', 'w') as f:
+              f.write(s)
+
+          # --- Beeping.podspec ---
+          # The :http URL is built from `s.version` at podspec evaluation
+          # time, so it auto-tracks the version bump. Only :sha256 needs
+          # a literal rewrite per release.
+          with open('Beeping.podspec') as f:
+              p = f.read()
+          p = re.sub(
+              r'(:sha256\s*=>\s*")[a-f0-9]+(")',
+              rf'\g<1>{new_sha}\g<2>',
+              p,
+          )
+          with open('Beeping.podspec', 'w') as f:
+              f.write(p)
+          PY
+
+          echo "----- Package.swift diff -----"
+          git diff Package.swift || true
+          echo "----- Beeping.podspec diff -----"
+          git diff Beeping.podspec || true
+
+          if git diff --quiet Package.swift Beeping.podspec; then
+              echo "Manifests already pinned to ${TAG} — nothing to do."
+              exit 0
+          fi
+
+          git add Package.swift Beeping.podspec
+          git commit -m "chore(release): pin Package.swift + podspec to ${TAG} artifacts"
+
+          # Try push to main first; if branch protection blocks, fall back.
+          if git push origin HEAD:main 2>err.log; then
+              echo "✓ pushed Package.swift sync directly to main"
+          else
+              echo "⚠ direct push to main blocked, falling back to release-state branch:"
+              cat err.log || true
+              git push origin "HEAD:release-state/${TAG}"
+          fi
+
+          # Force-move the tag to this new commit so SPM tag-pinned
+          # consumers find the synced Package.swift at the tag.
+          git tag -f "${TAG}"
+          git push origin "${TAG}" --force
+
       - name: Summary
         run: |
           {
