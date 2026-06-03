@@ -136,7 +136,7 @@ internal actor CloudEncoder: BeepingEncoder {
     internal static func serverMode(from mode: BeepingMode) -> EncodeRequest.Mode {
         switch mode {
         case .audible, .audibleOld: return .audible
-        case .nonAudible, .nonAudibleOld, .hidden: return .inaudible
+        case .nonAudible, .nonAudibleOld: return .inaudible
         case .all, .custom: return .all
         }
     }
