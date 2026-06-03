@@ -78,6 +78,25 @@ void bcCheckStatus(OSStatus status, const char *step) {
     return [NSString stringWithUTF8String:raw] ?: @"";
 }
 
++ (NSString *)versionInfo {
+    // The C API documents a >= 100-byte buffer; 128 gives headroom.
+    char buf[128] = {0};
+    int32_t written = BEEPING_GetVersionInfo(buf);
+    if (written <= 0) {
+        return @"";
+    }
+    return [NSString stringWithUTF8String:buf] ?: @"";
+}
+
++ (int32_t)setLogPath:(NSString *)absolutePath {
+    if (absolutePath == nil) {
+        // nullptr resets the library to its default log path.
+        return BEEPING_SetLogPath(nullptr);
+    }
+    const char *raw = [absolutePath UTF8String] ?: "";
+    return BEEPING_SetLogPath(raw);
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -111,6 +130,20 @@ void bcCheckStatus(OSStatus status, const char *step) {
 
 - (int32_t)readEncodedAudioBuffer:(float *)buffer {
     return BEEPING_GetEncodedAudioBuffer(buffer, _cHandle);
+}
+
+- (int32_t)resetEncodedAudioBuffer {
+    return BEEPING_ResetEncodedAudioBuffer(_cHandle);
+}
+
+- (int32_t)setAudioSignature:(NSData *)samples {
+    if (samples == nil || samples.length == 0) {
+        // Clear a previously-set signature.
+        return BEEPING_SetAudioSignature(0, nullptr, _cHandle);
+    }
+    int32_t sampleCount = static_cast<int32_t>(samples.length / sizeof(float));
+    const float *buffer = static_cast<const float *>(samples.bytes);
+    return BEEPING_SetAudioSignature(sampleCount, buffer, _cHandle);
 }
 
 - (int32_t)decodeAudioBuffer:(float *)buffer size:(int32_t)size {

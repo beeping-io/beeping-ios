@@ -375,6 +375,37 @@ public actor BeepingClient {
         await telemetryClient.record(.sessionStopped)
     }
 
+    // MARK: - Native engine extras (BEE-2327)
+
+    /// Extended version/build string of the underlying `beeping-core`
+    /// engine (`BEEPING_GetVersionInfo`). Useful in diagnostics / bug
+    /// reports — richer than the short product version.
+    public nonisolated static var coreVersionInfo: String {
+        BeepingCoreWrapper.coreVersionInfo
+    }
+
+    /// Overrides the native engine's log-file path. The engine writes a
+    /// rotating log there, complementing (not replacing) the Swift
+    /// `os.Logger`. Pass `nil` to reset to the library default.
+    ///
+    /// - Important: the native logger initializes lazily on the first
+    ///   engine handle, so this only takes effect when called **before**
+    ///   constructing any `BeepingClient`. Later calls are ignored.
+    public nonisolated static func setNativeLogPath(_ path: String?) {
+        BeepingCoreWrapper.setNativeLogPath(path)
+    }
+
+    /// Installs a custom audio signature (float32 mono PCM at 44.1 kHz,
+    /// max 2 s) mixed on top of the encoded tones during playback — e.g.
+    /// a branded sound. Pass `nil` to clear a previously-set signature.
+    ///
+    /// - Returns: `true` if the engine accepted the signature, `false`
+    ///   on failure (e.g. a buffer longer than 2 s).
+    @discardableResult
+    public func setAudioSignature(_ samples: [Float]?) -> Bool {
+        wrapper.setAudioSignature(samples) == 0
+    }
+
     // MARK: - Private
 
     private func dispatch(legacyEvent: BeepingEvent) {

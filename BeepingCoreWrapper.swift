@@ -276,6 +276,37 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         return ScheduledPayload(code: p.code, timestampSec: p.timestampSec)
     }
 
+    // MARK: - Engine introspection + extras (BEE-2327)
+
+    /// Extended engine version/build string (`BEEPING_GetVersionInfo`).
+    internal static var coreVersionInfo: String { BCNativeCore.versionInfo }
+
+    /// Overrides the native engine's log-file path (`BEEPING_SetLogPath`).
+    /// Must run before any engine handle is created. Returns the raw C code
+    /// (0 ok, -1 already initialized, -2 empty path).
+    @discardableResult
+    internal static func setNativeLogPath(_ path: String?) -> Int32 {
+        BCNativeCore.setLogPath(path)
+    }
+
+    /// Installs (or clears, when `samples` is `nil`/empty) a custom audio
+    /// signature mixed on top of encoded tones (`BEEPING_SetAudioSignature`).
+    /// Returns the raw C code (0 on success, negative on failure).
+    @discardableResult
+    internal func setAudioSignature(_ samples: [Float]?) -> Int32 {
+        guard let samples, !samples.isEmpty else {
+            return _handle.setAudioSignature(nil)
+        }
+        let data = samples.withUnsafeBytes { Data($0) }
+        return _handle.setAudioSignature(data)
+    }
+
+    /// Resets the encoded-buffer read index (`BEEPING_ResetEncodedAudioBuffer`).
+    @discardableResult
+    internal func resetEncodedAudioBuffer() -> Int32 {
+        _handle.resetEncodedAudioBuffer()
+    }
+
     internal var decodedMode: Int { Int(_handle.decodedMode) }
     internal var confidence: Float { _handle.confidence }
     internal var confidenceError: Float { _handle.confidenceError }

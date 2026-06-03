@@ -44,6 +44,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// Engine version (wraps `BEEPING_GetVersion`).
 @property (class, readonly, copy) NSString *version;
 
+/// Extended version/build string (wraps `BEEPING_GetVersionInfo`). Longer
+/// than `version` — includes build metadata. Stateless, so a class getter.
+@property (class, readonly, copy) NSString *versionInfo;
+
+/// Overrides the native engine's log-file path (wraps `BEEPING_SetLogPath`).
+/// Must be called **before** any `BCNativeCore` is created to take effect;
+/// later calls return -1 (logger already initialized). Pass `nil` to reset
+/// to the library default. Complements (does not replace) the Swift
+/// `os.Logger`. Returns 0 on success, -1 if already initialized, -2 if the
+/// path is empty.
++ (int32_t)setLogPath:(nullable NSString *)absolutePath;
+
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 /// Wraps `BEEPING_Configure`. Returns 0 on success, <0 on failure.
@@ -65,6 +77,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// Wraps `BEEPING_GetEncodedAudioBuffer`. Caller-supplied buffer must be at
 /// least `bufferSize` floats wide. Returns number of samples written.
 - (int32_t)readEncodedAudioBuffer:(float *)buffer NS_REFINED_FOR_SWIFT;
+
+/// Wraps `BEEPING_ResetEncodedAudioBuffer` — resets the read index so the
+/// encoded buffer can be re-read from the start. Returns 0 on success.
+- (int32_t)resetEncodedAudioBuffer;
+
+/// Wraps `BEEPING_SetAudioSignature`. Installs a custom audio signature
+/// (float32 mono PCM at 44.1 kHz, max 2 s) mixed on top of the encoded
+/// tones during playback — e.g. a branded sound. Pass `nil` (or empty) to
+/// clear a previously-set signature. Returns 0 on success, negative on
+/// failure (e.g. a buffer longer than 2 s).
+- (int32_t)setAudioSignature:(nullable NSData *)samples;
 
 /// Wraps `BEEPING_DecodeAudioBuffer`. Caller-supplied buffer is mono float32
 /// audio frames at the configured sample rate. Returns the raw decoder code:

@@ -55,16 +55,5 @@ Usa el skill `/pending` (recomendado). O copia este bloque al final del fichero:
 ## 🗂️ Pendientes registrados
 
 > _pending-001 promovida a BEE-2259 (Done en v0.1.2)._
-
-### ⏳ pending-002 — Exponer métodos C menores no bridgeados de beeping-core
-
-- 📅 **Fecha añadida**: 2026-06-02
-- 🏷️ **Tipo**: feat
-- 🧭 **Trigger**: Auditoría 2026-06-02 del C API de `beeping-core` v0.8.1 — el bridge `BeepingC.mm` envuelve 18/24 funciones. El gap serio (scheduler decode) se promovió a BEE-2312; estos son los restantes menores, sin demanda concreta todavía.
-- ⚙️ **Acción requerida**: evaluar/exponer según se necesite:
-  - `BEEPING_GetVersionInfo` — version/build extendida (hoy solo `BEEPING_GetVersion` está expuesto vía `BCNativeCore.version`).
-  - `BEEPING_SetAudioSignature` — custom audio signature / watermark; feature no expuesta en el SDK.
-  - `BEEPING_ResetEncodedAudioBuffer` — helper de lifecycle del buffer de encode.
-  - `BEEPING_SetLogPath` — **descartado a propósito**: iOS usa `os.Logger` (BEE-74), no log a fichero. Documentar el skip si se formaliza.
-- 🚦 **Estado**: 🆕 Nuevo
+> _pending-002 promovida a BEE-2327 (Phase 9). Sin pendings actuales._
 
