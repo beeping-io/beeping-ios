@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0](https://github.com/beeping-io/beeping-ios/compare/v0.1.2...v0.2.0) (2026-06-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* BeepingMode.hidden is removed. Callers selecting .hidden must switch to .nonAudible or .all. Acceptable under the 0.x rule (minor bump).
+
+### Features
+
+* Phase 9 batch — typed errors, traceID, core pin, scheduler decode, full C API, sendScheduled, mode cleanup ([#22](https://github.com/beeping-io/beeping-ios/issues/22)) ([d04eca9](https://github.com/beeping-io/beeping-ios/commit/d04eca9f55692c4b15cdf5ecea51e633bb650264))
+
 ## [0.1.2](https://github.com/beeping-io/beeping-ios/compare/v0.1.1...v0.1.2) (2026-05-18)
 
 
