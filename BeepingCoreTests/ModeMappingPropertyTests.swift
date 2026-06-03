@@ -45,7 +45,7 @@ struct ModeMappingPropertyTests {
 
     @Test(
         "Inaudible-family modes map to .inaudible (server default — avoided)",
-        arguments: [BeepingMode.nonAudible, .nonAudibleOld, .hidden]
+        arguments: [BeepingMode.nonAudible, .nonAudibleOld]
     )
     func inaudibleFamily(mode: BeepingMode) {
         #expect(CloudEncoder.serverMode(from: mode) == .inaudible)
@@ -66,6 +66,6 @@ struct ModeMappingPropertyTests {
 // adding a new conformance to the SDK's external API.
 extension BeepingMode: @retroactive CaseIterable {
     public static var allCases: [BeepingMode] {
-        [.audibleOld, .nonAudibleOld, .audible, .nonAudible, .hidden, .all, .custom]
+        [.audibleOld, .nonAudibleOld, .audible, .nonAudible, .all, .custom]
     }
 }

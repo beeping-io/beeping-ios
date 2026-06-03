@@ -32,8 +32,11 @@ public enum BeepingMode: Int32, Sendable {
     /// Non-audible (ultrasonic) tones above ~16 kHz.
     case nonAudible = 3
 
-    /// Hidden tones — perceptually masked carrier.
-    case hidden = 4
+    // Raw value 4 (`BEEPING_MODE_HIDDEN`) is intentionally NOT a public
+    // selectable case (BEE-2332): "hidden" is a *decode-time* classification
+    // surfaced via `decodedMode` / payload metadata, not an encode/decode
+    // mode the caller picks. Removed for contract parity with beeping-android
+    // (BEE-2305) and beeping_flutter.
 
     /// Decoder accepts any of the above; call `decodedMode` to find which
     /// one was matched.

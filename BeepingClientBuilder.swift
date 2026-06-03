@@ -42,6 +42,9 @@ public struct BeepingClientBuilder: Sendable {
     private var logLevel: BeepingLogLevel = .info
     private var telemetryEnabled: Bool = false
     private var telemetryHook: (any TelemetryHook)?
+    /// Caller-injected trace-ID for end-to-end correlation. `nil` (default)
+    /// lets `BeepingCoreWrapper` autogenerate one (BEE-2309).
+    private var traceID: String?
 
     // MARK: - Init (internal — constructed via factory methods on BeepingClient)
 
@@ -92,6 +95,17 @@ public struct BeepingClientBuilder: Sendable {
         return copy
     }
 
+    /// Injects a trace-ID propagated end-to-end: the `os.Logger` tags every
+    /// line with it and `CloudEncoder` sends it as the `X-Trace-Id` request
+    /// header, so a single id correlates SDK logs with server logs. When
+    /// not set, the SDK autogenerates one per client (BEE-2309). Used by
+    /// `beeping_flutter` (BEE-86) to thread a Dart-side `traceId` through.
+    public func traceID(_ id: String) -> Self {
+        var copy = self
+        copy.traceID = id
+        return copy
+    }
+
     // MARK: - Build
 
     /// Constructs a `BeepingClient` with the accumulated config. Creates and
@@ -99,7 +113,7 @@ public struct BeepingClientBuilder: Sendable {
     /// same engine handle (critical for `LocalEncoder`, which would crash
     /// against an unconfigured handle in `BEEPING_EncodeDataToAudioBuffer`).
     public func build() -> BeepingClient {
-        let wrapper = BeepingCoreWrapper(logLevel: logLevel)
+        let wrapper = BeepingCoreWrapper(logLevel: logLevel, traceID: traceID)
         wrapper.configure(mode: mode)
         let encoder = encoderFactory(wrapper, mode)
         return BeepingClient(

@@ -22,7 +22,6 @@ struct BeepingClientTests {
     func initWithMode() async {
         _ = BeepingClient(mode: .audible)
         _ = BeepingClient(mode: .nonAudible)
-        _ = BeepingClient(mode: .hidden)
         _ = BeepingClient(mode: .all)
     }
 

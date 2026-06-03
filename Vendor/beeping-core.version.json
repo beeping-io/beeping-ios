@@ -1,0 +1,11 @@
+{
+  "tag": "v0.8.1",
+  "release": "beeping-core v0.8.1",
+  "date": "2026-05-15",
+  "source": "https://github.com/beeping-io/beeping-core/releases/tag/v0.8.1",
+  "asset": "beeping-core-ios-xcframework.tar.zst",
+  "slices": {
+    "ios-arm64/libBeepingCore.a": "f92e1ac5c1760242969be9439175e90352884449fd6603d7ad48d9e3c2ca298c",
+    "ios-arm64_x86_64-simulator/libBeepingCore.a": "43308be52bed6701774a37a3d4edec8409f11922790a2d30c2213f8fb001c2cb"
+  }
+}

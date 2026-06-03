@@ -1,6 +1,0 @@
-# Xcode project is xcodegen-generated — regenerate via `xcodegen` in this folder.
-BeepingSampleApp.xcodeproj/
-
-# Generated secrets file — never commit.
-Sources/Generated/
-*.xcuserdata/

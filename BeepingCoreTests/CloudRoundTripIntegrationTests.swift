@@ -105,7 +105,7 @@ struct CloudRoundTripIntegrationTests {
     private static func serverMode(from mode: BeepingMode) -> String {
         switch mode {
         case .audible, .audibleOld: return "audible"
-        case .nonAudible, .nonAudibleOld, .hidden: return "inaudible"
+        case .nonAudible, .nonAudibleOld: return "inaudible"
         case .all, .custom: return "all"
         }
     }

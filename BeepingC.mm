@@ -45,6 +45,22 @@ void bcCheckStatus(OSStatus status, const char *step) {
 } // namespace
 
 
+#pragma mark - BCScheduledPayload
+
+@implementation BCScheduledPayload
+
+- (instancetype)initWithCode:(NSString *)code timestampSec:(NSInteger)timestampSec {
+    self = [super init];
+    if (self) {
+        _code = [code copy];
+        _timestampSec = timestampSec;
+    }
+    return self;
+}
+
+@end
+
+
 #pragma mark - BCNativeCore
 
 @interface BCNativeCore () {
@@ -60,6 +76,25 @@ void bcCheckStatus(OSStatus status, const char *step) {
         return @"";
     }
     return [NSString stringWithUTF8String:raw] ?: @"";
+}
+
++ (NSString *)versionInfo {
+    // The C API documents a >= 100-byte buffer; 128 gives headroom.
+    char buf[128] = {0};
+    int32_t written = BEEPING_GetVersionInfo(buf);
+    if (written <= 0) {
+        return @"";
+    }
+    return [NSString stringWithUTF8String:buf] ?: @"";
+}
+
++ (int32_t)setLogPath:(NSString *)absolutePath {
+    if (absolutePath == nil) {
+        // nullptr resets the library to its default log path.
+        return BEEPING_SetLogPath(nullptr);
+    }
+    const char *raw = [absolutePath UTF8String] ?: "";
+    return BEEPING_SetLogPath(raw);
 }
 
 - (instancetype)init {
@@ -95,6 +130,20 @@ void bcCheckStatus(OSStatus status, const char *step) {
 
 - (int32_t)readEncodedAudioBuffer:(float *)buffer {
     return BEEPING_GetEncodedAudioBuffer(buffer, _cHandle);
+}
+
+- (int32_t)resetEncodedAudioBuffer {
+    return BEEPING_ResetEncodedAudioBuffer(_cHandle);
+}
+
+- (int32_t)setAudioSignature:(NSData *)samples {
+    if (samples == nil || samples.length == 0) {
+        // Clear a previously-set signature.
+        return BEEPING_SetAudioSignature(0, nullptr, _cHandle);
+    }
+    int32_t sampleCount = static_cast<int32_t>(samples.length / sizeof(float));
+    const float *buffer = static_cast<const float *>(samples.bytes);
+    return BEEPING_SetAudioSignature(sampleCount, buffer, _cHandle);
 }
 
 - (int32_t)decodeAudioBuffer:(float *)buffer size:(int32_t)size {
@@ -193,6 +242,64 @@ void bcCheckStatus(OSStatus status, const char *step) {
         [outData setLength:static_cast<NSUInteger>(written) * sizeof(float)];
     }
     return outData;
+}
+
+// Shared splitter: runs BEEPING_ParseScheduledPayload over `payload`/`size`
+// and builds a BCScheduledPayload, or nil on a negative C return code.
+static BCScheduledPayload *_Nullable bcSplitScheduled(const char *payload, int32_t size) {
+    if (payload == nullptr || size < 5) {
+        return nil;
+    }
+    // Code prefix is `size - 4` chars; +1 for the NUL the C API writes.
+    std::vector<char> codeBuf(static_cast<size_t>(size - 4 + 1), 0);
+    int32_t codeSize = 0;
+    int32_t timestampSec = 0;
+    int32_t rc = BEEPING_ParseScheduledPayload(
+        payload, size,
+        codeBuf.data(), static_cast<int32_t>(codeBuf.size()), &codeSize,
+        &timestampSec);
+    if (rc != 0) {
+        return nil;
+    }
+    NSString *code = [[NSString alloc] initWithBytes:codeBuf.data()
+                                              length:static_cast<NSUInteger>(codeSize)
+                                            encoding:NSUTF8StringEncoding];
+    if (code == nil) {
+        return nil;
+    }
+    return [[BCScheduledPayload alloc] initWithCode:code
+                                       timestampSec:static_cast<NSInteger>(timestampSec)];
+}
+
++ (BCScheduledPayload *)parseScheduledPayload:(NSString *)payload {
+    const char *bytes = [payload UTF8String];
+    if (bytes == nullptr) {
+        return nil;
+    }
+    return bcSplitScheduled(bytes, static_cast<int32_t>(strlen(bytes)));
+}
+
+- (BCScheduledPayload *)decodedScheduledPayload {
+    // Recommended buffer size 30 per the C API docs; the decoded payload is
+    // 9 chars in practice (5 code + 4 timestamp).
+    char outCode[30] = {0};
+    int32_t codeSize = 0;
+    int32_t timestampSec = 0;
+    int32_t rc = BEEPING_GetDecodedScheduledPayload(
+        outCode, static_cast<int32_t>(sizeof(outCode)), &codeSize,
+        &timestampSec, _cHandle);
+    // 0 = no decoded data; <0 = integrity failure or split failure (-10).
+    if (rc <= 0) {
+        return nil;
+    }
+    NSString *code = [[NSString alloc] initWithBytes:outCode
+                                              length:static_cast<NSUInteger>(codeSize)
+                                            encoding:NSUTF8StringEncoding];
+    if (code == nil) {
+        return nil;
+    }
+    return [[BCScheduledPayload alloc] initWithCode:code
+                                       timestampSec:static_cast<NSInteger>(timestampSec)];
 }
 
 @end
