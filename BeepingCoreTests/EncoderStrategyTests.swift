@@ -121,6 +121,52 @@ struct EncoderStrategyTests {
         #expect(json["payload"] == nil)  // old shape gone
     }
 
+    // MARK: - CloudEncoder X-Trace-Id header (BEE-2309)
+
+    @Test("CloudEncoder sends the injected trace-ID as X-Trace-Id")
+    func cloudEncoderSendsInjectedTraceID() async throws {
+        MockURLProtocol.reset()
+        defer { MockURLProtocol.reset() }
+
+        MockURLProtocol.responder = { request in
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)!)
+        }
+
+        let encoder = CloudEncoder(
+            apiKey: "bk_x",
+            endpoint: URL(string: "https://api.beeping.io")!,
+            session: mockedSession(),
+            playbackSink: NoopPlaybackSink(),
+            traceID: "trace-xyz"
+        )
+        try await encoder.encode(samplePayload(key: "abcde"))
+
+        let request = try #require(MockURLProtocol.lastRequest)
+        #expect(request.value(forHTTPHeaderField: "X-Trace-Id") == "trace-xyz")
+    }
+
+    @Test("CloudEncoder's default trace-ID header is present and non-empty")
+    func cloudEncoderDefaultTraceIDNonEmpty() async throws {
+        MockURLProtocol.reset()
+        defer { MockURLProtocol.reset() }
+
+        MockURLProtocol.responder = { request in
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)!)
+        }
+
+        let encoder = CloudEncoder(
+            apiKey: "bk_x",
+            endpoint: URL(string: "https://api.beeping.io")!,
+            session: mockedSession(),
+            playbackSink: NoopPlaybackSink()
+        )
+        try await encoder.encode(samplePayload(key: "abcde"))
+
+        let request = try #require(MockURLProtocol.lastRequest)
+        let trace = request.value(forHTTPHeaderField: "X-Trace-Id")
+        #expect(trace?.isEmpty == false)
+    }
+
     // MARK: - CloudEncoder error mapping (BEE-2308 typed errors)
 
     /// Runs `encode` against a mocked response and returns the thrown
