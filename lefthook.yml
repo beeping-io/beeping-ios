@@ -189,7 +189,6 @@ pre-push:
           $(find . -name "*.swift" \
             -not -path "./node_modules/*" \
             -not -path "./Beeping.xcodeproj/*" \
-            -not -path "./BeepingSampleApp/BeepingSampleApp.xcodeproj/*" \
             -not -path "./Examples/PodConsumer/PodConsumer.xcodeproj/*" \
             -not -path "./.build/*" \
             -not -path "./build/*" \

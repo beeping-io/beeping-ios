@@ -190,12 +190,11 @@ recover the beep's position via `BeepingPayload.timestamp`. Silence
 between beeps is written as zeros — the returned buffer is exactly
 `floor(duration * 44_100)` samples long.
 
-See `BeepingSampleApp/Sources/Views/RootView.swift` → **Scheduler
-(BEE-2241)** section for an end-to-end demo that encodes + plays through
-the speaker and lets the listener decode the beeps back in-process.
-
 See [`docs/PRODUCTO.md`](docs/PRODUCTO.md) section 10 for the full flow and
 section 11 for state/error semantics.
+
+> A sample app is being rebuilt from the `beeping_flutter` example
+> (deferred — tracked in BEE-2334).
 
 ---
 

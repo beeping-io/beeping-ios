@@ -4,7 +4,4 @@
    <FileRef
       location = "group:Beeping.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:BeepingSampleApp/BeepingSampleApp.xcodeproj">
-   </FileRef>
 </Workspace>
