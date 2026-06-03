@@ -67,13 +67,23 @@ internal actor CloudEncoder: BeepingEncoder {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encodeBody(payload: payload, mode: mode)
 
-        let (data, response) = try await session.data(for: request)
+        // BEE-2308: transport failures (timeout, DNS, connection reset)
+        // surface as `networkError(statusCode: nil)` — they never reached
+        // an HTTP response, so there is no status to report.
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            throw BeepingError.networkError(statusCode: nil)
+        }
+
         guard let http = response as? HTTPURLResponse else {
-            throw BeepingError.decoderInternal(reason: "Cloud encode: non-HTTP response")
+            throw BeepingError.networkError(statusCode: nil)
         }
 
         guard (200..<300).contains(http.statusCode) else {
-            throw Self.mapErrorResponse(status: http.statusCode, body: data)
+            throw Self.mapErrorResponse(http)
         }
 
         // BEE-2050: hand the response WAV to the playback sink so the
@@ -97,8 +107,6 @@ internal actor CloudEncoder: BeepingEncoder {
         e.outputFormatting = [.sortedKeys]
         return e
     }()
-
-    private static let jsonDecoder = JSONDecoder()
 
     private static func encodeBody(payload: BeepingPayload, mode: BeepingMode) throws -> Data {
         // The OpenAPI spec takes a 5-char `key`. BeepingPayload exposes
@@ -124,19 +132,34 @@ internal actor CloudEncoder: BeepingEncoder {
         }
     }
 
-    private static func mapErrorResponse(status: Int, body: Data) -> BeepingError {
-        // 400 = validation; 429/500 = generic. Try the validation shape
-        // first, fall back to the generic shape, fall back to a raw
-        // status-code message.
-        if let validation = try? jsonDecoder.decode(ValidationErrorResponse.self, from: body),
-            validation.error != nil || (validation.errors?.isEmpty == false)
-        {
-            return .decoderInternal(reason: "Cloud encode HTTP \(status): \(validation.displayMessage)")
+    // BEE-2308: map a non-2xx HTTP response to a typed `BeepingError`,
+    // mirroring the Android contract (`AuthenticationFailed` /
+    // `RateLimited(retryAfter)` / `NetworkError(statusCode)`). The server's
+    // error body is no longer threaded into the error — the typed cases
+    // carry only the status code (and `Retry-After` for 429), which is what
+    // `beeping_flutter` (BEE-86) consumes. `decoderInternal` is reserved for
+    // real decoder/encoder failures and is never produced here.
+    internal static func mapErrorResponse(_ http: HTTPURLResponse) -> BeepingError {
+        switch http.statusCode {
+        case 401, 403:
+            return .authenticationFailed
+        case 429:
+            return .rateLimited(retryAfter: retryAfter(from: http))
+        default:
+            return .networkError(statusCode: http.statusCode)
         }
-        if let generic = try? jsonDecoder.decode(ErrorResponse.self, from: body) {
-            let hint = generic.hint.map { " (\($0))" } ?? ""
-            return .decoderInternal(reason: "Cloud encode HTTP \(status): \(generic.error)\(hint)")
+    }
+
+    /// Parses the `Retry-After` header as delta-seconds. Returns `0` when
+    /// the header is absent or not a valid number. (HTTP also permits an
+    /// absolute HTTP-date form; the beepbox server only emits delta-seconds,
+    /// so the date form is intentionally unsupported.)
+    private static func retryAfter(from http: HTTPURLResponse) -> TimeInterval {
+        guard let raw = http.value(forHTTPHeaderField: "Retry-After"),
+            let seconds = TimeInterval(raw.trimmingCharacters(in: .whitespaces))
+        else {
+            return 0
         }
-        return .decoderInternal(reason: "Cloud encode HTTP \(status): no parseable error body")
+        return seconds
     }
 }
