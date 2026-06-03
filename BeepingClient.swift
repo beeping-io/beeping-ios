@@ -306,6 +306,24 @@ public actor BeepingClient {
             interval: Float(interval))
     }
 
+    /// Split a scheduler-formatted payload into its `code` prefix and the
+    /// rounded-seconds timestamp recovered from the trailing 4-char base-32
+    /// tag — the inverse of the `code + timestamp` layout that
+    /// `encodeWithSchedule(...)` appends to each beep.
+    ///
+    /// Pure utility backed by the canonical C engine
+    /// (`BEEPING_ParseScheduledPayload`), so it agrees byte-for-byte with
+    /// the Android SDK and the core. Works on any payload with that layout,
+    /// including the 9-char strings surfaced via `BeepingEvent.decodedString`.
+    ///
+    /// - Parameter payload: the raw payload (must be `>= 5` chars: at least
+    ///   one `code` char plus the 4-char timestamp trailer).
+    /// - Returns: the split result, or `nil` if `payload` is shorter than 5
+    ///   chars or its trailing 4 chars are not valid base-32.
+    public nonisolated static func parseScheduledPayload(_ payload: String) -> ScheduledPayload? {
+        BeepingCoreWrapper.parseScheduledPayload(payload)
+    }
+
     /// Encode `code` as multiple beeps scheduled across `duration` seconds
     /// and return the resulting float32 mono PCM samples at 44100 Hz.
     ///

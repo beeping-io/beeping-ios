@@ -72,3 +72,25 @@ public struct BeepingPayload: Sendable, Equatable {
         self.receivedBeepsVolume = receivedBeepsVolume
     }
 }
+
+/// A scheduler-encoded payload split into its `code` prefix and the rounded
+/// timestamp (seconds) decoded from the trailing 4-char base-32 tag — the
+/// inverse of the `code + timestamp` layout `encodeWithSchedule(...)` appends
+/// to each beep (BEE-2312).
+///
+/// Produced by `BeepingClient.parseScheduledPayload(_:)`. The split is
+/// performed by the canonical C engine (`BEEPING_ParseScheduledPayload`) via
+/// the ObjC++ bridge — not a Swift reimplementation — so iOS, Android, and
+/// the core agree byte-for-byte.
+public struct ScheduledPayload: Sendable, Equatable {
+    /// The user payload (the beep `code`, typically a 5-char base-32 key).
+    public let code: String
+
+    /// The rounded timestamp in seconds, recovered from the trailer.
+    public let timestampSec: Int
+
+    public init(code: String, timestampSec: Int) {
+        self.code = code
+        self.timestampSec = timestampSec
+    }
+}

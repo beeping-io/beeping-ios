@@ -150,3 +150,73 @@ struct SchedulerTests {
         #expect(data.count == 10 * 44100 * MemoryLayout<Float>.size)
     }
 }
+
+/// Scheduler *decode* — the inverse split of the `code + timestamp` layout.
+/// Backed by the canonical C engine (`BEEPING_ParseScheduledPayload` /
+/// `BEEPING_GetDecodedScheduledPayload`) via the ObjC++ bridge (BEE-2312),
+/// replacing the former hand-rolled Swift base-32 split.
+@Suite("Scheduler decode (BEE-2312)")
+struct SchedulerDecodeTests {
+
+    /// 4-char zero-padded base-32 tag (MSB-first), the trailer layout
+    /// `encodeWithSchedule` appends. Mirrors the C engine's encoding so the
+    /// property test below has an independent oracle.
+    private func base32Tag(_ value: Int) -> String {
+        let alphabet = Array("0123456789abcdefghijklmnopqrstuv")
+        var v = value
+        var chars: [Character] = []
+        for _ in 0..<4 {
+            chars.append(alphabet[v % 32])
+            v /= 32
+        }
+        return String(chars.reversed())
+    }
+
+    @Test(
+        "parseScheduledPayload splits known payloads into code + timestamp",
+        arguments: [
+            ("abcde0000", "abcde", 0),
+            ("abcde0001", "abcde", 1),
+            ("abcde000a", "abcde", 10),
+            ("abcde0010", "abcde", 32)
+        ]
+    )
+    func parsesKnownPayloads(_ payload: String, _ code: String, _ ts: Int) {
+        let parsed = BeepingClient.parseScheduledPayload(payload)
+        #expect(parsed == ScheduledPayload(code: code, timestampSec: ts))
+    }
+
+    @Test("parseScheduledPayload rejects an invalid base-32 trailer")
+    func rejectsInvalidTrailer() {
+        // 'W','X','Y','Z' are outside the [0-9a-v] base-32 alphabet.
+        #expect(BeepingClient.parseScheduledPayload("abcdeWXYZ") == nil)
+    }
+
+    @Test("parseScheduledPayload rejects payloads shorter than 5 chars")
+    func rejectsShortPayload() {
+        #expect(BeepingClient.parseScheduledPayload("abcd") == nil)
+    }
+
+    @Test("parseScheduledPayload round-trips any code + base-32 timestamp")
+    func roundTripsCodeAndTimestamp() {
+        let codes = ["abcde", "0", "v0v0v", "qrstu"]
+        let timestamps = [0, 1, 7, 31, 32, 100, 1023, 32767, 1_048_575]
+        for code in codes {
+            for ts in timestamps {
+                let payload = code + base32Tag(ts)
+                let parsed = BeepingClient.parseScheduledPayload(payload)
+                #expect(
+                    parsed == ScheduledPayload(code: code, timestampSec: ts),
+                    "payload \(payload) → \(String(describing: parsed))")
+            }
+        }
+    }
+
+    @Test("decodedScheduledPayload returns nil when nothing is decoded")
+    func decodedScheduledPayloadNilWhenEmpty() {
+        // A fresh engine has no decoded word; GetDecodedScheduledPayload
+        // returns 0 → nil (and must NOT crash — BEE-2228 regression guard).
+        let wrapper = BeepingCoreWrapper()
+        #expect(wrapper.decodedScheduledPayload() == nil)
+    }
+}

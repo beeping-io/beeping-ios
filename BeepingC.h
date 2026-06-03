@@ -18,6 +18,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#pragma mark - BCScheduledPayload
+
+/// Result of splitting a scheduler-formatted payload (`code` + 4-char
+/// base-32 rounded-seconds timestamp) — the layout emitted by
+/// `BEEPING_EncodeWithSchedule`. Produced by the parse/decode wrappers on
+/// `BCNativeCore` (BEE-2312). Immutable value object.
+@interface BCScheduledPayload : NSObject
+/// The user `code` prefix (the payload minus the 4-char timestamp trailer).
+@property (readonly, copy) NSString *code;
+/// The rounded timestamp in seconds decoded from the 4-char trailer.
+@property (readonly) NSInteger timestampSec;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCode:(NSString *)code
+                timestampSec:(NSInteger)timestampSec NS_DESIGNATED_INITIALIZER;
+@end
+
 #pragma mark - BCNativeCore
 
 /// Wraps the opaque C engine handle from `BeepingCoreLib_api.h`. Methods on
@@ -105,6 +121,24 @@ NS_ASSUME_NONNULL_BEGIN
                                     interval:(float)interval
                                   beepGainDb:(float)beepGainDb
                                        error:(nullable int32_t *)errorOut;
+
+/// Wraps `BEEPING_ParseScheduledPayload`. Pure — does not touch the engine
+/// handle, so exposed as a class method (like `computeBeepSchedule...`).
+/// Splits `code + 4-char base-32 timestamp` into its parts. Usable on any
+/// payload with that layout, including ones produced outside this library.
+///
+/// - Parameter payload: the raw payload (>= 5 chars: >=1 code + 4 timestamp).
+/// - Returns: the split result, or `nil` if `payload` is shorter than 5
+///   chars or its trailing 4 chars are not valid base-32 (C return -2).
++ (nullable BCScheduledPayload *)parseScheduledPayload:(NSString *)payload;
+
+/// Wraps `BEEPING_GetDecodedScheduledPayload` — fetches the last decoded
+/// word and splits it in one step. Drive decoding via `decodeAudioBuffer:`
+/// and call this after a `-3` (DECODE_COMPLETE) token.
+///
+/// - Returns: the split result, or `nil` if no word is decoded yet (C
+///   return 0) or the data failed integrity / split checks (C return < 0).
+- (nullable BCScheduledPayload *)decodedScheduledPayload;
 
 /// Wraps `BEEPING_GetDecodedMode`.
 @property (readonly) int32_t decodedMode;
