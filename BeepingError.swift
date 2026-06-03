@@ -60,4 +60,11 @@ public enum BeepingError: Error, Sendable, Equatable {
     /// the input or could not produce a buffer. Carries the raw C return
     /// code plus a human-readable reason for diagnostics.
     case schedulerError(code: Int32, reason: String)
+
+    /// `sendScheduled(...)` was called on a cloud-mode client. Scheduled
+    /// emission encodes + plays locally via the C engine; cloud mode
+    /// delegates encoding to the server, which has no scheduled endpoint.
+    /// Mirrors the Android `SchedulingNotSupported` variant for
+    /// `beeping_flutter` parity (BEE-2329 / BEE-86).
+    case schedulingNotSupported
 }

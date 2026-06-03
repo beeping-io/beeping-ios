@@ -220,3 +220,73 @@ struct SchedulerDecodeTests {
         #expect(wrapper.decodedScheduledPayload() == nil)
     }
 }
+
+/// `sendScheduled` — encode-and-play parity with Android (BEE-2329).
+@Suite("sendScheduled (BEE-2329)")
+struct SendScheduledTests {
+
+    private func samplePayload(key: String = "abcde") -> BeepingPayload {
+        BeepingPayload(
+            key: key, decodedString: key + "0000", mode: 2, timestamp: 0,
+            confidence: 0.9, confidenceError: 0.1, confidenceNoise: 0.1,
+            receivedBeepsVolume: -5)
+    }
+
+    @Test("Local sendScheduled encodes and hands a valid WAV to the sink")
+    func localSendScheduledPlaysWav() async throws {
+        let wrapper = BeepingCoreWrapper()
+        wrapper.configure(mode: .all)
+        let spy = SpyPlaybackSink()
+        let client = BeepingClient(
+            wrapper: wrapper,
+            encoder: LocalEncoder(wrapper: wrapper),
+            mode: .all,
+            logLevel: .info,
+            telemetryEnabled: false,
+            telemetryHook: nil,
+            scheduledPlaybackSink: spy)
+
+        try await client.sendScheduled(
+            samplePayload(), duration: 5, startTime: 0, interval: 2.3)
+
+        let captured = await spy.captured
+        #expect(captured.count == 1)
+        // The bytes must be a WAV the ecosystem can read back.
+        let samples = try #require(captured.first.flatMap { WAVParser.float32Samples(from: $0) })
+        #expect(!samples.isEmpty)
+    }
+
+    @Test("Cloud sendScheduled throws schedulingNotSupported")
+    func cloudSendScheduledThrows() async {
+        let client =
+            BeepingClient
+            .cloud(apiKey: "k", endpoint: URL(string: "https://api.beeping.io")!)
+            .build()
+        do {
+            try await client.sendScheduled(
+                samplePayload(), duration: 5, startTime: 0, interval: 2.3)
+            Issue.record("expected schedulingNotSupported to be thrown")
+        } catch let error as BeepingError {
+            #expect(error == .schedulingNotSupported)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
+        await client.close()
+    }
+
+    @Test("WAVParser.wav16 round-trips through float32Samples")
+    func wavWriterRoundTrips() {
+        let floats: [Float] = [0, 0.5, -0.5, 1.0, -1.0, 0.25, -0.25]
+        let pcm = floats.withUnsafeBytes { Data($0) }
+        let wav = WAVParser.wav16(fromFloat32: pcm)
+        let back = WAVParser.float32Samples(from: wav)
+        let recovered = try? #require(back)
+        #expect(recovered?.count == floats.count)
+        // 16-bit quantization tolerance.
+        if let recovered {
+            for (got, want) in zip(recovered, floats) {
+                #expect(abs(got - want) < 0.0001)
+            }
+        }
+    }
+}

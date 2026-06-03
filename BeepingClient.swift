@@ -82,6 +82,9 @@ public actor BeepingClient {
 
     private let wrapper: BeepingCoreWrapper
     private let encoder: any BeepingEncoder
+    /// Sink used to play the PCM produced by `sendScheduled(...)` (BEE-2329).
+    /// Defaults to `AVAudioPlayerSink`; tests inject a spy.
+    private let scheduledPlaybackSink: any WAVPlaybackSink
     private var streams: [UUID: AsyncStream<Event>.Continuation] = [:]
 
     // BEE-72: builder-set knobs. BEE-74 wired up logLevel, BEE-75 wires
@@ -116,6 +119,7 @@ public actor BeepingClient {
         let w = BeepingCoreWrapper(logLevel: .info)
         self.wrapper = w
         self.encoder = LocalEncoder(wrapper: w)
+        self.scheduledPlaybackSink = AVAudioPlayerSink()
         self.logLevel = .info
         self.telemetryEnabled = false
         self.telemetryClient = TelemetryClient(enabled: false, hook: nil)
@@ -144,7 +148,8 @@ public actor BeepingClient {
         mode: BeepingMode = .all,
         logLevel: BeepingLogLevel = .info,
         telemetryEnabled: Bool = false,
-        telemetryHook: (any TelemetryHook)? = nil
+        telemetryHook: (any TelemetryHook)? = nil,
+        scheduledPlaybackSink: (any WAVPlaybackSink)? = nil
     ) {
         let w = BeepingCoreWrapper(logLevel: logLevel)
         w.configure(mode: mode)
@@ -154,7 +159,8 @@ public actor BeepingClient {
             mode: mode,
             logLevel: logLevel,
             telemetryEnabled: telemetryEnabled,
-            telemetryHook: telemetryHook
+            telemetryHook: telemetryHook,
+            scheduledPlaybackSink: scheduledPlaybackSink
         )
     }
 
@@ -166,10 +172,12 @@ public actor BeepingClient {
         mode: BeepingMode,
         logLevel: BeepingLogLevel,
         telemetryEnabled: Bool,
-        telemetryHook: (any TelemetryHook)?
+        telemetryHook: (any TelemetryHook)?,
+        scheduledPlaybackSink: (any WAVPlaybackSink)? = nil
     ) {
         self.wrapper = wrapper
         self.encoder = encoder
+        self.scheduledPlaybackSink = scheduledPlaybackSink ?? AVAudioPlayerSink()
         self.logLevel = logLevel
         self.telemetryEnabled = telemetryEnabled
         self.telemetryClient = TelemetryClient(enabled: telemetryEnabled, hook: telemetryHook)
@@ -276,6 +284,46 @@ public actor BeepingClient {
     ///   (network / auth / decoder failures, depending on mode).
     public func send(_ payload: BeepingPayload) async throws {
         try await encoder.encode(payload)
+        await telemetryClient.record(.beepEmitted)
+    }
+
+    /// Encodes `payload.key` as a scheduled train of beeps across `duration`
+    /// and plays it through the device speaker — the encode-and-play
+    /// counterpart of `encodeWithSchedule(...)` (which only returns the
+    /// buffer). Parity with Android `BeepingClient.sendScheduled` (BEE-2329),
+    /// so `beeping_flutter` can offer one uniform `sendScheduled` API.
+    ///
+    /// Local mode only: scheduled emission encodes on-device via the C
+    /// engine. In cloud mode this throws `BeepingError.schedulingNotSupported`
+    /// (the server has no scheduled-encode endpoint) — same contract Android
+    /// exposes.
+    ///
+    /// - Parameters:
+    ///   - payload: the beep to schedule; its `key` is the repeated code.
+    ///   - duration: total schedule duration in seconds. Must be `>= 2.3`.
+    ///   - startTime: offset of the first beep in seconds. Must be `>= 0`.
+    ///   - interval: seconds between beeps. Must be `> 0`.
+    ///   - beepGainDb: beep volume in dB. Clamped internally to `[-60, +12]`.
+    /// - Throws: `BeepingError.schedulingNotSupported` in cloud mode;
+    ///   `BeepingError.schedulerError` if the C engine rejects the input.
+    public func sendScheduled(
+        _ payload: BeepingPayload,
+        duration: TimeInterval,
+        startTime: TimeInterval,
+        interval: TimeInterval,
+        beepGainDb: Float = 0
+    ) async throws {
+        guard !(encoder is CloudEncoder) else {
+            throw BeepingError.schedulingNotSupported
+        }
+        let pcm = try wrapper.encodeWithSchedule(
+            code: payload.key,
+            duration: Float(duration),
+            startTime: Float(startTime),
+            interval: Float(interval),
+            beepGainDb: beepGainDb)
+        let wav = WAVParser.wav16(fromFloat32: pcm)
+        try await scheduledPlaybackSink.play(wavData: wav)
         await telemetryClient.record(.beepEmitted)
     }
 
