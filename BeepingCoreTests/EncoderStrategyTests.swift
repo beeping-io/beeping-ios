@@ -121,22 +121,74 @@ struct EncoderStrategyTests {
         #expect(json["payload"] == nil)  // old shape gone
     }
 
-    // MARK: - CloudEncoder error mapping
+    // MARK: - CloudEncoder X-Trace-Id header (BEE-2309)
 
-    @Test("CloudEncoder.encode parses ValidationErrorResponse on 400")
-    func cloudEncoderParsesValidationError() async {
+    @Test("CloudEncoder sends the injected trace-ID as X-Trace-Id")
+    func cloudEncoderSendsInjectedTraceID() async throws {
         MockURLProtocol.reset()
         defer { MockURLProtocol.reset() }
 
-        let validationJSON = """
-            {"errors":["key must be exactly 5 base32 characters [0-9a-v]"]}
-            """.data(using: .utf8)!
+        MockURLProtocol.responder = { request in
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)!)
+        }
+
+        let encoder = CloudEncoder(
+            apiKey: "bk_x",
+            endpoint: URL(string: "https://api.beeping.io")!,
+            session: mockedSession(),
+            playbackSink: NoopPlaybackSink(),
+            traceID: "trace-xyz"
+        )
+        try await encoder.encode(samplePayload(key: "abcde"))
+
+        let request = try #require(MockURLProtocol.lastRequest)
+        #expect(request.value(forHTTPHeaderField: "X-Trace-Id") == "trace-xyz")
+    }
+
+    @Test("CloudEncoder's default trace-ID header is present and non-empty")
+    func cloudEncoderDefaultTraceIDNonEmpty() async throws {
+        MockURLProtocol.reset()
+        defer { MockURLProtocol.reset() }
 
         MockURLProtocol.responder = { request in
-            let response = HTTPURLResponse(
-                url: request.url!, statusCode: 400, httpVersion: nil, headerFields: nil
-            )!
-            return (validationJSON, response)
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: nil)!)
+        }
+
+        let encoder = CloudEncoder(
+            apiKey: "bk_x",
+            endpoint: URL(string: "https://api.beeping.io")!,
+            session: mockedSession(),
+            playbackSink: NoopPlaybackSink()
+        )
+        try await encoder.encode(samplePayload(key: "abcde"))
+
+        let request = try #require(MockURLProtocol.lastRequest)
+        let trace = request.value(forHTTPHeaderField: "X-Trace-Id")
+        #expect(trace?.isEmpty == false)
+    }
+
+    // MARK: - CloudEncoder error mapping (BEE-2308 typed errors)
+
+    /// Runs `encode` against a mocked response and returns the thrown
+    /// `BeepingError`, or `nil` if the call unexpectedly succeeded. A
+    /// `nil` `status` leaves the responder unset so the URL loading
+    /// system fails the request — simulating a transport-level error.
+    private func capturedCloudError(
+        status: Int?,
+        headers: [String: String]? = nil,
+        body: Data = Data()
+    ) async -> BeepingError? {
+        MockURLProtocol.reset()
+        defer { MockURLProtocol.reset() }
+
+        if let status {
+            MockURLProtocol.responder = { request in
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: status,
+                    httpVersion: "HTTP/1.1", headerFields: headers
+                )!
+                return (body, response)
+            }
         }
 
         let encoder = CloudEncoder(
@@ -145,35 +197,66 @@ struct EncoderStrategyTests {
             session: mockedSession()
         )
 
-        await #expect(throws: BeepingError.self) {
+        do {
             try await encoder.encode(samplePayload(key: "12345"))
+            return nil
+        } catch let error as BeepingError {
+            return error
+        } catch {
+            return .decoderInternal(reason: "unexpected non-BeepingError: \(error)")
         }
     }
 
-    @Test("CloudEncoder.encode parses ErrorResponse on 429 + uses hint")
-    func cloudEncoderParsesGenericError() async {
-        MockURLProtocol.reset()
-        defer { MockURLProtocol.reset() }
+    @Test("401 maps to authenticationFailed")
+    func cloudEncoder401() async {
+        #expect(await capturedCloudError(status: 401) == .authenticationFailed)
+    }
 
-        let errJSON = """
-            {"error":"Rate limit exceeded","hint":"Retry after 20 seconds"}
+    @Test("403 maps to authenticationFailed")
+    func cloudEncoder403() async {
+        #expect(await capturedCloudError(status: 403) == .authenticationFailed)
+    }
+
+    @Test("429 with Retry-After: 30 maps to rateLimited(30)")
+    func cloudEncoder429WithRetryAfter() async {
+        let error = await capturedCloudError(status: 429, headers: ["Retry-After": "30"])
+        #expect(error == .rateLimited(retryAfter: 30))
+    }
+
+    @Test("429 without Retry-After maps to rateLimited(0)")
+    func cloudEncoder429NoRetryAfter() async {
+        #expect(await capturedCloudError(status: 429) == .rateLimited(retryAfter: 0))
+    }
+
+    @Test("400 maps to networkError(400) — no longer decoderInternal")
+    func cloudEncoder400() async {
+        let validationJSON = """
+            {"errors":["key must be exactly 5 base32 characters [0-9a-v]"]}
             """.data(using: .utf8)!
+        #expect(
+            await capturedCloudError(status: 400, body: validationJSON)
+                == .networkError(statusCode: 400))
+    }
 
-        MockURLProtocol.responder = { request in
-            let response = HTTPURLResponse(
-                url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil
-            )!
-            return (errJSON, response)
-        }
+    @Test("500 maps to networkError(500)")
+    func cloudEncoder500() async {
+        #expect(await capturedCloudError(status: 500) == .networkError(statusCode: 500))
+    }
 
-        let encoder = CloudEncoder(
-            apiKey: "bk_x",
-            endpoint: URL(string: "https://api.beeping.io")!,
-            session: mockedSession()
-        )
+    @Test("Transport failure maps to networkError(nil)")
+    func cloudEncoderTransportFailure() async {
+        #expect(await capturedCloudError(status: nil) == .networkError(statusCode: nil))
+    }
 
-        await #expect(throws: BeepingError.self) {
-            try await encoder.encode(samplePayload(key: "12345"))
+    @Test("HTTP error path never produces decoderInternal")
+    func cloudEncoderHTTPNeverDecoderInternal() async {
+        // Sweep the mapped status codes and assert none collapse into
+        // `decoderInternal`, which is reserved for real decoder failures.
+        for status in [400, 401, 403, 429, 500, 503] {
+            let error = await capturedCloudError(status: status)
+            if case .decoderInternal = error {
+                Issue.record("status \(status) produced decoderInternal")
+            }
         }
     }
 

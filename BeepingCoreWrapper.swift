@@ -247,12 +247,64 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
 
     internal var decodedKey: String? {
         guard let s = decodedString, s.count >= 5 else { return nil }
-        return String(s.prefix(5))
+        // Prefer the canonical split; fall back to a 5-char prefix when the
+        // payload has no valid timestamp trailer (non-scheduler streams).
+        return Self.parseScheduledPayload(s)?.code ?? String(s.prefix(5))
     }
 
     internal var decodedTimestamp: Int {
-        guard let s = decodedString, s.count >= 9 else { return 0 }
-        return Self.fromBase32(s.dropFirst(5).prefix(4))
+        guard let s = decodedString else { return 0 }
+        return Self.parseScheduledPayload(s)?.timestampSec ?? 0
+    }
+
+    // MARK: - Scheduler decode (BEE-2312)
+
+    /// Splits a scheduler-formatted payload (`code` + 4-char base-32
+    /// timestamp) via the canonical C engine. Pure — no engine handle
+    /// needed. Returns `nil` if the payload is shorter than 5 chars or its
+    /// trailing 4 chars are not valid base-32.
+    internal static func parseScheduledPayload(_ payload: String) -> ScheduledPayload? {
+        guard let p = BCNativeCore.parseScheduledPayload(payload) else { return nil }
+        return ScheduledPayload(code: p.code, timestampSec: p.timestampSec)
+    }
+
+    /// Fetches the last decoded word from the engine and splits it via
+    /// `BEEPING_GetDecodedScheduledPayload`. Returns `nil` when nothing is
+    /// decoded yet or the data failed integrity / split checks.
+    internal func decodedScheduledPayload() -> ScheduledPayload? {
+        guard let p = _handle.decodedScheduledPayload() else { return nil }
+        return ScheduledPayload(code: p.code, timestampSec: p.timestampSec)
+    }
+
+    // MARK: - Engine introspection + extras (BEE-2327)
+
+    /// Extended engine version/build string (`BEEPING_GetVersionInfo`).
+    internal static var coreVersionInfo: String { BCNativeCore.versionInfo }
+
+    /// Overrides the native engine's log-file path (`BEEPING_SetLogPath`).
+    /// Must run before any engine handle is created. Returns the raw C code
+    /// (0 ok, -1 already initialized, -2 empty path).
+    @discardableResult
+    internal static func setNativeLogPath(_ path: String?) -> Int32 {
+        BCNativeCore.setLogPath(path)
+    }
+
+    /// Installs (or clears, when `samples` is `nil`/empty) a custom audio
+    /// signature mixed on top of encoded tones (`BEEPING_SetAudioSignature`).
+    /// Returns the raw C code (0 on success, negative on failure).
+    @discardableResult
+    internal func setAudioSignature(_ samples: [Float]?) -> Int32 {
+        guard let samples, !samples.isEmpty else {
+            return _handle.setAudioSignature(nil)
+        }
+        let data = samples.withUnsafeBytes { Data($0) }
+        return _handle.setAudioSignature(data)
+    }
+
+    /// Resets the encoded-buffer read index (`BEEPING_ResetEncodedAudioBuffer`).
+    @discardableResult
+    internal func resetEncodedAudioBuffer() -> Int32 {
+        _handle.resetEncodedAudioBuffer()
     }
 
     internal var decodedMode: Int { Int(_handle.decodedMode) }
@@ -388,13 +440,13 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         // Token semantics from `BeepingCoreLib_api.h`:
         //   -2 = start, -3 = end (decoded data ready or invalid)
         // `decoded == nil` on -3 indicates the data was invalid (END_BAD).
-        let key: String? = decoded.flatMap { $0.count >= 5 ? String($0.prefix(5)) : nil }
-        let timestamp: Int
-        if let d = decoded, d.count >= 9 {
-            timestamp = fromBase32(d.dropFirst(5).prefix(4))
-        } else {
-            timestamp = 0
-        }
+        // Canonical split via the C engine (BEE-2312). For non-scheduler
+        // streams (no valid 4-char base-32 trailer) the parse returns nil,
+        // so we fall back to the 5-char prefix for the key and 0 timestamp.
+        let parsed = decoded.flatMap { parseScheduledPayload($0) }
+        let key: String? =
+            parsed?.code ?? decoded.flatMap { $0.count >= 5 ? String($0.prefix(5)) : nil }
+        let timestamp = parsed?.timestampSec ?? 0
 
         switch token {
         case -2:
@@ -420,21 +472,5 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
         default:
             return nil
         }
-    }
-
-    // MARK: - Helpers
-
-    private static let _base32Chars: [Character] =
-        Array("0123456789abcdefghijklmnopqrstuv")
-
-    private static func fromBase32<S: StringProtocol>(_ s: S) -> Int {
-        var decimal = 0
-        var factor = 1
-        for ch in s.reversed() {
-            guard let idx = _base32Chars.firstIndex(of: ch) else { return 0 }
-            decimal += factor * idx
-            factor *= 32
-        }
-        return decimal
     }
 }

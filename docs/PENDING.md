@@ -54,5 +54,6 @@ Usa el skill `/pending` (recomendado). O copia este bloque al final del fichero:
 
 ## 🗂️ Pendientes registrados
 
-> _pending-001 promovida a BEE-2259 (Done en v0.1.2). Sin pendings actuales._
+> _pending-001 promovida a BEE-2259 (Done en v0.1.2)._
+> _pending-002 promovida a BEE-2327 (Phase 9). Sin pendings actuales._
 

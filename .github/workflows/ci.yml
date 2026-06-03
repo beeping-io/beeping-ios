@@ -32,6 +32,25 @@ jobs:
         # build plugin) — this step is a syntax-only gate.
         run: ruby -ryaml -e "YAML.load_file('OpenAPI/openapi.yaml')"
 
+      - name: Verify beeping-core pin (checksum)
+        # BEE-2311: the vendored BeepingCore.xcframework must match the
+        # SHA256s recorded in Vendor/beeping-core.version.json. Catches an
+        # accidental binary swap or a corrupted vendor blob.
+        run: bash scripts/verify-core-pin.sh
+
+      - name: Self-test the beeping-core pin tooling
+        # BEE-2311: proves the drift detection works (tamper + lying
+        # manifest are rejected; freshness warning fires only when newer).
+        run: bash scripts/test-core-pin.sh
+
+      - name: Check for a newer beeping-core release (non-blocking)
+        # BEE-2311: freshness nudge. Emits a ::warning:: annotation when
+        # beeping-core has shipped past the pinned tag; never fails CI.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-core-latest.sh
+
       - name: Install SwiftLint
         # macos-latest runners have homebrew preinstalled.
         run: brew install swiftlint
