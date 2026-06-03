@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   # file post-build so each tag's podspec is self-consistent.
   s.source           = {
     :http   => "https://github.com/beeping-io/beeping-ios/releases/download/v#{s.version}/Beeping.xcframework.zip",
-    :sha256 => "110988ad921a6a6d3a0dd7335cb894ba89d24fb2df0595344aed3e0efcf9f917"
+    :sha256 => "6b5fbb38edad08c1f8155b25cabe295b1f903d2dce75a9ac60b517d37d6c0988"
   }
 
   s.platform         = :ios, "15.0"
