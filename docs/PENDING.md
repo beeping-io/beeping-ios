@@ -55,5 +55,36 @@ Usa el skill `/pending` (recomendado). O copia este bloque al final del fichero:
 ## 🗂️ Pendientes registrados
 
 > _pending-001 promovida a BEE-2259 (Done en v0.1.2)._
-> _pending-002 promovida a BEE-2327 (Phase 9). Sin pendings actuales._
+> _pending-002 promovida a BEE-2327 (Phase 9)._
+
+### ⏳ pending-003 — 💥 `AudioEngine.start()` aborta el proceso si la sesión de audio no activa
+
+- 📅 **Fecha añadida**: 2026-07-22
+- 🏷️ **Tipo**: fix
+- 🧭 **Trigger**: encontrado durante el Human QA Checkpoint de BEE-92 (`beeping_flutter`), intentando usar el Simulador de iOS como segundo dispositivo. La app crashea de forma reproducible a los ~14 s con `SIGABRT`:
+
+  ```text
+  AURemoteIO::Start() → _ReportRPCTimeout → abort
+  BCAudioUnitController start
+  ```
+
+- ⚙️ **Acción requerida**: en `AudioEngine.swift`,
+
+  ```swift
+  internal func start() {
+      configureAudioSession()   // el catch solo hace log.error y sigue
+      _ = _controller.start()   // arranca igual y descarta el OSStatus
+  }
+  ```
+
+  1. `configureAudioSession()` pasa a `throws` y relanza como `BeepingError.missingMicrophonePermission` — el caso **ya está declarado** en `BeepingError.swift`, documentado exactamente para esto, y nadie lo lanza.
+  2. `start()` pasa a `throws` y **no llama a `_controller.start()`** si la sesión no activó. Este es el paso que evita el `abort()`: la llamada aborta desde dentro (código de Apple), así que comprobar su retorno a posteriori no sirve.
+  3. Dejar de descartar el `OSStatus` de `_controller.start()`; añadir un caso `audioUnitStartFailed(OSStatus)` para fallos que no sean de permisos.
+
+  Nota: `BCAudioUnitController.start` (ObjC++) **sí** comprueba y devuelve el `OSStatus` correctamente. El defecto está solo en la capa Swift.
+
+- 🚧 **Bloqueado por**: nada técnico. Al arreglarlo hace falta release de `beeping-ios`, porque `beeping_flutter_ios` fija `Beeping ~> 0.2.0` desde CocoaPods y no vería el cambio; para validar antes, apuntar el pod a un `:path` local.
+- 🚦 **Estado**: 🆕 Nuevo
+
+**Impacto en hardware**: con el permiso concedido en un iPhone real no se manifiesta (verificado: la app aguanta estable en `listening…`). Sigue latente si otra app se queda la sesión de audio, entra una llamada, o se revoca el micro con la app en segundo plano — casos que en producción acabarían apareciendo como crash en vez de como error mostrable.
 
