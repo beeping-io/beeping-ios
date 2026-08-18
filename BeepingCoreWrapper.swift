@@ -124,13 +124,23 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
 
     // MARK: - Listen
 
-    internal func startListening() {
+    /// - Throws: whatever `AudioEngine.start()` throws — the audio session
+    ///   failing to activate, or the audio unit refusing to start.
+    ///   `_isListening` is rolled back so a failed attempt can be retried
+    ///   (BEE-2351).
+    internal func startListening() throws {
         let shouldStart: Bool = withLock {
             guard !_isListening else { return false }
             _isListening = true
             return true
         }
-        if shouldStart { _audioEngine?.start() }
+        guard shouldStart else { return }
+        do {
+            try _audioEngine?.start()
+        } catch {
+            withLock { _isListening = false }
+            throw error
+        }
     }
 
     internal func stopListening() {
@@ -144,11 +154,20 @@ internal final class BeepingCoreWrapper: @unchecked Sendable {
 
     // MARK: - Play
 
-    internal func play(code: String) {
+    /// - Throws: whatever `AudioEngine.start()` throws. The emitting flags
+    ///   are rolled back on failure so the engine is not left believing it
+    ///   is mid-emission (BEE-2351).
+    internal func play(code: String) throws {
         let _ = _handle.encode(code, type: 0)
         withLock { _isEmitting = true }
         _audioEngine?.markEmitting(true)
-        _audioEngine?.start()
+        do {
+            try _audioEngine?.start()
+        } catch {
+            withLock { _isEmitting = false }
+            _audioEngine?.markEmitting(false)
+            throw error
+        }
     }
 
     // MARK: - Cloud-mode loopback decode (BEE-2050)

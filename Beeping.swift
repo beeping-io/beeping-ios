@@ -63,8 +63,18 @@ public final class BeepingLegacy: NSObject {
     /// Start listening for incoming beeps. The audio session is
     /// configured here; the user is prompted for microphone permission
     /// the first time `listen()` runs after install.
+    /// - Note: BEE-2351 — this legacy entry point stays non-throwing to keep
+    ///   its Objective-C selector (`listen`) stable; adding `throws` would
+    ///   rename it to `listenAndReturnError:` and break ObjC callers. A
+    ///   failure to activate the audio session is logged and listening
+    ///   simply does not start. Consumers that need the error should use
+    ///   `BeepingClient.listen()`, which reports it as `.failed`.
     @objc public func listen() {
-        wrapper.startListening()
+        do {
+            try wrapper.startListening()
+        } catch {
+            log.error("listen() could not start audio: \(error)")
+        }
     }
 
     /// Stop listening.
@@ -75,6 +85,10 @@ public final class BeepingLegacy: NSObject {
     // MARK: - Internals
 
     private let wrapper: BeepingCoreWrapper
+
+    /// BEE-2351: the legacy facade has no error channel of its own, so a
+    /// failed audio start is reported here.
+    private let log = BeepingLog(category: "legacy")
 
     private override init() {
         let w = BeepingCoreWrapper()
