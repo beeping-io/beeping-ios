@@ -56,15 +56,28 @@ struct EncoderStrategyTests {
         _ = encoder
     }
 
-    @Test("LocalEncoder.encode does not throw on a benign payload")
-    func localEncoderDoesNotThrow() async throws {
+    @Test("LocalEncoder.encode either emits or fails typed — never aborts")
+    func localEncoderFailsTypedOnBenignPayload() async throws {
         let wrapper = BeepingCoreWrapper()
         // Wrapper must be configured before `play(code:)` reaches the
         // C engine — calling encode against an unconfigured handle
         // SIGSEGVs inside `BCNativeCore.encode(...:type:)`.
         wrapper.configure(mode: .all)
         let encoder = LocalEncoder(wrapper: wrapper)
-        try await encoder.encode(samplePayload())
+
+        // BEE-2351: emission drives the same shared `.playAndRecord` audio
+        // unit as listening, so it needs the microphone permission the test
+        // host does not have. The contract asserted here is not "it always
+        // succeeds" — it is that the outcome is a *typed* failure and never
+        // a process abort. Written as an implication so it holds on hosts
+        // where the permission happens to be granted.
+        do {
+            try await encoder.encode(samplePayload())
+        } catch let error as BeepingError {
+            #expect(
+                error == .missingMicrophonePermission,
+                "the only acceptable failure here is the permission gate, got \(error)")
+        }
     }
 
     // MARK: - CloudEncoder type shape
