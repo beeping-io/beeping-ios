@@ -38,6 +38,7 @@
 		BC0001000000000000000101 /* BeepingLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000100 /* BeepingLog.swift */; };
 		BC0001000000000000000103 /* BeepingLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000102 /* BeepingLogTests.swift */; };
 		BC0001000000000000000901 /* AudioEngineStartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000900 /* AudioEngineStartTests.swift */; };
+		BC0001000000000000000903 /* LocalEncoderWireFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000902 /* LocalEncoderWireFormatTests.swift */; };
 		BC0001000000000000000111 /* TelemetryEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000110 /* TelemetryEvent.swift */; };
 		BC0001000000000000000113 /* TelemetryHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000112 /* TelemetryHook.swift */; };
 		BC0001000000000000000115 /* TelemetryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0001000000000000000114 /* TelemetryClient.swift */; };
@@ -105,6 +106,7 @@
 		BC0001000000000000000100 /* BeepingLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingLog.swift; sourceTree = "<group>"; };
 		BC0001000000000000000102 /* BeepingLogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeepingLogTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000900 /* AudioEngineStartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineStartTests.swift; sourceTree = "<group>"; };
+		BC0001000000000000000902 /* LocalEncoderWireFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalEncoderWireFormatTests.swift; sourceTree = "<group>"; };
 		BC0001000000000000000110 /* TelemetryEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryEvent.swift; sourceTree = "<group>"; };
 		BC0001000000000000000112 /* TelemetryHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryHook.swift; sourceTree = "<group>"; };
 		BC0001000000000000000114 /* TelemetryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryClient.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				BC0001000000000000000084 /* BuilderDSLTests.swift */,
 				BC0001000000000000000102 /* BeepingLogTests.swift */,
 				BC0001000000000000000900 /* AudioEngineStartTests.swift */,
+				BC0001000000000000000902 /* LocalEncoderWireFormatTests.swift */,
 				BC0001000000000000000116 /* TelemetryTests.swift */,
 				41E1E2ED1AFA5EFE00987410 /* Supporting Files */,
 			);
@@ -409,6 +412,7 @@
 				BC0001000000000000000085 /* BuilderDSLTests.swift in Sources */,
 				BC0001000000000000000103 /* BeepingLogTests.swift in Sources */,
 				BC0001000000000000000901 /* AudioEngineStartTests.swift in Sources */,
+				BC0001000000000000000903 /* LocalEncoderWireFormatTests.swift in Sources */,
 				BC0001000000000000000117 /* TelemetryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

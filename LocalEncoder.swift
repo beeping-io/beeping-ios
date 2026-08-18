@@ -28,32 +28,81 @@ internal actor LocalEncoder: BeepingEncoder {
     }
 
     func encode(_ payload: BeepingPayload) async throws {
-        // Defensive validation: the C engine's ReedSolomon path SIGSEGVs
-        // when fed non-base32 input (any char outside `[0-9a-v]`, or a
-        // length other than the expected 9 chars: 5 key + 4 timestamp).
-        // Throw a typed error so callers see a clean failure instead of
-        // a process crash. Upstream beeping-core should also reject the
-        // same input but the SDK can't depend on that yet.
-        try Self.validateForCEngine(code: payload.decodedString)
+        // BEE-2355: the caller supplies a 5-char **key** — the public
+        // contract, per beepbox's OpenAPI (`^[0-9a-v]{5}$`). Composing the
+        // 9-char wire string is the SDK's job, not the caller's. Before
+        // this, `encode` demanded the composed form and rejected every
+        // valid key with `decoderInternal`.
+        let wire = try Self.wireString(for: payload)
 
         // The legacy C engine doesn't surface errors past validation, but
         // the audio session can still refuse to activate — BEE-2351 makes
         // that a thrown error rather than a process abort.
-        try wrapper.play(code: payload.decodedString)
+        try wrapper.play(code: wire)
     }
 
-    /// Beepbox payloads are 9 lowercase base32 chars: 5-char key +
-    /// 4-char timestamp. Anything else is rejected at the Swift layer
-    /// to prevent the C engine from crashing on malformed input.
-    private static func validateForCEngine(code: String) throws {
-        guard code.count == 9 else {
+    // MARK: - Wire format
+
+    /// Base-32 alphabet shared by the key and the timestamp tag: digits
+    /// `0-9` then letters `a-v`. Exactly 32 symbols because the C engine's
+    /// Reed-Solomon code lives in GF(2⁵) — `'v'` is symbol 31 and there is
+    /// no room for `w`…`z`.
+    private static let alphabet = Array("0123456789abcdefghijklmnopqrstuv")
+
+    /// Number of base-32 chars the timestamp tag occupies.
+    private static let timestampChars = 4
+
+    /// Composes the 9-char string the C engine encodes: the 5-char key
+    /// followed by the rounded timestamp in seconds as a 4-char
+    /// zero-padded base-32 tag.
+    ///
+    /// Mirrors `BEEPING_EncodeWithSchedule`, whose contract states the
+    /// payload is *"`code` concatenated with the rounded timestamp of the
+    /// beep in seconds, encoded as 4-char zero-padded base-32"*, and is the
+    /// exact inverse of `BEEPING_ParseScheduledPayload`.
+    internal static func wireString(for payload: BeepingPayload) throws -> String {
+        let key =
+            payload.key.isEmpty
+            ? String(payload.decodedString.prefix(5))
+            : payload.key
+        try validateKey(key)
+        return key + base32Tag(payload.timestamp)
+    }
+
+    /// The public contract is `^[0-9a-v]{5}$` — 5 chars, lowercase.
+    ///
+    /// Note the SDK is deliberately stricter than the engine here: the C
+    /// `getIdxFromChar` accepts `'V'` as well as `'v'`, but the published
+    /// beepbox API only admits lowercase, and diverging would let a key
+    /// encode locally that the server would reject.
+    private static func validateKey(_ key: String) throws {
+        guard key.count == 5 else {
             throw BeepingError.decoderInternal(
-                reason: "LocalEncoder: payload must be 9 base32 chars (got \(code.count))")
+                reason: "LocalEncoder: key must be 5 base32 chars (got \(key.count) in \"\(key)\")")
         }
-        let allowed = Set("0123456789abcdefghijklmnopqrstuv")
-        for c in code where !allowed.contains(c) {
+        let allowed = Set(alphabet)
+        for c in key where !allowed.contains(c) {
             throw BeepingError.decoderInternal(
-                reason: "LocalEncoder: payload \"\(code)\" contains non-base32 char '\(c)'")
+                reason: """
+                    LocalEncoder: key "\(key)" contains '\(c)', which is outside \
+                    the base32 alphabet [0-9a-v] (lowercase only)
+                    """)
         }
+    }
+
+    /// Encodes `seconds` as a zero-padded 4-char base-32 tag.
+    ///
+    /// Values are taken modulo 32⁴ (1 048 576 s ≈ 12 days) because that is
+    /// all four chars can carry; negatives are clamped to 0 rather than
+    /// wrapping to a far-future tag.
+    private static func base32Tag(_ seconds: Int) -> String {
+        let modulus = Int(pow(32.0, Double(timestampChars)))
+        var value = seconds <= 0 ? 0 : seconds % modulus
+        var chars = [Character]()
+        for _ in 0..<timestampChars {
+            chars.append(alphabet[value % 32])
+            value /= 32
+        }
+        return String(chars.reversed())
     }
 }
