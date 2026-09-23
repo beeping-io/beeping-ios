@@ -42,12 +42,14 @@ internal protocol AudioSessionConfiguring: Sendable {
 
     /// Whether the user has granted microphone access.
     ///
-    /// This is the check that actually prevents the BEE-2351 abort.
-    /// `setActive(true)` succeeds happily while the permission is `.denied`
-    /// — verified on the Simulator — so the session activating tells us
-    /// nothing. Starting a `.playAndRecord` RemoteIO without the permission
-    /// is what hangs the RPC to the audio daemon and ends in
-    /// `_ReportRPCTimeout → abort`.
+    /// Checked separately because `setActive(true)` succeeds happily while
+    /// the permission is `.denied` — verified on the Simulator — so the
+    /// session activating tells us nothing about whether the system will
+    /// actually serve a `.playAndRecord` unit.
+    ///
+    /// Note this is **not** known to be the cause of the BEE-2351 abort:
+    /// that abort was later reproduced with the permission granted. It is a
+    /// genuine precondition worth failing fast on, no more.
     var isRecordPermissionGranted: Bool { get }
 }
 
@@ -109,20 +111,22 @@ internal final class AudioEngine: @unchecked Sendable {
     ///   could not be activated, or `BeepingError.audioUnitStartFailed` if
     ///   the unit itself refused to start.
     ///
-    /// The session is activated **first and the failure is propagated**
-    /// rather than logged: starting the audio unit on an inactive session
-    /// makes `AURemoteIO::Start()` abort the process from inside Apple's
-    /// code (`_ReportRPCTimeout → abort`, ~14 s later). That abort cannot
-    /// be caught — `AudioOutputUnitStart` never returns — so the only
-    /// defence is not to call it. See BEE-2351.
+    /// Both preconditions are propagated rather than logged and stepped
+    /// over, which is what the code did before BEE-2351: it configured the
+    /// session, ignored any failure, and started the unit regardless.
+    ///
+    /// ⚠️ Neither check is known to prevent the `AURemoteIO::Start() →
+    /// _ReportRPCTimeout → abort` crash. That abort was reproduced under
+    /// `integration_test` with the microphone **granted**, and again after
+    /// moving the call off Swift Concurrency's cooperative pool onto a
+    /// private queue — so it is caused by neither. Its cause is still open;
+    /// see BEE-2351. What these guards do buy is failing fast, with a typed
+    /// error, on two states in which audio genuinely cannot work.
     internal func start() throws {
         try configureAudioSession()
 
-        // THE check that prevents the abort. Do not reorder below the
-        // controller call and do not downgrade to a log: an ungranted
-        // permission makes `AudioOutputUnitStart` hang on its RPC to the
-        // audio daemon and abort the process ~14 s later, from inside
-        // Apple's code, where nothing can catch it (BEE-2351).
+        // A `.playAndRecord` unit needs the microphone. Cheap and local, so
+        // it fails fast here rather than somewhere inside CoreAudio.
         guard _session.isRecordPermissionGranted else {
             log.error("microphone permission not granted — refusing to start audio")
             throw BeepingError.missingMicrophonePermission
