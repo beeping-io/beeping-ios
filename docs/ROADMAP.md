@@ -119,4 +119,4 @@ This table grows with every closed task. Velocity is recalculated as
 - `docs/PRODUCTO.md` — full product spec (sections 6 = scope, 19 = risks, 20 = timeline)
 - `docs/ROADMAP_CHANGELOG.md` — append-only log of every change to this file
 - `~/.claude/CLAUDE.md` — global methodology, branch model, ROADMAP rules
-- Linear milestone Phase 9: `https://linear.app/me8/project/03da887d924e?selectedProjectMilestone=3b2f36a8-b6e7-4202-8748-1a8c8ec65d21`
+- Task manager (Phase 9): [GitHub Projects v2 (Project #22)](https://github.com/orgs/beeping-io/projects/22)
