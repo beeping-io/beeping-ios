@@ -233,7 +233,7 @@ Internamente:
 | **Tests calidad** | snapshot-testing para SwiftUI sample app + property-based con SwiftCheck en encoder/decoder paths |
 | **CI tiempo** | < 12 min build + test + lint full pipeline (más lento que Android por overhead Xcode) |
 | **XCFramework tamaño** | XCFramework < 10 MB (legacy `libBeepingCoreUniversal.a` es 18 MB; BEE-79 lo reemplaza por slices delgadas por arch) |
-| **Latencia decode** | < 200 ms desde fin de chirp hasta emisión de `.decoded` (`.local`) |
+| **Latencia decode** | < 200 ms desde fin de beep hasta emisión de `.decoded` (`.local`) |
 | **Latencia decode** | < 1500 ms (`.cloud`) — depende de RTT |
 | **Memory** | Steady-state < 30 MB durante listen |
 | **Privacy** | Cero PII en logs, telemetry opt-out por defecto, audit anual de eventos emitidos, `PrivacyInfo.xcprivacy` declarando APIs sensibles |
