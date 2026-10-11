@@ -51,6 +51,7 @@ fastlane/test_output/
 # ── XCFramework distribution outputs ─────────────────────────────────────
 dist/
 Framework/
+Beeping.xcframework/
 *.xcframework.zip
 
 # ── Local config (machine-specific, NEVER commit) ────────────────────────
