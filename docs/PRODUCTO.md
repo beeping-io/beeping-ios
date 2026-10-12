@@ -348,6 +348,9 @@ App SwiftUI demostrativa que:
 ### DT-04: SPM primario, CocoaPods secundario
 **Por qué**: SPM es nativo Apple, integrado en Xcode, sin dependencias externas (Ruby/CocoaPods). CocoaPods sigue siendo necesario para Flutter plugins (BEE-81 — `beeping_flutter` lo consume) y RN modules legacy. Mantenemos ambos pero invertimos prioridad respecto al SDK legacy.
 
+**Validación del Podspec (`pod spec lint` vs `pod lib lint`)**:
+Para podspecs que vendorean binarios distribuidos remotamente (`source :http`), `pod lib lint` falla (`vendored_frameworks did not match any file`) porque valida contra el árbol local del repositorio donde el binario (`Beeping.xcframework`) no reside. La validación canónica de release es `pod spec lint Beeping.podspec --allow-warnings`, que descarga el asset remoto desde GitHub Releases y compila contra él (comportamiento idéntico al que ejecuta `pod trunk push`).
+
 ### DT-05: Native lib consumida, no vendoreada
 **Por qué**: El `libBeepingCoreUniversal.a` (18 MB) actualmente vendoreado es de Apr 2025, sin trazabilidad de versión, y bloatea el repo. Consumirlo de releases firmadas de `beeping-core` da: trazabilidad (versión pin en `Package.swift`), seguridad (firma + SBOM), y workflow consistente con `beeping-android` (Phase 8).
 
@@ -398,7 +401,7 @@ App SwiftUI demostrativa que:
 | **Phase 9 completada** | 16/16 tasks closed | Fin de Phase 9 |
 | **GitHub Release v0.0.0 live** | XCFramework + checksum + signature publicados | Tras BEE-82 |
 | **SPM resoluble** | `swift package resolve` con URL del repo OK | Tras BEE-80 |
-| **CocoaPods resoluble** | `pod lib lint Beeping.podspec` verde | Tras BEE-81 |
+| **CocoaPods resoluble** | `pod spec lint Beeping.podspec --allow-warnings` verde | Tras BEE-81 |
 | **CI green ratio** | ≥ 95% en `develop` | Continuo |
 | **Lint warnings** | 0 totales | Continuo (BEE-77) |
 | **Coverage** | ≥ 80% line | Tras BEE-76 |

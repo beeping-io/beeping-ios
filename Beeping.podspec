@@ -18,6 +18,13 @@
 # automatically — no `./build.sh` step required on the consumer side.
 # The sha256 is checked against the trunk-published podspec by CocoaPods.
 #
+# Validation note (BEE-2339):
+# Always use `pod spec lint Beeping.podspec --allow-warnings` (NOT `pod lib lint`).
+# `pod lib lint` only checks local repository files and fails because
+# `Beeping.xcframework` lives inside the remote GitHub Release zip (`:http` source).
+# `pod spec lint` downloads and verifies the remote artifact, matching
+# what `pod trunk push` executes during publication.
+#
 
 Pod::Spec.new do |s|
   s.name             = "Beeping"
