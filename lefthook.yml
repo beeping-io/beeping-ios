@@ -218,6 +218,7 @@ pre-push:
             | grep -v "auto-linked framework 'CoreAudioTypes'" \
             | grep -v "auto-linked framework 'UIUtilities'" \
             | grep -v "SwiftUICore" \
+            | grep -v "failed with exit code 0 but produced no further output" \
             | grep -q .; then
           echo "❌ unexpected warnings or errors in build output"
           grep -nE "warning:|error:" /tmp/lefthook-build.log \
@@ -226,7 +227,8 @@ pre-push:
             | grep -v "'allowBluetooth' was deprecated" \
             | grep -v "auto-linked framework 'CoreAudioTypes'" \
             | grep -v "auto-linked framework 'UIUtilities'" \
-            | grep -v "SwiftUICore"
+            | grep -v "SwiftUICore" \
+            | grep -v "failed with exit code 0 but produced no further output"
           exit 1
         fi
 

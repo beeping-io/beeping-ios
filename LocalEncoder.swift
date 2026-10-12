@@ -36,9 +36,10 @@ internal actor LocalEncoder: BeepingEncoder {
         // same input but the SDK can't depend on that yet.
         try Self.validateForCEngine(code: payload.decodedString)
 
-        // The legacy C engine doesn't surface errors past validation;
-        // play(code:) is fire-and-forget once the input is well-formed.
-        wrapper.play(code: payload.decodedString)
+        // The legacy C engine doesn't surface errors past validation, but
+        // the audio session can still refuse to activate — BEE-2351 makes
+        // that a thrown error rather than a process abort.
+        try wrapper.play(code: payload.decodedString)
     }
 
     /// Beepbox payloads are 9 lowercase base32 chars: 5-char key +
