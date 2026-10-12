@@ -64,11 +64,12 @@ echo "  ✓ sha256 matches ($expected)"
 
 echo "==> Verifying cosign keyless signature"
 # The certificate-identity-regexp matches any workflow that lives at
-# `.github/workflows/release.yml` on a refs/tags/v* ref in the
+# `.github/workflows/release.yml` on a refs/tags/v* ref or refs/heads/main
+# (when triggered via workflow_dispatch on main) in the
 # `beeping-io/beeping-ios` repository. If anyone forks the repo and
 # publishes a malicious build, the identity won't match this regexp.
 cosign verify-blob \
-  --certificate-identity-regexp "https://github.com/${REPO}/.github/workflows/release.yml@refs/tags/v.*" \
+  --certificate-identity-regexp "https://github.com/${REPO}/.github/workflows/release.yml@refs/(heads/main|tags/v.*)" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   --bundle Beeping.xcframework.zip.cosign.bundle \
   Beeping.xcframework.zip
