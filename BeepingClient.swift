@@ -254,7 +254,28 @@ public actor BeepingClient {
         AsyncStream { continuation in
             let id = UUID()
             self.streams[id] = continuation
-            self.wrapper.startListening()
+
+            // BEE-2351: audio may refuse to start (denied microphone
+            // permission, another app owning the session). Report it rather
+            // than hand back a stream that will never produce anything.
+            //
+            // `.failed` is followed by `.stopped` per the documented
+            // contract on `Event` — a fatal failure closes the session, and
+            // consumers that only watch for `.stopped` to tear down must
+            // still see it. `listen()` stays non-throwing, so the public
+            // API is unchanged.
+            do {
+                try self.wrapper.startListening()
+            } catch {
+                let reported: BeepingError =
+                    (error as? BeepingError)
+                    ?? .decoderInternal(reason: "startListening failed: \(error)")
+                continuation.yield(.failed(reported))
+                continuation.yield(.stopped)
+                continuation.finish()
+                self.streams[id] = nil
+                return
+            }
 
             // BEE-75: emit sessionStarted to telemetry. The actor
             // serializes; the await is fire-and-forget via Task.

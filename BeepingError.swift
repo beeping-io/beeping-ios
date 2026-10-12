@@ -26,6 +26,17 @@ public enum BeepingError: Error, Sendable, Equatable {
     /// for the interruption to end and restarts `listen()`.
     case audioSessionInterrupted
 
+    /// `AudioOutputUnitStart` refused to start the audio unit, carrying the
+    /// raw `OSStatus`. Distinct from `missingMicrophonePermission`, which
+    /// covers the session never activating in the first place (BEE-2351).
+    ///
+    /// The SDK must never call into the audio unit with an inactive
+    /// session: `AURemoteIO::Start()` aborts the **process** from inside
+    /// Apple's code (`_ReportRPCTimeout → abort`), so the failure cannot be
+    /// caught after the fact. This case therefore only surfaces genuine
+    /// start failures on a session that *did* activate.
+    case audioUnitStartFailed(status: OSStatus)
+
     /// `libBeepingCoreUniversal.a` failed to load (or post-BEE-79 the
     /// XCFramework binary target failed to resolve). Not recoverable from
     /// the SDK side — the app bundle is malformed.
