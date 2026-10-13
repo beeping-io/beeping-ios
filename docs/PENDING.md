@@ -5,10 +5,10 @@ no ahora".
 
 🎯 **Aquí entra**: deuda detectada, follow-ups de incidentes, feedback accionable,
 "esto hay que hacerlo pero no hemos decidido cuándo".
-🚫 **Aquí NO entra**: trabajo ya agendado a un milestone (eso va a Linear).
+🚫 **Aquí NO entra**: trabajo ya agendado a un milestone (eso va a GitHub Projects v2).
 
-🪄 **Promoción**: ponerle un milestone a un pending lo convierte en task Linear
-`BEE-XXXX` y se elimina automáticamente de este fichero.
+🪄 **Promoción**: ponerle un milestone a un pending lo convierte en issue de GitHub Projects v2
+`#XXXX` y se elimina automáticamente de este fichero.
 
 ---
 
