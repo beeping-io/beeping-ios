@@ -4,10 +4,10 @@ Captura **ideas no maduras**: brainstorms, "what if we...", spikes pendientes
 de explorar, ocurrencias que no son aún una tarea formal.
 
 🌱 **Aquí entra**: cualquier ocurrencia, incluso si suena rara — todas son bienvenidas.
-🚫 **Aquí NO entra**: trabajo ya decidido y agendado a un milestone (eso va a Linear).
+🚫 **Aquí NO entra**: trabajo ya decidido y agendado a un milestone (eso va a GitHub Projects v2).
 
-🪄 **Promoción**: ponerle un milestone a una idea la convierte en task Linear
-`BEE-XXXX` y se elimina automáticamente de este fichero.
+🪄 **Promoción**: ponerle un milestone a una idea la convierte en issue de GitHub Projects v2
+`#XXXX` y se elimina automáticamente de este fichero.
 
 ---
 

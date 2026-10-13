@@ -102,7 +102,9 @@ podspec end to end (build XCFramework → xcodegen → pod install →
 xcodebuild build).
 
 > Trunk publication (`pod 'Beeping'` without a path) lands in **BEE-82**
-> alongside the SPM `url:checksum:` switch.
+> alongside the SPM `url:checksum:` switch. Validating the podspec against
+> its remote `:http` release archive must use `pod spec lint Beeping.podspec --allow-warnings`
+> (`pod lib lint` only checks local repo files and will fail finding the vendored framework).
 
 ---
 
